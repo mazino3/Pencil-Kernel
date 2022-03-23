@@ -4,33 +4,7 @@
 #include "graphic.h"
 #include "io.h"
 
-uint8_t fcolor = 0x07;
-
-/* put_char
-* 功能:在光标位置显示一个字符
-*/
-void put_char(uint8_t char_ascii)
-{
-    put_char1(0x07,char_ascii);
-    return;
-}
-
-/* put_str
-* 功能:显示字符串
-*/
-void put_str(char* str)
-{
-    put_str1(0x07,str);
-    return;
-}
-
-void put_int(int a,int base)
-{
-    put_int1(0x07,a,base);
-    return;
-}
-
-void put_char1(uint8_t color,uint8_t char_ascii)
+void put_char(uint8_t color,uint8_t char_ascii)
 {
     if(DisplayMode == _TEXT)
     {
@@ -54,6 +28,9 @@ void put_char1(uint8_t color,uint8_t char_ascii)
                 cursor_pos -= (cursor_pos % ScrnX);
                 cursor_pos += ScrnX; /* 移动到下一行行首 */
                 break;
+            case '\t':
+                cursor_pos = ((cursor_pos + 4) & ~(4 - 1));
+                break;
             /* 普通字符 */
             default:
                 font |= (char_ascii << 8);
@@ -75,23 +52,32 @@ void put_char1(uint8_t color,uint8_t char_ascii)
 /* put_str
 * 功能:显示字符串
 */
-void put_str1(uint8_t color,char* str)
+void put_str(uint8_t color,const char* str)
 {
     while(*str != '\0')
     {
-        put_char1(color,*str);
+        put_char(color,*str);
         str++;
     }
     return;
 }
 
-void put_int1(uint8_t color,int a,int base)
+void put_int(uint8_t color,int a,int base)
 {
     char buf[64 +2] = {0};
     itoa(a,buf,base);
-    put_str1(color,buf);
+    put_str(color,buf);
     return;
 }
+
+void put_uint(uint8_t color,unsigned int a,int base)
+{
+    char buf[64 +2] = {0};
+    utoa(a,buf,base);
+    put_str(color,buf);
+    return;
+}
+
 
 /* itoa
 * 功能:将a转为base进制的字符串写入str地址
@@ -144,21 +130,66 @@ void itoa(int a,char* str,int base)
     return;
 }
 
+
+/* utoa
+* 功能:将a转为base进制的字符串写入str地址
+* a    :要转换的数字(无符号)
+* str  :转换后的字符串的存储地址
+* base :进制,最高支持36进制
+*/
+void utoa(unsigned int a,char* str,int base)
+{
+    static char digits[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    int i; /* 作为下标来索引 */
+    int isNegative; /* 是否是负的？ */
+    isNegative = a;
+    i = 0;
+    /* 转换为字符串,不过是倒过来的 */
+    do
+    {
+        str[i] = digits[a % base];
+        i++;
+        a = a / base;
+    }while(a > 0);
+    str[i] = '\0'; /* 加上字符串结尾 */
+    char* p = str;
+    char* q = str;
+    char tmp;
+    while(*q != '\0')
+    {
+        q++;
+    } 
+    q--;
+    /* 把字符串倒过来 */
+    while(q > p)
+    {
+        tmp = *p;
+        *p = *q;
+        p++;
+        *q = tmp;
+        q--;
+    }
+    return;
+}
+
 /* roll_screen
 * 滚动屏幕
 */
 void roll_screen()
 {
-    uint16_t* src;
-    uint16_t* dst;
-    src = ((uint16_t*)(Vram_l + ScrnX * 2)); /* 第一行行首 */
-    dst = ((uint16_t*)(Vram_l)); /* 第0行行首 */
-    int i;
-    for(i = 0;i < ((ScrnX - 1) * ScrnY);i++)
+    if(DisplayMode == _TEXT)
     {
-        *dst = *src;
-        dst++;
-        src++;
+        uint16_t* src;
+        uint16_t* dst;
+        src = ((uint16_t*)(Vram_l + ScrnX * 2)); /* 第一行行首 */
+        dst = ((uint16_t*)(Vram_l)); /* 第0行行首 */
+        int i;
+        for(i = 0;i < ((ScrnX - 1) * ScrnY);i++)
+        {
+            *dst = *src;
+            dst++;
+            src++;
+        }
     }
     return;
 }

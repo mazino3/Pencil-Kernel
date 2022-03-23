@@ -93,6 +93,10 @@ enum Display
     #define __volatile__ volatile
 #endif
 
+#ifndef nop
+    #define nop() __asm__ __volatile__ ("nop;");
+#endif
+
 #ifndef PUBLIC
     #define PUBLIC
 #endif

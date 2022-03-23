@@ -15,7 +15,7 @@ void init_cpu()
         *(uint32_t*)&FactoryName[ 8] = CpuFacName[2];
         *(uint32_t*)&FactoryName[12] = CpuFacName[3];
         FactoryName[16] = '\0';
-        put_str1(0x07,FactoryName);
+        put_str(0x07,FactoryName);
     }
     return;
 }
@@ -33,7 +33,7 @@ void cpu_info()
         *(uint32_t*)&FactoryName[ 8] = CpuFacName[2];
         *(uint32_t*)&FactoryName[12] = CpuFacName[3];
         FactoryName[16] = '\0';
-        put_str1(0x07,FactoryName);
+        put_str(0x07,FactoryName);
     }
     return;
 }

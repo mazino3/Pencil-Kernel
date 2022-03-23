@@ -19,36 +19,41 @@ void k_thread_b(void* arg);
 void kernel_main(void)
 {
     int i;
+    for(i = 0;i < 25;i++)
+    {
+        put_char(0x07,'\n');
+    }
     set_cursor(0);
     init_all();
     intr_enable(); /* 开中断 */
-
-    put_str1(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    put_str1(0x07,"Copyright (c) 2022 Linchenjun,All rights reserved.\n\n");
+    put_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
+    put_str(0x07,"Copyright (c) 2021-2022 Linchenjun,All rights reserved.\n\n");
     
-    put_str1(0x07,"CPU    :");cpu_info();put_char('\n');
-    put_str1(0x07,"Memory :");put_int(TotalMem_l / 1024 / 1024,10);put_str("MB");put_char('(');put_int(TotalMem_l / 1024,10);put_str("KB)");put_char('\n');
-    put_str1(0x07,"Disk   :");put_int(DiskCnt,10);put_char('\n');
+    put_str(0x07,"CPU    :");cpu_info();put_char(0x07,'\n');
+    put_str(0x07,"Memory :");put_int(0x07,TotalMem_l / 1024 / 1024,10);put_str(0x07,"MB ( ");put_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
+    put_str(0x07,"Disk   :");put_int(0x07,DiskCnt,10);put_char(0x07,'\n');
+    
+    // 异常处理测试
+    // i = i / 0;                   // #DE
+    // asm volatile("int $0xff");   // #GP
+    // *((uint32_t*)0x20220323) = 1;// #PF
     
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
-    put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2022 Linchenjun,All rights reserved.");
-    
-    thread_start("k_a",63,k_thread_a,"thread A\n");
-    thread_start("k_b",31,k_thread_b,"thread B\n");
-
+    put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 LinChenjun, All rights reserved.");
+    thread_start("k_a",31,k_thread_a,"arg_A ");
+    thread_start("k_a",15,k_thread_b,"arg_B ");
+    put_str(0x07,"PKn\n");
+    put_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07," - 0x");put_uint(0x07,(uint32_t)running_thread() + PG_SIZE,16);put_str(0x07,"\n");
     //RectangleFill(&(Screen.win),0x00ffffff,30,40,40,50);
-
     while(1) /* 这个死循环不能少 */
     {
         ;
-            
     }
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
 }
 
 void k_thread_a(void* arg)
 {
-    put_str1(0x07,(char*)arg);
     char buf[6] = "00000";
     uint32_t i = 0x00000000;
     int sec;
@@ -92,9 +97,8 @@ void k_thread_a(void* arg)
 
 void k_thread_b(void* arg)
 {
-    put_str1(0x07,(char*)arg);
     while(1)
     {
-        //RectangleFill(&(Screen.win),i,20,40,30,50);
+        nop();
     }
 }

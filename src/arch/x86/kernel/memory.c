@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "debug.h"
 #include "global.h"
+#include "print.h"
 #include "stdint.h"
 #include "string.h"
 
@@ -233,8 +234,8 @@ void* get_kernel_page(uint32_t page_count)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
-    put_str1(0x07,"Mem_alloc: 0x");
-    put_int1(0x07,vaddr,16);
-    put_char('\n');
+    put_str(0x07,"Mem_alloc: 0x");
+    put_int(0x07,vaddr,16);
+    put_char(0x07,'\n');
     return vaddr;
 }

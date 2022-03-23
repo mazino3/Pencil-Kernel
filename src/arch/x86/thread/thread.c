@@ -121,6 +121,7 @@ void schedule()
 
 void thread_block(enum task_status status)
 {
+    ASSERT(status != TASK_RUNNING && status != TASK_READY);
     enum intr_status old_status = intr_disable();
     struct task_struct* cur_thread = running_thread();
     cur_thread->status = status;
@@ -132,9 +133,9 @@ void thread_block(enum task_status status)
 void thread_unblock(struct task_struct* thread)
 {
     enum intr_status old_status = intr_disable();
-    if(thread->status != TASK_READY)
+    ASSERT(thread->status != TASK_READY)
     {
-        fifo_put(&ready_thread,&thread); //这里有bug
+        fifo_put(&ready_thread,&thread);
         thread->status = TASK_READY;
     }
     intr_set_status(old_status);
