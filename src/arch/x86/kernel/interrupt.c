@@ -37,6 +37,11 @@ void init_pic()
 void idt_desc_init(void)
 {
     int i;
+    //intr_entry_table[0x00] = general_intr_handler;
+    for(i = 0;i < 20;i++)
+    {
+        intr_entry_table[IDT_DESC_CNT] = general_intr_handler;
+    }
     intr_entry_table[0x20] = asm_intr0x20_handler;
     for(i = 0;i < IDT_DESC_CNT;i++)
     {
@@ -94,7 +99,7 @@ void general_intr_handler(uint8_t vector_nr)
     put_str("intr:");
     put_int(vector_nr);
     put_char(' ');
-    if(vector_nr >= 0 && vector_nr <= 20)
+    if(vector_nr >= 0 && vector_nr < 20)
     {
         put_str(intr_name[vector_nr]);
     }

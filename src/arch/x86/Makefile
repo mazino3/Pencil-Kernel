@@ -11,7 +11,7 @@ MAKE := $(TOOL_DIR)make
 NASM := $(TOOL_DIR)nasm
 OBJCOPY :=$(TOOL_DIR)objcopy
 OBJDUMP :=$(TOOL_DIR)objdump
-#IMGCOPY := $(TOOL_DIR)/imgcopy/imgcopy
+IMGCOPY := $(TOOL_DIR)imgcopy/imgcopy
 
 #src path
 BOOT_DIR := boot/
@@ -125,6 +125,7 @@ clean:
 	$(CD) $(THREAD_DIR) && $(DELET) *.ao
 	$(CD) $(THREAD_DIR) && $(DELET) *.co
 	$(CD) $(THREAD_DIR) && $(DELET) *.s
+	$(DELET) $(v_disk).lock
 
 debug: build
 #	$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,if=floppy,format=raw -boot a -S
@@ -132,7 +133,7 @@ debug: build
 
 dump: $(KERNEL_OBJ_FILE)
 #	$(OBJDUMP) -D $(KERNEL_OBJ_FILE) -M intel > $(BUILD_DIR)/kernel.dmp
-	..\..\..\tools\objdump -D $(KERNEL_OBJ_FILE) -M intel > $(BUILD_DIR)/kernel.asm
+	..\..\..\tools\objdump -D $(KERNEL_OBJ_FILE) > $(BUILD_DIR)/kernel.asm
 
 img: img.asm
 	$(NASM) -o $(v_disk) img.asm
@@ -162,6 +163,7 @@ mkvd:
 	$(NASM) -o $(v_disk) vhd.asm
 
 run: build
+	$(DELET) $(v_disk).lock
 #	$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,if=floppy,format=raw -boot a
 	$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
@@ -183,3 +185,5 @@ system: mkdir $(OBJ_FILE)
 vhd: vhd.asm $(BOOT) $(LOADER)
 	$(NASM) -o $(v_disk) vhd.asm
 	$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
+#	$(IMGCOPY) -fdisk $(v_disk) 130 16 63 1 63 130977
+#	$(IMGCOPY) -bootable $(v_disk) 1

@@ -33,6 +33,7 @@ void init_pic();
 void idt_desc_init(void);
 void set_gatedesc(struct gate_desc* gd,void* func,int selector,int ar);
 void init_idt();
+void general_intr_handler(uint8_t vector_nr);
 void exception_init();
 void register_handler(int vector_no,void* func);
 

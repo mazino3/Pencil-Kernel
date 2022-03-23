@@ -18,8 +18,8 @@
 DrvNum equ 0x7b00
 
 ;界面,同样只能选一个,同时选择将使用文本界面
-;%define __UI_TEXT__
-%define __UI_GRAPHIC__
+%define __UI_TEXT__
+;%define __UI_GRAPHIC__
 
 %ifdef __UI_GRAPHIC__
     ;这里是VBE模式号
@@ -30,13 +30,13 @@ DrvNum equ 0x7b00
     ;0x144,1024 * 768
     ;0x145,1280 * 1024
     ;0x18c,2560 * 1600
-    ;这里挑3个来尝试,总会有一个可以的吧？
+    ;这里挑3个来尝试,总会有一个可以的吧?
     %ifdef __BOOT_ON_VIR_MACHINE__
-        VBE_MODE1 equ 0x118 ;首选模式号:1024 * 768 32位色彩
+        VBE_MODE1 equ 0x143 ;首选模式号:1024 * 768 32位色彩
         VBE_MODE2 equ 0x142 ;备选号1: 800 * 600 32位色彩
         VBE_MODE3 equ 0x140 ;备选号2: 640 * 480 32位色彩
     %else
-        VBE_MODE1 equ 0x118
+        VBE_MODE1 equ 0x180
     %endif
 %endif
 
@@ -77,7 +77,7 @@ ScrnY       equ 0x7c1c ; + 28 对于文本模式,这是指行数;对于图形模
 %endif
 
 
-KernelSectors equ 200         ;Kernel占用200扇区
+KernelSectors equ 30         ;Kernel占用72扇区(Max:72)
 KernelBufAddress equ 0x7F00   ;Kernel临时转存区
-KernelBaseAddress equ 0x7F00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000
+KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000
 KernelStackTop equ 0x7b00     ;kernel栈顶在0x7b00,虚拟地址是0xc0007b00

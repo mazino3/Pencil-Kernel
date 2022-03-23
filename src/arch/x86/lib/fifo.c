@@ -1,5 +1,6 @@
 #include "fifo.h"
 #include "global.h"
+#include "interrupt.h"
 #include "stdint.h"
 
 
@@ -25,9 +26,11 @@ void init_fifo(struct FIFO* fifo,void* buf,int type,int size)
 */
 int fifo_put(struct FIFO* fifo,void* data)
 {
+    enum intr_status old_status = intr_disable();
     if(fifo->free == 0) /* 没有空余 */
     {
         fifo->flage = 0x01;
+        intr_set_status(old_status);
         return -1;
     }
     fifo->free--;
@@ -46,17 +49,21 @@ int fifo_put(struct FIFO* fifo,void* data)
             fifo->buf64[fifo->nw] = *((uint64_t*)data);
             break;
         default:
+            intr_set_status(old_status);
             return -1;
     }
     fifo->nw = (fifo->nw + 1 == fifo->size ? 0 : fifo->nw + 1);
+    intr_set_status(old_status);
     return 0;
 }
 
 
 int fifo_get(struct FIFO* fifo,void* data)
 {
+    enum intr_status old_status = intr_disable();
     if(fifo->free == fifo->size)
     {
+        intr_set_status(old_status);
         return -1;
     }
     fifo->free++;
@@ -76,6 +83,7 @@ int fifo_get(struct FIFO* fifo,void* data)
             break;
     }
     fifo->nr = (fifo->nr + 1 == fifo->size ? 0 : fifo->nr + 1);
+    intr_set_status(old_status);
     return 0;
 }
 

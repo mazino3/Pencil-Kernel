@@ -20,7 +20,7 @@ void init_memory()
     mem_free_page(&kernel_pool,(void*)0x00102000,k_Total);
     mem_free_page(&user_pool,(void*)(0x00102000 + k_Total),u_Total);
 
-    mem_free_page(&kernel_vaddr,(void*)0x00000000,0x00100000);
+    //mem_free_page(&kernel_vaddr,(void*)0x00000000,0x00100000);
     //mem_free_page(&kernel_vaddr,(void*)0xc0000000,0x3fffffff);
     mem_free_page(&kernel_vaddr,(void*)0xc0000000,0x3dffffff);
     return;
@@ -232,5 +232,8 @@ void* get_kernel_page(uint32_t page_count)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
+    put_str1(0x07,"\nMem_alloc:");
+    put_int1(vaddr);
+    put_char('\n');
     return vaddr;
 }

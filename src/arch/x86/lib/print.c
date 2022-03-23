@@ -4,22 +4,45 @@
 #include "graphic.h"
 #include "io.h"
 
-static uint8_t fcolor = 0x07;
+uint8_t fcolor = 0x07;
 
 /* put_char
 * 功能:在光标位置显示一个字符
 */
 void put_char(uint8_t char_ascii)
 {
+    put_char1(0x07,char_ascii);
+    return;
+}
+
+/* put_str
+* 功能:显示字符串
+*/
+void put_str(char* str)
+{
+    put_str1(0x07,str);
+    return;
+}
+
+void put_int(int a)
+{
+    put_int1(0x07,a);
+    return;
+}
+
+void put_char1(uint8_t color,uint8_t char_ascii)
+{
     if(DisplayMode == _TEXT)
     {
-        uint16_t font = fcolor;
+        uint16_t font = color;
         int cursor_pos;
         cursor_pos = get_cursor();
         switch(char_ascii)
         {
             /* 先是控制字符 */
-
+            case '\0':
+                return;
+                break;
             /* 退格 */
             case '\b':
                 cursor_pos--; /* 光标位置减1 */
@@ -35,7 +58,7 @@ void put_char(uint8_t char_ascii)
             default:
                 font |= (char_ascii << 8);
                 *((uint8_t*)(Vram_l + (cursor_pos * 2))) = char_ascii;
-                *((uint8_t*)(Vram_l + (cursor_pos * 2) +1)) = fcolor;
+                *((uint8_t*)(Vram_l + (cursor_pos * 2) +1)) =color;
                 cursor_pos++;
                 break;
         }
@@ -52,21 +75,21 @@ void put_char(uint8_t char_ascii)
 /* put_str
 * 功能:显示字符串
 */
-void put_str(char* str)
+void put_str1(uint8_t color,char* str)
 {
     while(*str != '\0')
     {
-        put_char(*str);
+        put_char1(color,*str);
         str++;
     }
     return;
 }
 
-void put_int(int a)
+void put_int1(uint8_t color,int a)
 {
     char buf[64 +2] = {0};
-    itoa(a,buf,16);
-    put_str(buf);
+    itoa(a,buf,10);
+    put_str1(color,buf);
     return;
 }
 

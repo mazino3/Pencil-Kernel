@@ -1,23 +1,38 @@
 [bits 32]
 
+extern general_intr_handler
 extern intr0x20_handler
 
 section .text
     global asm_intr0x20_handler
     asm_intr0x20_handler:
-        push es
+        push 0
+
         push ds
+        push es
+        push fs
+        push gs
+
         pushad
-        mov eax,esp
-        push eax
+        
+        push 0x20
+
         mov ax,ss
         mov ds,ax
         mov es,ax
         call intr0x20_handler
-        pop eax
+        
+        add esp,4
+        
         popad
-        pop ds
+        
+        pop gs
+        pop fs
         pop es
+        pop ds
+        
+        add esp,4
+        
         iretd
 
 section .data

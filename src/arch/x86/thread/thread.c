@@ -87,21 +87,6 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
     /* 加入线程队列 */
     fifo_put(&all_thread,&thread);
 
-// #if false
-//     __asm__ __volatile__
-//     (
-//         "movl %[kstack],%%esp;"
-//         "pop %%ebp;"
-//         "pop %%ebx;"
-//         "pop %%edi;"
-//         "pop %%esi;"
-//         "ret"
-//         :
-//         :[kstack]"g"(thread->self_kstack)
-//         :
-//     );
-//     return thread;
-// #endif
     return thread;
 }
 
@@ -139,6 +124,18 @@ void thread_block(enum task_status status)
     struct task_struct* cur_thread = running_thread();
     cur_thread->status = status;
     schedule();
+    intr_set_status(old_status);
+    return;
+}
+
+void thread_unblock(struct task_struct* thread)
+{
+    enum intr_status old_status = intr_disable();
+    if(thread->status != TASK_READY)
+    {
+        fifo_put(&ready_thread,&thread); //这里有bug
+        thread->status = TASK_READY;
+    }
     intr_set_status(old_status);
     return;
 }

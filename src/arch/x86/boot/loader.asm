@@ -42,6 +42,8 @@ MemSuccessMsg db "Get total memory bytes success!";31
 LoadKernelMsg db "Loading Kernel...";17
 LoadKernelSuccessMsg db "Load Kernel success!";20
 
+OffsetOfKernelCount dd 0
+
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处
 
 ;loader从此处开始执行
@@ -157,10 +159,46 @@ Start:
         mov bx,0x0007;第0页,黑底白字
         mov dx,0x0300;3行,0列
         int 0x10
+
+        ; ;go to Unreal Mode
+        ; in al,0x92
+        ; or al,0x02
+        ; out 0x92,al
+
+        ; cli
+
+        ; lgdt [gdt_ptr]
+        ; mov eax,cr0
+        ; or eax,0x00000001
+        ; mov cr0,eax
+
+        ; mov ax,SelectorData32
+        ; mov fs,ax
+
+        ; mov eax,cr0
+        ; and eax,0xfffffffe
+        ; mov cr0,eax
+
+        ; sti
+        ; ;到这里已经是 Unreal Mode
+
         mov eax,KernelStartSec
-        mov cx,20
-        mov bx,KernelBaseAddress
+        mov cx,KernelSectors
+        mov bx,KernelBufAddress
         call ReadSector
+
+        ; mov edi,KernelBaseAddress
+        ; mov ax,KernelBufAddress >> 8
+        ; mov ds,ax
+        ; mov esi,0
+        ; mov cx,512 * 20
+        ; .move_kernel:
+        ;     mov al,byte [ds:esi]
+        ;     mov byte [fs:edi],al
+        ;     inc esi
+        ;     inc edi
+        ;     loop .move_kernel
+
         .kernel_load_success:
             mov bp,LoadKernelSuccessMsg
             mov cx,20;20个字符
@@ -175,7 +213,7 @@ Start:
             mov bx,0xc108 ; or 0x4108?
             int 0x10
             mov dword [DisplayMode],0     ;文本模式
-            mov dword [Vram_l],0x000b8000 ;显存地址(虚拟地址)
+            mov dword [Vram_l],0x000b8000 ;显存地址
             mov dword [Vram_h],0
             mov dword [ScrnX],80
             mov dword [ScrnY],25
@@ -225,7 +263,7 @@ Start:
                 mov bx,0xc108 ; or 0x4108?
                 int 0x10
                 mov dword [DisplayMode],0     ;文本模式
-                mov dword [Vram_l],0x000b8000 ;显存地址(虚拟地址)
+                mov dword [Vram_l],0x000b8000 ;显存地址
                 mov dword [Vram_h],0
                 mov dword [ScrnX],80
                 mov dword [ScrnY],25
@@ -438,8 +476,8 @@ SetupPage:
         sub eax,0x1000
         mov [PAGE_DIR_TABLE_POS + 4092],eax ;最后一个页目录指向页表本身
     ;3. 创建页表项
-    ;将低端1MB做固定映射
-    mov ecx,256 ;低端1MB内存里有256页
+    ;将低端4MB做固定映射
+    mov ecx,0x100 * 4 ;低端4MB内存里有256 * 0x4页
     mov esi,0
     mov edx,PG_US_U | PG_RW_W | PG_P
     .create_pte:
@@ -461,14 +499,15 @@ SetupPage:
         inc esi
         add eax,0x1000
         loop .create_kernel_pde
-    %ifdef __UI_GRAPHIC__
+
+    ;%ifdef __UI_GRAPHIC__
         ;为显示缓存区映射
-        mov eax,PAGE_DIR_TABLE_POS + 0x1000
-        add eax,0xfe0 * 0x1000
+        mov eax,PAGE_DIR_TABLE_POS + 0x1000 ;第一个页表地址
+        add eax,0xfe0 * 0x1000 ;0xfe000000以后16MB为显存
         or eax,PG_US_S | PG_RW_W | PG_P
         mov ebx,PAGE_DIR_TABLE_POS
         mov esi,1016
-        mov ecx,4
+        mov ecx,4 ;显存占用4个页目录
         .create_vram_pde:
             mov [ebx + esi * 4],eax
             add eax,0x1000
@@ -485,5 +524,5 @@ SetupPage:
             add eax,0x1000 ;指向下一个物理页地址
             inc esi
             loop .create_vram_pte
-    %endif
+    ;%endif
     ret

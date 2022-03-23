@@ -9,26 +9,26 @@
 #define PACKED __attribute__(packed);
 #endif
 
-struct part_table //åˆ†åŒºè¡¨(16å­—èŠ‚)
+struct part_table //·ÖÇø±í(16×Ö½Ú)
 {
-    uint8_t bootable;    //å¯å¦å¼•å¯¼?
-    uint8_t start_head;  //èµ·å§‹ç£å¤´
-    uint8_t start_sector;//èµ·å§‹æ‰‡åŒº
-    uint8_t start_chs;   //èµ·å§‹ç£é“
-    uint8_t fs_type;     //fsç±»å‹
-    uint8_t end_head;    //ç»“æŸç£å¤´
-    uint8_t end_sector;  //ç»“æŸæ‰‡åŒº
-    uint8_t end_chs;     //ç»“æŸç£é“
-    uint32_t start_lba;  //èµ·å§‹lba
-    uint32_t sec_cnt;    //æ‰‡åŒºæ•°
+    uint8_t bootable;    //¿É·ñÒıµ¼?
+    uint8_t start_head;  //ÆğÊ¼´ÅÍ·
+    uint8_t start_sector;//ÆğÊ¼ÉÈÇø
+    uint8_t start_chs;   //ÆğÊ¼´ÅµÀ
+    uint8_t fs_type;     //fsÀàĞÍ
+    uint8_t end_head;    //½áÊø´ÅÍ·
+    uint8_t end_sector;  //½áÊøÉÈÇø
+    uint8_t end_chs;     //½áÊø´ÅµÀ
+    uint32_t start_lba;  //ÆğÊ¼lba
+    uint32_t sec_cnt;    //ÉÈÇøÊı
 } PACKED;
 
-std::string command;  // è¾“å…¥çš„å‘½ä»¤
-std::fstream disk;    // è™šæ‹Ÿç£ç›˜æ–‡ä»¶
-std::string input_path;   //è™šæ‹Ÿç£ç›˜ä¸­çš„è·¯å¾„
+std::string command;  // ÊäÈëµÄÃüÁî
+std::fstream disk;    // ĞéÄâ´ÅÅÌÎÄ¼ş
+std::string input_path;   //ĞéÄâ´ÅÅÌÖĞµÄÂ·¾¶
 std::string output_path;
-std::fstream input_file;  // è¾“å…¥åˆ°è™šæ‹Ÿç£ç›˜ä¸­çš„æ–‡ä»¶
-std::fstream output_file; // ä»è™šæ‹Ÿç£ç›˜ä¸­è¯»å‡ºçš„æ–‡ä»¶
+std::fstream input_file;  // ÊäÈëµ½ĞéÄâ´ÅÅÌÖĞµÄÎÄ¼ş
+std::fstream output_file; // ´ÓĞéÄâ´ÅÅÌÖĞ¶Á³öµÄÎÄ¼ş
 
 void bootable(char* part);
 void fdisk(char* part,char* s_lba,char* sec_cnt,char* spt);
@@ -40,7 +40,7 @@ int main(int argc,char* argv[])
     command = argv[1];
     if(argc < 3)
     {
-        if(command == "help")
+        if(command == "-help")
         {
             help();
             return 0;
@@ -51,45 +51,45 @@ int main(int argc,char* argv[])
             exit(2);
         }
     }
-    if(command == "bootable")
+    if(command == "-bootable")
     {
         disk.open(argv[2],std::ios_base::in | std::ios_base::out | std::ios_base::binary);
         if(!(disk.is_open()))
         {
-            std::cout << argv[2] << "æ‰“å¼€å¤±è´¥æˆ–æ–‡ä»¶ä¸å­˜åœ¨";
+            std::cout << argv[2] << "´ò¿ªÊ§°Ü»òÎÄ¼ş²»´æÔÚ";
             exit(2);
         }
         bootable(argv[3]);
     }
-    else if(command == "fdisk")
+    else if(command == "-fdisk")
     {
         disk.open(argv[2],std::ios_base::in | std::ios_base::out | std::ios_base::binary);
         if(!(disk.is_open()))
         {
-            std::cout << argv[2] << "æ‰“å¼€å¤±è´¥æˆ–æ–‡ä»¶ä¸å­˜åœ¨";
+            std::cout << argv[2] << "´ò¿ªÊ§°Ü»òÎÄ¼ş²»´æÔÚ";
             exit(2);
         }
 
         fdisk(argv[6],argv[7],argv[8],argv[5]);
     }
-    else if(command == "format")
+    else if(command == "-format")
     {
         disk.open(argv[2],std::ios_base::in | std::ios_base::out | std::ios_base::binary);
         if(!(disk.is_open()))
         {
-            std::cout << argv[2] << "æ‰“å¼€å¤±è´¥æˆ–æ–‡ä»¶ä¸å­˜åœ¨";
+            std::cout << argv[2] << "´ò¿ªÊ§°Ü»òÎÄ¼ş²»´æÔÚ";
             exit(2);
         }
         int part = argv[3][0] - '0';
         format(part);
     }
-    else if(command == "input")
+    else if(command == "-input")
     {
-        std::cout << "inputæš‚ä¸æ”¯æŒ";
+        std::cout << "inputÔİ²»Ö§³Ö";
     }
-    else if(command == "output")
+    else if(command == "-output")
     {
-        std::cout << "outputæš‚ä¸æ”¯æŒ";
+        std::cout << "outputÔİ²»Ö§³Ö";
     }
     else
     {
@@ -111,23 +111,23 @@ void fdisk(char* part,char* s_lba,char* sec_cnt,char* spt)
     //disk.seekg(0x1be + (part - 1) * 16);
     //disk.read((char*)&disk_part,16);
 
-    // disk_part.bootable = 0x80; //å¯å¼•å¯¼
+    // disk_part.bootable = 0x80; //¿ÉÒıµ¼
     int end_lba = atoi(s_lba) + atoi(sec_cnt);
 
-    disk_part.start_head = (atoi(s_lba)/atoi(spt)) & 1; //lbaè½¬chs,è§boot.asm
+    disk_part.start_head = (atoi(s_lba)/atoi(spt)) & 1; //lba×ªchs,¼ûboot.asm
     disk_part.start_sector = (atoi(s_lba) % atoi(spt)) + 1;
     disk_part.start_chs = (atoi(s_lba)/atoi(spt)) >> 1;
 
-    disk_part.fs_type = 0x95; //EPFSæ˜¯0x95
+    disk_part.fs_type = 0x95; //EPFSÊÇ0x95
 
-    disk_part.end_head = (end_lba/atoi(spt)) & 1; // lbaè½¬chs
+    disk_part.end_head = (end_lba/atoi(spt)) & 1; // lba×ªchs
     disk_part.end_sector = (end_lba % atoi(spt)) + 1;
     disk_part.end_chs = (end_lba/atoi(spt)) >> 1;
 
     disk_part.start_lba = atoi(s_lba);
     disk_part.sec_cnt = atoi(sec_cnt);
     // std::cout << 0x1be + (stoi(part) - 1) * 16;
-    disk.seekp(0x1be + (atoi(part) - 1) * 16); //å®šä½è¾“å‡º
+    disk.seekp(0x1be + (atoi(part) - 1) * 16); //¶¨Î»Êä³ö
     disk.write((char*)&disk_part,16);
 }
 
@@ -141,29 +141,31 @@ void format(int part)
 
     disk.seekp(0x1be + (part - 1) * 16);
     disk.write((char*)&disk_part,16);
-    //æ­¤å¤„è¿˜æœ‰æ›´å¤šæ“ä½œ,åæœŸå®Œå–„
+    //´Ë´¦»¹ÓĞ¸ü¶à²Ù×÷,ºóÆÚÍêÉÆ
 }
 
 void help()
 {
     std::cout << "imgcopy v0.0.1" << std::endl;
-    std::cout << "è™šæ‹Ÿç£ç›˜(ç¡¬ç›˜)ç¼–è¾‘å·¥å…·(ä»…é™EPFS)" << std::endl;
+    std::cout << "ĞéÄâ´ÅÅÌ(Ó²ÅÌ)±à¼­¹¤¾ß(½öÏŞEPFS)" << std::endl;
 
-    std::cout << "å‘½ä»¤:" << std::endl;
-    std::cout << "bootable (disk) (part)" << std::endl
-              << "\t" << "å°†è™šæ‹Ÿç£ç›˜diskçš„partåˆ†åŒºè®¾ä¸ºæ´»åŠ¨åˆ†åŒº" << std::endl << std::endl;
-    std::cout << "fdisk (disk) (cyclinders) (heads) (spt) (part) (start_lba) (sector_cnt)" << std::endl
-              << "\t" << "å°†è™šæ‹Ÿç£ç›˜diskçš„start_lbaæ‰‡åŒºå¼€å§‹çš„sector_cntæ‰‡åŒºåˆ’ä¸ºpartåˆ†åŒº" << std::endl << std::endl;
+    std::cout << "ÃüÁî:" << std::endl;
+    std::cout << "-bootable (disk) (part)" << std::endl
+              << "\t" << "½«ĞéÄâ´ÅÅÌdiskµÄpart·ÖÇøÉèÎª»î¶¯·ÖÇø" << std::endl << std::endl;
 
-    std::cout << "format (disk) (part)" << std::endl
-              << "\t" << "å°†è™šæ‹Ÿç£ç›˜diskçš„partåˆ†åŒºæ ¼å¼åŒ–ä¸ºEPFS(ä»…æ”¯æŒä¸»åˆ†åŒº)" << std::endl
-              << "\t" << "ç¤ºä¾‹:" << std::endl
-              << "\t" << "imgcopy format a.img 1" << std::endl
-              << "\t" << "æ­¤å‘½ä»¤å°†a.imgçš„ç¬¬1åˆ†åŒºæ ¼å¼åŒ–ä¸ºEPFS" << std::endl << std::endl;
+    std::cout << "-fdisk (disk) (cyclinders) (heads) (spt) (part) (start_lba) (sector_cnt)" << std::endl
+              << "\t" << "½«ĞéÄâ´ÅÅÌdiskµÄstart_lbaÉÈÇø¿ªÊ¼µÄsector_cntÉÈÇø»®Îªpart·ÖÇø" << std::endl << std::endl;
 
-    std::cout << "input (disk) (part) (path) (file)" << std::endl
-              << "\t" << "å°†fileè¾“å…¥åˆ°è™šæ‹Ÿç£ç›˜diskä¸­partåˆ†åŒºçš„pathç›®å½•ä¸­" << std::endl
-              << "\t" << "ç¤ºä¾‹:" << std::endl
-              << "\t" << "imgcopy input a.img 1 /file/a.txt 1.txt" << std::endl
-              << "\t" << "æ­¤å‘½ä»¤å°†1.txtè¾“å…¥åˆ°è™šæ‹Ÿç£ç›˜a.imgçš„ç¬¬1åˆ†åŒºä¸­çš„/file/a.txtæ–‡ä»¶ä¸­";
+    std::cout << "-format (disk) (part)" << std::endl
+              << "\t" << "½«ĞéÄâ´ÅÅÌdiskµÄpart·ÖÇø¸ñÊ½»¯ÎªEPFS(½öÖ§³ÖÖ÷·ÖÇø)" << std::endl
+              << "\t" << "Ê¾Àı:" << std::endl
+              << "\t" << "imgcopy -format a.img 1" << std::endl
+              << "\t" << "´ËÃüÁî½«a.imgµÄµÚ1·ÖÇø¸ñÊ½»¯ÎªEPFS" << std::endl << std::endl;
+
+    std::cout << "-input (disk) (part) (path) (file)" << std::endl
+              << "\t" << "½«fileÊäÈëµ½ĞéÄâ´ÅÅÌdiskÖĞpart·ÖÇøµÄpathÄ¿Â¼ÖĞ" << std::endl
+              << "\t" << "Ê¾Àı:" << std::endl
+              << "\t" << "imgcopy -input a.img 1 /file/a.txt 1.txt" << std::endl
+              << "\t" << "´ËÃüÁî½«1.txtÊäÈëµ½ĞéÄâ´ÅÅÌa.imgµÄµÚ1·ÖÇøÖĞµÄ/file/a.txtÎÄ¼şÖĞ";
 }
+

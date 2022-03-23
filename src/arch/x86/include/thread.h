@@ -71,7 +71,7 @@ struct thread_stack
 struct task_struct
 {
     uint32_t* self_kstack;   /* 线程内核栈指针 */
-    enum task_status status; /* 状态 */
+    volatile enum task_status status; /* 状态 */
     char name[16];           /* 名称 */
 
     uint8_t priority;        /* 优先级 */
@@ -85,9 +85,12 @@ struct task_struct
 
 void init_thread();
 void thread_init(struct task_struct* thread,char* name,uint8_t priority);
+struct task_struct* running_thread();
 void kernel_thread(thread_function* func,void* arg);
 void thread_create(struct task_struct* thread,thread_function func,void* arg);
 struct task_struct* thread_start(char* name,uint8_t priority,thread_function func,void* arg);
 void switch_to(struct task_struct* cur_thread,struct task_struct* next);
+
+void thread_block(enum task_status status);
 
 #endif /* __THREAD_H__ */
