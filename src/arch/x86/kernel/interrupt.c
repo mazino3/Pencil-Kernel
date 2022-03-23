@@ -96,8 +96,8 @@ void general_intr_handler(uint8_t vector_nr)
     io_out8(PIC_M_CTRL,0x20);
     io_out8(PIC_S_CTRL,0x20);
 
-    put_str("intr:");
-    put_int(vector_nr);
+    put_str("intr: 0x");
+    put_int(vector_nr,16);
     put_char(' ');
     if(vector_nr >= 0 && vector_nr < 20)
     {

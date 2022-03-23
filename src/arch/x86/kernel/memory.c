@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "debug.h"
 #include "global.h"
 #include "stdint.h"
 #include "string.h"
@@ -15,14 +16,14 @@ void init_memory()
 {
     uint32_t k_Total;
     uint32_t u_Total;
-    k_Total = (TotalMem_l - 0x00102000)/2;
+    k_Total = (TotalMem_l - 0x00a02000)/2;
     u_Total = TotalMem_l - k_Total;
-    mem_free_page(&kernel_pool,(void*)0x00102000,k_Total);
-    mem_free_page(&user_pool,(void*)(0x00102000 + k_Total),u_Total);
+    mem_free_page(&kernel_pool,(void*)0x00a02000,k_Total);
+    mem_free_page(&user_pool,(void*)(0x00a02000 + k_Total),u_Total);
 
     //mem_free_page(&kernel_vaddr,(void*)0x00000000,0x00100000);
     //mem_free_page(&kernel_vaddr,(void*)0xc0000000,0x3fffffff);
-    mem_free_page(&kernel_vaddr,(void*)0xc0000000,0x3dffffff);
+    mem_free_page(&kernel_vaddr,(void*)0xc0a02000,0x3dffffff);
     return;
 }
 
@@ -232,8 +233,8 @@ void* get_kernel_page(uint32_t page_count)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
-    put_str1(0x07,"\nMem_alloc:");
-    put_int1(vaddr);
+    put_str1(0x07,"Mem_alloc: 0x");
+    put_int1(0x07,vaddr,16);
     put_char('\n');
     return vaddr;
 }

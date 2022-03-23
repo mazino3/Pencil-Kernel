@@ -454,6 +454,7 @@ DiskAddressPacket:
         mov byte [gs:((160*6)+16)],'o'
         mov byte [gs:((160*6)+18)],'d'
         mov byte [gs:((160*6)+20)],'e'
+
         jmp 0xc0000000+KernelBaseAddress
 SetupPage:
     ;1. 先将页目录表所用的内存空间清零

@@ -30,6 +30,7 @@ LOADER := $(BOOT_DIR)loader.bin
 
 #obj
 LIBS := $(LIB_DIR)bitmap.co \
+$(DEVICE_DIR)cpu.co         \
 $(KERNEL_DIR)debug.co       \
 $(LIB_DIR)fifo.co           \
 $(LIB_DIR)font.co           \

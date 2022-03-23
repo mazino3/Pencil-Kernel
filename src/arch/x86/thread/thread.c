@@ -1,4 +1,5 @@
 #include "thread.h"
+#include "debug.h"
 #include "fifo.h"
 #include "global.h"
 #include "interrupt.h"

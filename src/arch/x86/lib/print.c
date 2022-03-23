@@ -24,9 +24,9 @@ void put_str(char* str)
     return;
 }
 
-void put_int(int a)
+void put_int(int a,int base)
 {
-    put_int1(0x07,a);
+    put_int1(0x07,a,base);
     return;
 }
 
@@ -85,10 +85,10 @@ void put_str1(uint8_t color,char* str)
     return;
 }
 
-void put_int1(uint8_t color,int a)
+void put_int1(uint8_t color,int a,int base)
 {
     char buf[64 +2] = {0};
-    itoa(a,buf,10);
+    itoa(a,buf,base);
     put_str1(color,buf);
     return;
 }

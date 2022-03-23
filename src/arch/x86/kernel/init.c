@@ -1,4 +1,5 @@
 #include "init.h"
+#include "cpu.h"
 #include "graphic.h"
 #include "interrupt.h"
 #include "memory.h"

@@ -1,4 +1,5 @@
-﻿#include "debug.h"
+﻿#include "cpu.h"
+#include "debug.h"
 #include "global.h"
 #include "graphic.h"
 #include "init.h"
@@ -18,27 +19,23 @@ void k_thread_b(void* arg);
 void kernel_main(void)
 {
     int i;
-    if(DisplayMode == _TEXT)
-    {
-        for(i = 0;i < ScrnY;i ++)
-        {
-            roll_screen();
-        }
-    }
     set_cursor(0);
     init_all();
     intr_enable(); /* 开中断 */
 
     put_str1(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    put_str1(0x07,"Copyright (c) 2022 Linchenjun,All rights reserved.\n");
-    put_str1(0x07,"Memory :");put_int(TotalMem_l / 1024 / 1024);put_str("MB");put_char('(');put_int(TotalMem_l / 1024);put_str("KB)");put_char('\n');
-    put_str1(0x07,"Disk   :");put_int(DiskCnt);put_char('\n');
+    put_str1(0x07,"Copyright (c) 2022 Linchenjun,All rights reserved.\n\n");
+    
+    put_str1(0x07,"CPU    :");cpu_info();put_char('\n');
+    put_str1(0x07,"Memory :");put_int(TotalMem_l / 1024 / 1024,10);put_str("MB");put_char('(');put_int(TotalMem_l / 1024,10);put_str("KB)");put_char('\n');
+    put_str1(0x07,"Disk   :");put_int(DiskCnt,10);put_char('\n');
+    
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2022 Linchenjun,All rights reserved.");
     
-    thread_start("k_a",31,k_thread_a,0);
-    thread_start("k_b",31,k_thread_b,0);
-    
+    thread_start("k_a",63,k_thread_a,"thread A\n");
+    thread_start("k_b",31,k_thread_b,"thread B\n");
+
     //RectangleFill(&(Screen.win),0x00ffffff,30,40,40,50);
 
     while(1) /* 这个死循环不能少 */
@@ -51,6 +48,7 @@ void kernel_main(void)
 
 void k_thread_a(void* arg)
 {
+    put_str1(0x07,(char*)arg);
     char buf[6] = "00000";
     uint32_t i = 0x00000000;
     int sec;
@@ -94,10 +92,9 @@ void k_thread_a(void* arg)
 
 void k_thread_b(void* arg)
 {
-    uint32_t i = 0x00000000;
+    put_str1(0x07,(char*)arg);
     while(1)
     {
         //RectangleFill(&(Screen.win),i,20,40,30,50);
-        i++;
     }
 }

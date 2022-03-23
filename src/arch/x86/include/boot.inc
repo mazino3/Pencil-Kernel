@@ -77,7 +77,7 @@ ScrnY       equ 0x7c1c ; + 28 对于文本模式,这是指行数;对于图形模
 %endif
 
 
-KernelSectors equ 30         ;Kernel占用72扇区(Max:72)
+KernelSectors equ 50         ;Kernel占用72扇区(Max:72)
 KernelBufAddress equ 0x7F00   ;Kernel临时转存区
 KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000
-KernelStackTop equ 0x7b00     ;kernel栈顶在0x7b00,虚拟地址是0xc0007b00
+KernelStackTop equ 0x7000     ;kernel栈顶在0x7b00,虚拟地址是0xc0007b00
