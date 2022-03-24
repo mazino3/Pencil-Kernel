@@ -42,8 +42,6 @@ MemSuccessMsg db "Get total memory bytes success!";31
 LoadKernelMsg db "Loading Kernel...";17
 LoadKernelSuccessMsg db "Load Kernel success!";20
 
-OffsetOfKernelCount dd 0
-
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处
 
 ;loader从此处开始执行
@@ -160,26 +158,26 @@ Start:
         mov dx,0x0300;3行,0列
         int 0x10
 
-        ; ;go to Unreal Mode
-        ; in al,0x92
-        ; or al,0x02
-        ; out 0x92,al
+        ;go to Unreal Mode
+        cli
+        
+        in al,0x92
+        or al,0x02
+        out 0x92,al
 
-        ; cli
+        lgdt [gdt_ptr]
+        mov eax,cr0
+        or eax,0x00000001
+        mov cr0,eax
 
-        ; lgdt [gdt_ptr]
-        ; mov eax,cr0
-        ; or eax,0x00000001
-        ; mov cr0,eax
+        mov ax,SelectorData32
+        mov fs,ax
 
-        ; mov ax,SelectorData32
-        ; mov fs,ax
+        mov eax,cr0
+        and eax,0xfffffffe
+        mov cr0,eax
 
-        ; mov eax,cr0
-        ; and eax,0xfffffffe
-        ; mov cr0,eax
-
-        ; sti
+        sti
         ; ;到这里已经是 Unreal Mode
 
         mov eax,KernelStartSec
@@ -187,8 +185,9 @@ Start:
         mov bx,KernelBufAddress
         call ReadSector
 
+        ; call ReadSector
         ; mov edi,KernelBaseAddress
-        ; mov ax,KernelBufAddress >> 8
+        ; mov ax,KernelBufAddress >> 4
         ; mov ds,ax
         ; mov esi,0
         ; mov cx,512 * 20
@@ -283,10 +282,10 @@ Start:
                 jmp .set_display_mode_next
         %endif
     .set_display_mode_next:
-    ;要向内核传递的其他参数
-    mov eax,0
-    mov byte al,[0x475]
-    mov dword [DiskCnt],eax
+        ;要向内核传递的其他参数
+        mov eax,0
+        mov byte al,[0x475]
+        mov dword [DiskCnt],eax
     ;进入32位模式
     SetProtectMode:
         cli ;关闭中断

@@ -34,7 +34,6 @@ intr_entry_table:
 
 %macro VECTOR 2
 section .text
-extern intr%1_handler
     global asm_intr%1_handler
     asm_intr%1_handler:
         %2

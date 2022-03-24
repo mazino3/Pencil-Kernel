@@ -45,12 +45,11 @@ DrvNum equ 0x7b00
 ;以下内容的地址都是物理地址
 BaseOfBootStack equ 0x7c00  ;boot栈区起始地址
 
-%ifdef __BOOT_FLOPPY__
-    LoaderStartSec equ 0x02   ;loader在2扇区(LBA)开始处
-%endif
-%ifdef __BOOT_HARDDISK__
+; %ifdef __BOOT_FLOPPY__
+;     LoaderStartSec equ 0x02   ;loader在2扇区(LBA)开始处
+; %endif
+; %ifdef __BOOT_HARDDISK__
     LoaderStartSec equ 0x41   ;loader在65扇区(LBA)开始处
-%endif
 
 LoaderSectors equ 7           ;loader占用7扇区
 LoaderBaseAddress equ 0x1000  ;loader加载到0x1000地址处
@@ -70,15 +69,13 @@ ScrnX       equ 0x7c18 ; + 24 对于文本模式,这是指列数;对于图形模
 ScrnY       equ 0x7c1c ; + 28 对于文本模式,这是指行数;对于图形模式,这是指y轴方向上的像素数
 
 
-%ifdef __BOOT_FLOPPY__
-    KernelStartSec equ 0x09   ;Kernel在9扇区(LBA)开始处
-%endif
-%ifdef __BOOT_HARDDISK__
+; %ifdef __BOOT_FLOPPY__
+;     KernelStartSec equ 0x09   ;Kernel在9扇区(LBA)开始处
+; %endif
+; %ifdef __BOOT_HARDDISK__
     KernelStartSec equ 0x48   
-%endif
 
-
-KernelSectors equ 50         ;Kernel占用72扇区(Max:72)
-KernelBufAddress equ 0x7F00   ;Kernel临时转存区
+KernelSectors equ 64         ;Kernel占用50扇区(Max:72)注意:在实机启动时不能超过64,不然有重启现象
+KernelBufAddress equ 0x7f00   ;Kernel临时转存区
 KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000
-KernelStackTop equ 0x7000     ;kernel栈顶在0x7b00,虚拟地址是0xc0007b00
+KernelStackTop equ 0x7000     ;kernel栈顶在0x7000,虚拟地址是0xc0007000

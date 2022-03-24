@@ -19,7 +19,7 @@ void k_thread_b(void* arg);
 void kernel_main(void)
 {
     int i;
-    for(i = 0;i < 25;i++)
+    for(i = 0;i < 35;i++)
     {
         put_char(0x07,'\n');
     }
@@ -27,7 +27,7 @@ void kernel_main(void)
     init_all();
     intr_enable(); /* 开中断 */
     put_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    put_str(0x07,"Copyright (c) 2021-2022 Linchenjun,All rights reserved.\n\n");
+    put_str(0x07,"Copyright (c) 2021-2022 LinChenjun,All rights reserved.\n\n");
     
     put_str(0x07,"CPU    :");cpu_info();put_char(0x07,'\n');
     put_str(0x07,"Memory :");put_int(0x07,TotalMem_l / 1024 / 1024,10);put_str(0x07,"MB ( ");put_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
@@ -43,7 +43,7 @@ void kernel_main(void)
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("k_a",15,k_thread_b,"arg_B ");
     put_str(0x07,"PKn\n");
-    put_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07," - 0x");put_uint(0x07,(uint32_t)running_thread() + PG_SIZE,16);put_str(0x07,"\n");
+    put_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07,"\n");
     //RectangleFill(&(Screen.win),0x00ffffff,30,40,40,50);
     while(1) /* 这个死循环不能少 */
     {

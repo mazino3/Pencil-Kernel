@@ -115,7 +115,7 @@ void general_intr_handler(uint8_t vector_nr)
     put_str(0x17,"\n ");
     if(vector_nr >= 0 && vector_nr < 20)
     {
-        put_str(0x14,intr_name[vector_nr]);
+        put_str(0x17,intr_name[vector_nr]);
     }
     if(vector_nr== 14)
     {
@@ -127,7 +127,7 @@ void general_intr_handler(uint8_t vector_nr)
             :
             :
         );
-        put_str(0x17," ( address: 0x");put_int(0x17,(uint32_t)page_fault_vaddr,16);put_str(0x17," )\n");
+        put_str(0x17," ( fault address: 0x");put_uint(0x17,(uint32_t)page_fault_vaddr,16);put_str(0x17," )\n");
     }
     put_str(0x17,"\n CPU :");
     cpu_info();
