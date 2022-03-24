@@ -16,7 +16,7 @@ current support:`x86` <br />
 
 ### 启动流程
 ```
-+mbr.bin(仅限硬盘)
++mbr.bin(暂无)
 |
 +boot.bin
 |
