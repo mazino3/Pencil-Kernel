@@ -16,7 +16,7 @@ current support:`x86` <br />
 
 ### 启动流程
 ```
-+mbr.bin(仅限硬盘)
++mbr.bin(暂无)
 |
 +boot.bin
 |
@@ -66,7 +66,7 @@ current support:`x86` <br />
 - [x] 在物理电脑上运行
 - [ ] 微内核
 - [ ] ~~打倒Linux~~
-### 真机启动
+### 实机启动
 使用rufus等软件将a.img写入u盘,然后从U盘启动即可.
 ### 更多 More
 [[运行截图 Run screenshot]](doc/image/Readme.md)<br />
@@ -76,6 +76,7 @@ current support:`x86` <br />
 E-mail: zpojia@hotmail.com<br />
 bilibili: @Linevtnpu
 ***
-(注意:LICENSE不适用于tools目录中的程序)
+### LICENSE
+注意:LICENSE仅适用于src目录中的代码,其他文件请在法律允许的范围内使用
 ***
 &copy; 2021-2022 Pencil-Kernel developers,All rights reserved.
