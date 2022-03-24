@@ -9,7 +9,7 @@ org LoaderBaseAddress
 GDT_BASE: SEGMDESC 0,0,0
 SectionCode32:     SEGMDESC 0x00000000,0xfffff,AR_CODE32 ;32位代码段
 SectionData32:     SEGMDESC 0x00000000,0xfffff,AR_DATA32 ;32位数据段
-SectionVideo:      SEGMDESC 0x000b8000,0x00007,AR_DATA32 ;文字显存
+; SectionVideo:      SEGMDESC 0x000b8000,0x00007,AR_DATA32 ;文字显存
 
 ; 下面这个段似乎没用,先删了吧
 ; SectionColorVideo: SEGMDESC 0x000a0000,0x0000e,AR_DATA32 ;彩色显存
@@ -22,7 +22,7 @@ times 60 dq 0;预留60个描述符
 ;段选择子
 SelectorCode32     equ (0x0001 << 3 | TI_GDT | RPL0)
 SelectorData32     equ (0x0002 << 3 | TI_GDT | RPL0)
-SelectorVideo      equ (0x0003 << 3 | TI_GDT | RPL0)
+; SelectorVideo      equ (0x0003 << 3 | TI_GDT | RPL0)
 ; SelectorColorVideo equ (0x0004 << 3 | TI_GDT | RPL0)
 
 ;gdt指针
@@ -411,26 +411,27 @@ DiskAddressPacket:
         mov es,ax
         mov ss,ax
         mov esp,LoaderStackTop
-        mov ax,SelectorVideo
-        mov gs,ax
-        mov byte [gs:((160*5)+ 0)],'P'
-        mov byte [gs:((160*5)+ 2)],'r'
-        mov byte [gs:((160*5)+ 4)],'o'
-        mov byte [gs:((160*5)+ 6)],'t'
-        mov byte [gs:((160*5)+ 8)],'e'
-        mov byte [gs:((160*5)+10)],'c'
-        mov byte [gs:((160*5)+12)],'t'
+        ; mov ax,SelectorData32
+        ; mov gs,ax
+        ; mov byte [gs:((160*5)+ 0)],'P'
+        ; mov byte [gs:((160*5)+ 2)],'r'
+        ; mov byte [gs:((160*5)+ 4)],'o'
+        ; mov byte [gs:((160*5)+ 6)],'t'
+        ; mov byte [gs:((160*5)+ 8)],'e'
+        ; mov byte [gs:((160*5)+10)],'c'
+        ; mov byte [gs:((160*5)+12)],'t'
+
     ;开启分页
     SetPagingMode:
         call SetupPage
         ;先保存gdt地址,开启分页后重新加载
         sgdt [gdt_ptr]
         ;将gdt段描述符中的显存段加上0xc0000000
-        mov ebx,[gdt_ptr + 2]
-        or dword [ebx + 0x18 + 4],0xc0000000;显存段是第3个段描述符,每个描述符8字节,3*8 = 0x18
+        ; mov ebx,[gdt_ptr + 2]
+        ; or dword [ebx + 0x18 + 4],0xc0000000;显存段是第3个段描述符,每个描述符8字节,3*8 = 0x18
 
-        add dword [gdt_ptr + 2],0xc0000000
-        add esp,0xc0000000
+        ; add dword [gdt_ptr + 2],0xc0000000
+        ; add esp,0xc0000000
         ;页目录表赋值给cr3
         mov eax,PAGE_DIR_TABLE_POS
         mov cr3,eax
@@ -440,8 +441,6 @@ DiskAddressPacket:
         or eax,0x80000000
         mov cr0,eax
 
-        ;重新加载gdt
-        lgdt [gdt_ptr]
         mov byte [gs:((160*6)+ 0)],'P'
         mov byte [gs:((160*6)+ 2)],'a'
         mov byte [gs:((160*6)+ 4)],'g'

@@ -184,7 +184,7 @@ void roll_screen()
         src = ((uint16_t*)(Vram_l + ScrnX * 2)); /* 第一行行首 */
         dst = ((uint16_t*)(Vram_l)); /* 第0行行首 */
         int i;
-        for(i = 0;i < ((ScrnX - 1) * ScrnY);i++)
+        for(i = 0;i < (ScrnX * ScrnY);i++)
         {
             *dst = *src;
             dst++;

@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include "global.h"
 #include "io.h"
+#include "keyboard.h"
 #include "print.h"
 #include "stdint.h"
 #include "timer.h"
@@ -27,9 +28,15 @@ void init_pic()
     io_out8(PIC_S_DATA, 0x02 ); /* PIC1 IRQ2 */
     io_out8(PIC_S_DATA, 0x01 ); /* 无缓冲区模式 */
 
-    io_out8(PIC_M_DATA, 0xfe ); /* 11111110 只打开时间中断 */
+    io_out8(PIC_M_DATA, 0xfc ); /* 11111100 只打开时间和键盘中断 */
     io_out8(PIC_S_DATA, 0xff ); /* 11111111 禁止所有中断 */
 
+    return;
+}
+
+static void intr0x27_handler()
+{
+    io_out8(PIC_M_CTRL,0x20);
     return;
 }
 
@@ -44,6 +51,8 @@ void idt_desc_init(void)
         idt_table[i] = general_intr_handler;
     }
     idt_table[0x20] = intr0x20_handler;
+    idt_table[0x21] = intr0x21_handler;
+    idt_table[0x27] = intr0x27_handler;
     for(i = 0;i < IDT_DESC_CNT;i++)
     {
         set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32,AR_IDT_DESC_DPL0);
