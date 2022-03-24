@@ -73,9 +73,14 @@ ScrnY       equ 0x7c1c ; + 28 对于文本模式,这是指行数;对于图形模
 ;     KernelStartSec equ 0x09   ;Kernel在9扇区(LBA)开始处
 ; %endif
 ; %ifdef __BOOT_HARDDISK__
-    KernelStartSec equ 0x48   
+KernelStartSec equ 0x48   
 
-KernelSectors equ 64         ;Kernel占用50扇区(Max:72)注意:在实机启动时不能超过64,不然有重启现象
+;KernelSectors equ 256         ;Kernel占用128扇区(Max:128)注意:启动时不能超过128(实体机<= 64),不然有重启现象
+;7f00 ~ 9fb00
+KernelBlockSize equ 64
+KernelReadLoop equ 18
+
 KernelBufAddress equ 0x7f00   ;Kernel临时转存区
 KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000
+
 KernelStackTop equ 0x7000     ;kernel栈顶在0x7000,虚拟地址是0xc0007000

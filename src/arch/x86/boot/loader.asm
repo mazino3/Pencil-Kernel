@@ -158,32 +158,51 @@ Start:
         mov dx,0x0300;3行,0列
         int 0x10
 
-        ;go to Unreal Mode
-        cli
+        ; ;go to Unreal Mode
+        ; cli
         
-        in al,0x92
-        or al,0x02
-        out 0x92,al
+        ; in al,0x92
+        ; or al,0x02
+        ; out 0x92,al
 
-        lgdt [gdt_ptr]
-        mov eax,cr0
-        or eax,0x00000001
-        mov cr0,eax
+        ; lgdt [gdt_ptr]
+        ; mov eax,cr0
+        ; or eax,0x00000001
+        ; mov cr0,eax
 
-        mov ax,SelectorData32
-        mov fs,ax
+        ; mov ax,SelectorData32
+        ; mov fs,ax
 
-        mov eax,cr0
-        and eax,0xfffffffe
-        mov cr0,eax
+        ; mov eax,cr0
+        ; and eax,0xfffffffe
+        ; mov cr0,eax
 
-        sti
+        ; sti
         ; ;到这里已经是 Unreal Mode
-
+        mov dx,KernelBaseAddress >> 4
+        mov es,dx
         mov eax,KernelStartSec
-        mov cx,KernelSectors
-        mov bx,KernelBufAddress
-        call ReadSector
+        mov ecx,KernelBlockSize
+        mov ebx,0
+        mov di,KernelReadLoop
+        .readloop:
+            call ReadSector
+            add eax,KernelBlockSize
+            add dx,((512 * KernelBlockSize) >> 4)
+            mov es,dx
+            dec di
+            cmp di,0
+            ja .readloop
+        ;内核1 ~ 64扇区
+        ; mov eax,KernelStartSec
+        ; mov ecx,KernelSectors
+        ; mov ebx,0
+        ; call ReadSector
+        ; ;65 ~ 128扇区
+        ; add eax,KernelSectors
+        ; add ebx,KernelSectors * 512
+        ; mov ecx,KernelSectors
+        ; call ReadSector
 
         ; call ReadSector
         ; mov edi,KernelBaseAddress
@@ -205,6 +224,12 @@ Start:
             mov bx,0x0002;第0页,黑底绿字
             mov dx,0x0400;4行,0列
             int 0x10
+
+        ; mov eax,KernelStartSec + KernelSectors
+        ; mov ecx,KernelSectors
+        ; mov ebx,KernelBaseAddress + 0x8000
+        ; call ReadSector
+
     ;设置显示模式
     SetDisplayMode:
         %ifdef __UI_TEXT__
@@ -342,7 +367,7 @@ ReadSector:
             push bx
             push dx
             push es
-            mov word  [DiskAddressPacket + 2],1  ;一次一扇区
+            mov word  [DiskAddressPacket + 2],cx  ;扇区
             mov word  [DiskAddressPacket + 4],bx ;看ReadSector和DiskAddressPacket的说明
             mov word  [DiskAddressPacket + 6],es ;同上
             mov dword [DiskAddressPacket + 8],eax;同上
@@ -355,9 +380,9 @@ ReadSector:
             pop dx
             pop bx
             pop dword eax
-            inc eax
-            add bx,512 ;下512字节
-            loop .ReadOneSector
+            ; inc eax
+            ; add bx,512 ;下512字节
+            ; loop .ReadOneSector
             ret
     %endif
     ;为软盘准备的版本
