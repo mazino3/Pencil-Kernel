@@ -76,6 +76,7 @@ current support:`x86` <br />
 E-mail: zpojia@hotmail.com<br />
 bilibili: @Linevtnpu
 ***
-(注意:LICENSE不适用于tools目录中的程序)
+### LICENSE
+注意:LICENSE仅适用于src目录中的代码,其他文件请在法律允许的范围内使用
 ***
 &copy; 2021-2022 Pencil-Kernel developers,All rights reserved.
