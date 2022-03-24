@@ -66,7 +66,7 @@ current support:`x86` <br />
 - [x] 在物理电脑上运行
 - [ ] 微内核
 - [ ] ~~打倒Linux~~
-### 真机启动
+### 实机启动
 使用rufus等软件将a.img写入u盘,然后从U盘启动即可.
 ### 更多 More
 [[运行截图 Run screenshot]](doc/image/Readme.md)<br />
