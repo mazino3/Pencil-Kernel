@@ -75,12 +75,16 @@ Start:
         .find_max_memory: ;冒泡排序
             mov eax,[ebx]
             add eax,[ebx + 8]
+            jc .memory_too_more ;如果进位,说明内存大于4GB,直接结束操作
             add ebx,20
             cmp edx,eax
             jge .next_ards
             mov edx,eax   ;edx是内存总大小
         .next_ards:
             loop .find_max_memory
+            jmp .memory_get_success
+        .memory_too_more:
+            mov edx,0xffffffff
             jmp .memory_get_success
 
         ;int 0x15 ax=0xe801:获取内存布局,最大4GB
