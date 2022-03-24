@@ -10,6 +10,7 @@ extern char PKnFont[256][16];
 void put_char(uint8_t color,uint8_t char_asci);
 void put_str(uint8_t color,const char* str);
 void put_int(uint8_t color,int num,int base);
+void put_int(uint8_t color,unsigned int num,int base);
 
 void roll_screen();
 void itoa(int a,char* str,int base);

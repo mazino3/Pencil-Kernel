@@ -37,7 +37,7 @@ void list_append(struct list* L,struct list_elem* elem);
 struct list_elem* list_remove(struct list_elem* elem);
 struct list_elem* list_pop(struct list* L);
 bool list_find(struct list* L,struct list_elem* obj_elem);
-void list_traversal(struct list* L,func function,int arg);
+struct list_elem* list_traversal(struct list* L,func function,int arg);
 int list_len(struct list* L);
 bool list_empty(struct list* L);
 

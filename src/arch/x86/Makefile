@@ -39,6 +39,7 @@ $(KERNEL_DIR)init.co        \
 $(KERNEL_DIR)interrupt.ao   \
 $(KERNEL_DIR)interrupt.co   \
 $(DEVICE_DIR)keyboard.co    \
+$(LIB_DIR)list.co            \
 $(KERNEL_DIR)memory.co      \
 $(LIB_DIR)print.co          \
 $(LIB_DIR)string.co         \

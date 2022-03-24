@@ -1,6 +1,6 @@
 #include "list.h"
-#include "interrupt.h"
 #include "global.h"
+#include "interrupt.h"
 
 /* list_init
 * 初始化链表
@@ -105,7 +105,7 @@ bool list_find(struct list* L,struct list_elem* obj_elem)
     return false;
 }
 
-void list_traversal(struct list* L,func function,int arg)
+struct list_elem* list_traversal(struct list* L,func function,int arg)
 {
     struct list_elem* elem = L->head.next;
     while(elem != &(L->tail))
