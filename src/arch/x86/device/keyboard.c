@@ -1,9 +1,14 @@
 #include "keyboard.h"
+#include "fifo.h"
 #include "global.h"
 #include "interrupt.h"
 #include "io.h"
+#include "memory.h"
 #include "print.h"
 #include "stdint.h"
+
+static char buf[64];
+struct FIFO keybuf;
 
 static bool ctrl_status;
 static bool shift_status;
@@ -75,6 +80,12 @@ static char keymap [][2] =
     { casplock, casplock}, /* 0x3a */
 };
 
+void init_keyboard()
+{
+    init_fifo(&keybuf,buf,8,64);
+    return;
+}
+
 void intr0x21_handler(void)
 {
     io_out8(PIC_M_CTRL,0x20);
@@ -90,15 +101,18 @@ void intr0x21_handler(void)
         ext_scandcode = true;
         return;
     }
+    /* 上一个是拓展码,合并 */
     if(ext_scandcode == true)
     {
         scancode |=  0xe000;
         ext_scandcode = false;
     }
+    /* 是通码还是断码 */
     break_code = ((scancode & 0x0080) != 0); /* break_code:true or false */
     
     if(break_code == true) /* 是断码 */
     {
+        /* 还原成通码 */
         scancode &= 0xff7f;
         switch(scancode)
         {
@@ -117,39 +131,58 @@ void intr0x21_handler(void)
         }
         return;
     }
+    /* 是通码 */
     else if((scancode < 0x3b && scancode > 0x00) || scancode == alt_r_m || scancode == ctrl_r_m)
     {
         bool shift = false;
+        /* 可以与shift结合的按键 */
         if((scancode < 0x0e) || (scancode == 0x29) || (scancode == 0x1a) || (scancode == 0x1b) || (scancode == 0x2b) || (scancode == 0x27) || (scancode == 0x28) || (scancode >= 0x33 && scancode <= 0x35))
         {
+            /* shift被按下 */
             if(shift_down == true)
             {
                 shift = true;
             }
         }
+        /* 其他按键 */
         else
         {
+            /* shift和casplock都按下,互相抵消 */
             if(shift_down && casplock_down)
             {
                 shift = false;
             }
+            /* shift或casplock被按下 */
             else if(shift_down || casplock_down)
             {
                 shift = true;
             }
+            /* shift没有被按下 */
             else
             {
                 shift = false;
             }
         }
+        /* 获取字符 */
         scancode &= 0x00ff;
         char cur_char = keymap[scancode][shift];
+        /* 字符可以显示 */
         if(cur_char != 0)
         {
-            put_char(0x07,cur_char);
+            /* 缓冲区未满 */
+            if(!(fifo_fill(&keybuf)))
+            {
+                /* 加入缓冲区 */
+                fifo_put(&keybuf,&cur_char);
+                put_char(0x07,cur_char); // 临时
+            }
+            else
+            {
+                put_str(0x04,"keybuf_overflow!!! ");
+            }
             return;
         }
-        
+        /* shift,ctrl和casplock有没有被按下? */
         switch(scancode)
         {
             case ctrl_l_m:
@@ -165,9 +198,10 @@ void intr0x21_handler(void)
                 alt_status = true;
                 break;
             case casplock_m:
-                casplock_status =! casplock_status;
+                casplock_status =! casplock_status; /* 按下casplock,casplock状态反转 */
                 break;
             default:
+                /* 未知按键 */
                 put_str(0x04,"unknow key");
         }
     }

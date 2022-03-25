@@ -40,8 +40,8 @@ void kernel_main(void)
     
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 LinChenjun, All rights reserved.");
-    thread_start("k_a",31,k_thread_a,"arg_A ");
-    thread_start("k_a",15,k_thread_b,"arg_B ");
+    // thread_start("k_a",31,k_thread_a,"arg_A ");
+    // thread_start("k_a",15,k_thread_b,"arg_B ");
     put_str(0x07,"PKn\n");
     put_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07,"\n");
     //RectangleFill(&(Screen.win),0x00ffffff,30,40,40,50);

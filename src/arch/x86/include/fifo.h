@@ -26,5 +26,6 @@ int fifo_put(struct FIFO* fifo,void* data);
 
 int fifo_get(struct FIFO* fifo,void* data);
 bool fifo_empty(struct FIFO* fifo);
+bool fifo_fill(struct FIFO* fifo);
 
 #endif /* __FIFO_H__ */

@@ -32,7 +32,7 @@
 #define casplock_m 0x3a
 
 
-
+void init_keyboard();
 void intr0x21_handler(void);
 
 #endif /* __KEYBOARD_H__ */
