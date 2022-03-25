@@ -67,17 +67,18 @@ MAKE_DIR := md
 
 #.asm to .bin
 %.bin: %.asm $(INCLUDE_DIR)boot.inc
-	@$(ECHO) -----------
-	@$(ECHO) --- compile $<
-	@$(ECHO) -----------
-	$(NASM) -I $(INCLUDE_DIR) -I ../ -o $*.bin $*.asm
+#	@$(ECHO) -----------
+#	@$(ECHO) --- compile $<
+	@$(ECHO) $@
+#	@$(ECHO) -----------
+	@$(NASM) -I $(INCLUDE_DIR) -I ../ -o $*.bin $*.asm
 
 #.asm to .ao (elf)
 %.ao: %.asm
-	@$(ECHO) -----------
-	@$(ECHO) --- compile $<
-	@$(ECHO) -----------
-	$(NASM) -f elf -I $(INCLUDE_DIR) -I ../ -o $*.ao $*.asm
+#	@$(ECHO) -----------
+	@$(ECHO) $@
+#	@$(ECHO) -----------
+	@$(NASM) -f elf -I $(INCLUDE_DIR) -I ../ -o $*.ao $*.asm
 
 #.c to .co (elf)
 # cc1 参数说明:
@@ -88,11 +89,11 @@ MAKE_DIR := md
 # -Wall:发出警告
 
 %.co: %.c
-	@$(ECHO) -----------
-	@$(ECHO) --- compile $<
-	@$(ECHO) -----------
-	$(CC1) -I $(INCLUDE_DIR) -I ../  -fno-builtin -m32 -Os -quiet -Wall  -o $*.s $*.c
-	$(AS) -I $(INCLUDE_DIR) -I ../ -o $*.co $*.s
+#	@$(ECHO) -----------
+	@$(ECHO) $@
+#	@$(ECHO) -----------
+	@$(CC1) -I $(INCLUDE_DIR) -I ../  -fno-builtin -m32 -Os -quiet -Wall  -o $*.s $*.c
+	@$(AS) -I $(INCLUDE_DIR) -I ../ -o $*.co $*.s
 
 #command:
 #all: make all

@@ -175,7 +175,7 @@ void page_table_add(void* _vaddr,void* _paddr)
 {
     uint32_t* pde = pde_ptr(_vaddr);
     uint32_t* pte = pte_ptr(_vaddr);
-    uint32_t vaddr = (uint32_t)_vaddr;
+    // uint32_t vaddr = (uint32_t)_vaddr;
     uint32_t paddr = (uint32_t)_paddr;
 
     if(*pde & 0x00000001)
@@ -235,7 +235,7 @@ void* get_kernel_page(uint32_t page_count)
         memset(vaddr,0,page_count * PG_SIZE);
     }
     put_str(0x07,"Mem_alloc: 0x");
-    put_int(0x07,vaddr,16);
+    put_uint(0x07,(unsigned int)vaddr,16);
     put_char(0x07,'\n');
     return vaddr;
 }

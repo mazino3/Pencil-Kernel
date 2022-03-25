@@ -141,8 +141,6 @@ void utoa(unsigned int a,char* str,int base)
 {
     static char digits[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     int i; /* 作为下标来索引 */
-    int isNegative; /* 是否是负的？ */
-    isNegative = a;
     i = 0;
     /* 转换为字符串,不过是倒过来的 */
     do

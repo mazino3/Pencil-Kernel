@@ -78,7 +78,7 @@ static char keymap [][2] =
 void intr0x21_handler(void)
 {
     io_out8(PIC_M_CTRL,0x20);
-    bool ctrl_down = ctrl_status;
+    // bool ctrl_down = ctrl_status;
     bool shift_down = shift_status;
     bool casplock_down = casplock_status;
 
