@@ -66,23 +66,28 @@ MAKE_DIR := md
 
 #.asm to .bin
 %.bin: %.asm $(INCLUDE_DIR)boot.inc
-	@$(NASM) -I $(INCLUDE_DIR) -I ../ -o $*.bin $*.asm
+	@$(NASM) -f bin -I $(INCLUDE_DIR) -o $*.bin $*.asm
 
 #.asm to .ao (elf)
+# -f elf32 :使用elf文件格式
 %.ao: %.asm Makefile
-	@$(NASM) -f elf -I $(INCLUDE_DIR) -I ../ -o $*.ao $*.asm
+	@$(NASM) -f elf32 -I $(INCLUDE_DIR) -o $*.ao $*.asm
 
 #.c to .co (elf)
 # cc1 参数说明:
 # -fno-builtin: 不识别内建函数
+# -fno-strict-aliasing: 禁用严格别名规则
 # -m32: 编译32位代码
-# -Os:启用优化,优化等级介于-O2和-O3之间
+# -Os: 启用优化,优化等级介于-O2和-O3之间
 # -quiet: 不显示多余的信息?
-# -Wall:发出警告
+# -Wall: 发出警告
+
+# as参数说明:
+# --32: 编译为32位文件
 
 %.co: %.c Makefile
-	@$(CC1) -I $(INCLUDE_DIR) -I ../  -fno-builtin -m32 -Os -quiet -Wall  -o $*.s $*.c
-	@$(AS) -I $(INCLUDE_DIR) -I ../ -o $*.co $*.s
+	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -m32 -Os -quiet -Wall  -o $*.s $*.c
+	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
 $(v_disk): vhd.asm
 	$(NASM) -o $(v_disk) vhd.asm

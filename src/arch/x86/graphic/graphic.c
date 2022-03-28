@@ -64,7 +64,7 @@ void put_char_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,cha
     uint32_t* put;
     uint8_t data;
     int idx = ch;
-    char* font = PKnFont[idx];
+    unsigned char* font = PKnFont[idx];
     if(DisplayMode == _GRAPHIC)
     {
         for(i = 0;i < 16;i++)
