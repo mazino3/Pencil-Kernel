@@ -175,9 +175,11 @@ void intr0x21_handler(void)
                 /* 加入缓冲区 */
                 fifo_put(&keybuf,&cur_char);
                 put_char(0x07,cur_char); // 临时
+                fifo_get(&keybuf,&cur_char);
             }
             else
             {
+                
                 put_str(0x04,"keybuf_overflow!!! ");
             }
             return;

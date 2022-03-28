@@ -37,9 +37,9 @@ Start:
     int 0x10
 
     ;加载loader.bin (Load Loader.bin)
-    mov eax,LoaderStartSec
-    mov cx,LoaderSectors
-    mov bx,LoaderBaseAddress
+    mov eax,[Lable_LoaderStartSec]
+    mov cx,[Lable_LoaderSectors]
+    mov bx,[Lable_LoaderBaseAddress]
     call ReadSector
     ;跳转到loader.bin,boot的使命到此结束
     jmp LoaderBaseAddress+LoaderOffsetAddress
@@ -118,6 +118,27 @@ DiskAddressPacket:
     dw 0    ;+ 6 传送缓冲区基地址   (buf(seg))
     dq 0    ;+ 8 扇区起始号(LBA模式)(Start Sector number(LBA mode))
     dq 0    ;+10 64位缓冲区地址拓展 (未始用)(64-bit buffer address extension(unusing))
+
+times 400 - ($ - $$) db 0
+
+dd LoaderStartSec                                ;loader扇区(LBA)开始处
+
+dd LoaderSectors       ;loader占用扇区数
+dd LoaderBaseAddress   ;loader加载地址处
+dd LoaderOffsetAddress ;loader前0x4ff字节是数据,代码正式开始是0x500字节
+dd LoaderStackTop      ;0x700
+
+dd KernelBlockSize   ;64
+dd KernelReadLoop    ;18
+
+dd KernelBufAddress  ;Kernel临时转存区
+dd KernelBaseAddress ;Kernel开始物理地址
+
+dd KernelStackTop    ;kernel栈顶
+
+
+times 446 - ($ - $$) db 0
+;硬盘分区表
 
 times 510 - ($ - $$) db 0
 db 0x55,0xaa

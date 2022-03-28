@@ -42,6 +42,8 @@ MemSuccessMsg db "Get total memory bytes success!";31
 LoadKernelMsg db "Loading Kernel...";17
 LoadKernelSuccessMsg db "Load Kernel success!";20
 
+OffsetOfKernelAt1M dd 100000
+
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处
 
 ;loader从此处开始执行
@@ -159,25 +161,25 @@ Start:
         int 0x10
 
         ; ;go to Unreal Mode
-        ; cli
+        cli
         
-        ; in al,0x92
-        ; or al,0x02
-        ; out 0x92,al
+        in al,0x92
+        or al,0x02
+        out 0x92,al
 
-        ; lgdt [gdt_ptr]
-        ; mov eax,cr0
-        ; or eax,0x00000001
-        ; mov cr0,eax
+        lgdt [gdt_ptr]
+        mov eax,cr0
+        or eax,0x00000001
+        mov cr0,eax
 
-        ; mov ax,SelectorData32
-        ; mov fs,ax
+        mov ax,SelectorData32
+        mov fs,ax
 
-        ; mov eax,cr0
-        ; and eax,0xfffffffe
-        ; mov cr0,eax
+        mov eax,cr0
+        and eax,0xfffffffe
+        mov cr0,eax
 
-        ; sti
+        sti
         ; ;到这里已经是 Unreal Mode
         mov dx,KernelBaseAddress >> 4
         mov es,dx
@@ -193,29 +195,21 @@ Start:
             dec di
             cmp di,0
             ja .readloop
-        ;内核1 ~ 64扇区
-        ; mov eax,KernelStartSec
-        ; mov ecx,KernelSectors
-        ; mov ebx,0
-        ; call ReadSector
-        ; ;65 ~ 128扇区
-        ; add eax,KernelSectors
-        ; add ebx,KernelSectors * 512
-        ; mov ecx,KernelSectors
-        ; call ReadSector
 
-        ; call ReadSector
-        ; mov edi,KernelBaseAddress
-        ; mov ax,KernelBufAddress >> 4
-        ; mov ds,ax
-        ; mov esi,0
-        ; mov cx,512 * 20
         ; .move_kernel:
-        ;     mov al,byte [ds:esi]
-        ;     mov byte [fs:edi],al
-        ;     inc esi
-        ;     inc edi
-        ;     loop .move_kernel
+        ;     mov dx,KernelBaseAddress >> 4
+        ;     mov es,dx
+        ;     mov eax,KernelStartSec
+        ;     mov ecx,KernelBlockSize
+        ;     mov ebx,0
+        ;     mov di,KernelReadLoop
+        ;     mov esi,0
+        ;     .moveloop:
+        ;         mov al,byte [ds:esi]
+        ;         mov byte [fs:edi],al
+        ;         inc esi
+        ;         inc edi
+        ;         ja .moveloop
 
         .kernel_load_success:
             mov bp,LoadKernelSuccessMsg

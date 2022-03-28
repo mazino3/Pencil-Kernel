@@ -39,7 +39,7 @@ $(KERNEL_DIR)init.co        \
 $(KERNEL_DIR)interrupt.ao   \
 $(KERNEL_DIR)interrupt.co   \
 $(DEVICE_DIR)keyboard.co    \
-$(LIB_DIR)list.co            \
+$(LIB_DIR)list.co           \
 $(KERNEL_DIR)memory.co      \
 $(LIB_DIR)print.co          \
 $(LIB_DIR)string.co         \
@@ -57,7 +57,6 @@ v_disk := a.img
 #other
 OBJ_FORMAT := elf32-i386
 K_VERSION := 0.0.0 test
-COPYRIGHT := Copyright 2021-2022 LinChenjun
 #command
 COPY := copy
 CD := cd
@@ -97,32 +96,32 @@ $(v_disk): vhd.asm
 .PHONY: clean debug dump img run system
 
 clean:
-	$(CD) $(BOOT_DIR) && $(DELET) *.bin
+	@$(CD) $(BOOT_DIR) && $(DELET) *.bin
 
-	$(CD) $(BUILD_DIR) && $(DELET) *.bin
-	$(CD) $(BUILD_DIR) && $(DELET) *.o
+	@$(CD) $(BUILD_DIR) && $(DELET) *.bin
+	@$(CD) $(BUILD_DIR) && $(DELET) *.o
 
-	$(CD) $(DEVICE_DIR) && $(DELET) *.s
-	$(CD) $(DEVICE_DIR) && $(DELET) *.co
+	@$(CD) $(DEVICE_DIR) && $(DELET) *.s
+	@$(CD) $(DEVICE_DIR) && $(DELET) *.co
 
-	$(CD) $(GRAPHIC_DIR) && $(DELET) *.s
-	$(CD) $(GRAPHIC_DIR) && $(DELET) *.co
+	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.s
+	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.co
 
-	$(CD) $(KERNEL_DIR) && $(DELET) *.ao
-	$(CD) $(KERNEL_DIR) && $(DELET) *.bin
-	$(CD) $(KERNEL_DIR) && $(DELET) *.co
-	$(CD) $(KERNEL_DIR) && $(DELET) *.o
-	$(CD) $(KERNEL_DIR) && $(DELET) *.s
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.bin
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.co
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.o
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.s
 
-	$(CD) $(LIB_DIR) && $(DELET) *.ao
-	$(CD) $(LIB_DIR) && $(DELET) *.co
-	$(CD) $(LIB_DIR) && $(DELET) *.s
+	@$(CD) $(LIB_DIR) && $(DELET) *.ao
+	@$(CD) $(LIB_DIR) && $(DELET) *.co
+	@$(CD) $(LIB_DIR) && $(DELET) *.s
 
-	$(CD) $(THREAD_DIR) && $(DELET) *.ao
-	$(CD) $(THREAD_DIR) && $(DELET) *.co
-	$(CD) $(THREAD_DIR) && $(DELET) *.s
+	@$(CD) $(THREAD_DIR) && $(DELET) *.ao
+	@$(CD) $(THREAD_DIR) && $(DELET) *.co
+	@$(CD) $(THREAD_DIR) && $(DELET) *.s
 	
-	$(DELET) $(v_disk).lock
+	@$(DELET) $(v_disk).lock
 
 debug: img
 	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c -S
