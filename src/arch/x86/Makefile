@@ -30,6 +30,7 @@ LOADER := $(BOOT_DIR)loader.bin
 
 #obj
 LIBS := $(LIB_DIR)bitmap.co \
+$(DEVICE_DIR)console.co     \
 $(DEVICE_DIR)cpu.co         \
 $(KERNEL_DIR)debug.co       \
 $(LIB_DIR)fifo.co           \
@@ -43,6 +44,7 @@ $(LIB_DIR)list.co           \
 $(KERNEL_DIR)memory.co      \
 $(LIB_DIR)print.co          \
 $(LIB_DIR)string.co         \
+$(THREAD_DIR)sync.co        \
 $(THREAD_DIR)thread.ao      \
 $(THREAD_DIR)thread.co      \
 $(DEVICE_DIR)time.co        \

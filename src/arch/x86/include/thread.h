@@ -97,5 +97,6 @@ void schedule();
 void switch_to(struct task_struct* cur_thread,struct task_struct* next);
 
 void thread_block(enum task_status status);
+void thread_unblock(struct task_struct* thread);
 
 #endif /* __THREAD_H__ */

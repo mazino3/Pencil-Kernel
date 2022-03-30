@@ -151,10 +151,10 @@ void thread_block(enum task_status status)
 void thread_unblock(struct task_struct* thread)
 {
     enum intr_status old_status = intr_disable();
-    ASSERT(thread->status != TASK_READY)
-    {
-        thread->status = TASK_READY;
-    }
+    ASSERT(thread->status != TASK_READY);
+    ASSERT(!list_find(&ready_list,&(thread->ready_tag)));
+    list_push(&ready_list,&(thread->ready_tag));
+    thread->status = TASK_READY;
     intr_set_status(old_status);
     return;
 }
