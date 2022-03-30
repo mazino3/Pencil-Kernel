@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "interrupt.h"
 #include "thread.h"
+
 /* sema_init
 * 初始化信号量
 */
@@ -42,11 +43,7 @@ void sema_down(struct semaphore* psema)
         list_append(&(psema->waiters),&running_thread()->general_tag);
         thread_block(TASK_BLOCKED);
     }
-    // psema->value--;
-    ASSERT(psema->value <= 1);
-    put_int(0x70,psema->value,10);
-    while(1);
-
+    psema->value--;
     ASSERT(psema->value == 0);
     intr_set_status(old_status);
     return;
@@ -76,16 +73,17 @@ void sema_up(struct semaphore* psema)
 void lock_acquire(struct lock* plock)
 {
     ASSERT(plock->semaphore.value <= 1);
-    if(plock->holder == running_thread())
-    {
-        plock->holder_repeat_nr++;
-    }
-    else
+    if(plock->holder != running_thread())
     {
         sema_down(&(plock->semaphore));
         plock->holder = running_thread();
         ASSERT(plock->holder_repeat_nr == 0);
         plock->holder_repeat_nr = 1;
+
+    }
+    else
+    {
+        plock->holder_repeat_nr++;
     }
     return;
 }

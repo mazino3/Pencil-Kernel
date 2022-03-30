@@ -143,6 +143,7 @@ void thread_block(enum task_status status)
     enum intr_status old_status = intr_disable();
     struct task_struct* cur_thread = running_thread();
     cur_thread->status = status;
+    put_str(0x02,"block ");put_uint(0x02,(uint32_t)cur_thread,16);
     schedule();
     intr_set_status(old_status);
     return;
@@ -155,6 +156,8 @@ void thread_unblock(struct task_struct* thread)
     ASSERT(!list_find(&ready_list,&(thread->ready_tag)));
     list_push(&ready_list,&(thread->ready_tag));
     thread->status = TASK_READY;
+    ASSERT(list_find(&ready_list,&(thread->ready_tag)));
+    put_str(0x01,"unblock ");put_uint(0x01,(uint32_t)thread,16);
     intr_set_status(old_status);
     return;
 }
