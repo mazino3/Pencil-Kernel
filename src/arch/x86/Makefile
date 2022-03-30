@@ -94,17 +94,15 @@ $(v_disk): vhd.asm
 
 #command:
 #clean: delet all obj file
-#debug: debug kernel
 #dump
-#run: start qenu
+#img: build system and delet obj file
+#run: perform the "img" and start qenu run Pencil-Kernel
+#system: like "img" but reserved obj file
 
 .PHONY: clean debug dump img run system
 
 clean:
 	@$(CD) $(BOOT_DIR) && $(DELET) *.bin
-
-	@$(CD) $(BUILD_DIR) && $(DELET) *.bin
-	@$(CD) $(BUILD_DIR) && $(DELET) *.o
 
 	@$(CD) $(DEVICE_DIR) && $(DELET) *.s
 	@$(CD) $(DEVICE_DIR) && $(DELET) *.co
@@ -126,18 +124,17 @@ clean:
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
 	
-	@$(DELET) $(v_disk).lock
+#	@$(DELET) $(v_disk).lock
 
 debug: img
 	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c -S
 
+# 将文件写入后删除
 img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
 	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=200 seek=72 conv=notrunc
-
-mkvd:
-	$(NASM) -o $(v_disk) vhd.asm
+	@$(MAKE) -r clean
 
 run: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)

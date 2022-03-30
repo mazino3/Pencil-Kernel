@@ -3,20 +3,25 @@
 #include "fifo.h"
 #include "global.h"
 #include "interrupt.h"
+#include "list.h"
 #include "memory.h"
+#include "print.h"
 #include "stdint.h"
 #include "string.h"
 
 struct task_struct* main_thread;
-struct FIFO ready_thread;
-struct FIFO all_thread;
+
+struct list ready_list;
+struct list all_list;
+
+struct list_elem* this_thread_tag;
 
 static void make_main_thread();
 
 void init_thread()
 {
-    init_fifo(&ready_thread,get_kernel_page(1),32,PG_SIZE / sizeof(uint32_t));
-    init_fifo(&all_thread,get_kernel_page(1),32,PG_SIZE / sizeof(uint32_t));
+    list_init(&ready_list);
+    list_init(&all_list);
     make_main_thread();
     return;
 }
@@ -68,7 +73,7 @@ void thread_create(struct task_struct* thread,thread_function func,void* arg)
     struct thread_stack* kthread_stack;
     kthread_stack = ((struct thread_stack*)(thread->self_kstack));
 
-    kthread_stack->eip = kernel_thread; /* kernel_thread是个函数 */
+    kthread_stack->eip = kernel_thread; /* kernel_thread是线程中执行的函数 */
     kthread_stack->func = func;
     kthread_stack->func_arg = arg;
     kthread_stack->ebp = 0;
@@ -83,11 +88,15 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
     struct task_struct* thread = (struct task_struct*)get_kernel_page(1);
     thread_init(thread,name,priority);
     thread_create(thread,func,arg);
+    /* 准备加入队列 */
+    (thread->gernel_tag).data = thread;
+    (thread->ready_tag).data = thread;
     /* 加入就绪队列 */
-    fifo_put(&ready_thread,&thread);
+    list_append(&ready_list,&(thread->ready_tag));
+    ASSERT(list_find(&ready_list,&(thread->ready_tag)));
     /* 加入线程队列 */
-    fifo_put(&all_thread,&thread);
-
+    list_append(&all_list,&(thread->gernel_tag));
+    ASSERT(list_find(&all_list,&(thread->gernel_tag)));
     return thread;
 }
 
@@ -95,16 +104,18 @@ static void make_main_thread(void)
 {
     main_thread = running_thread();
     thread_init(main_thread,"main",31);
-    fifo_put(&all_thread,&main_thread);
+    main_thread->gernel_tag.data = main_thread;
+    main_thread->ready_tag.data = main_thread;
     return;
 }
-
 void schedule()
 {
     struct task_struct* cur_thread = running_thread();
     if(cur_thread->status == TASK_RUNNING)
     {
-        fifo_put(&ready_thread,&cur_thread);
+        /* 防止重复添加 */
+        ASSERT(!(list_find(&ready_list,&(cur_thread->ready_tag))));
+        list_append(&ready_list,&(cur_thread->ready_tag));
         cur_thread->ticks = cur_thread->priority;
         cur_thread->status = TASK_RUNNING;
     }
@@ -112,8 +123,14 @@ void schedule()
     {
 
     }
-    struct task_struct* next;
-    fifo_get(&ready_thread,&next);
+    struct task_struct* next = NULL;
+    this_thread_tag = NULL;
+
+    /* 就绪队列不能为空 */
+    ASSERT(!(list_empty(&ready_list)));
+    ASSERT(ready_list.tail.prev != &ready_list.head);
+    this_thread_tag = list_pop(&ready_list);
+    next = this_thread_tag->data;
     next->status = TASK_RUNNING;
     switch_to(cur_thread,next);
     return;
@@ -135,7 +152,6 @@ void thread_unblock(struct task_struct* thread)
     enum intr_status old_status = intr_disable();
     ASSERT(thread->status != TASK_READY)
     {
-        fifo_put(&ready_thread,&thread);
         thread->status = TASK_READY;
     }
     intr_set_status(old_status);

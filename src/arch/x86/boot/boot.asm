@@ -39,10 +39,10 @@ Start:
     ;加载loader.bin (Load Loader.bin)
     mov eax,[Lable_LoaderStartSec]
     mov cx,[Lable_LoaderSectors]
-    mov bx,[Lable_LoaderBaseAddress]
+    mov bx,LoaderBaseAddress
     call ReadSector
     ;跳转到loader.bin,boot的使命到此结束
-    jmp LoaderBaseAddress+LoaderOffsetAddress
+    jmp LoaderBaseAddress + LoaderOffsetAddress
 
 ;Function: ReadSector
 ;参数 (Input):
@@ -121,20 +121,13 @@ DiskAddressPacket:
 
 times 400 - ($ - $$) db 0
 
-dd LoaderStartSec                                ;loader扇区(LBA)开始处
+dd LoaderStartSec      ; + 0 loader扇区(LBA)开始处
 
-dd LoaderSectors       ;loader占用扇区数
-dd LoaderBaseAddress   ;loader加载地址处
-dd LoaderOffsetAddress ;loader前0x4ff字节是数据,代码正式开始是0x500字节
-dd LoaderStackTop      ;0x700
+dd LoaderSectors       ; + 4 loader占用扇区数
 
-dd KernelBlockSize   ;64
-dd KernelReadLoop    ;18
-
-dd KernelBufAddress  ;Kernel临时转存区
-dd KernelBaseAddress ;Kernel开始物理地址
-
-dd KernelStackTop    ;kernel栈顶
+dd KernelStartSec      ; + 8 Kernel起始扇区号
+;dd KernelBlockSize   ;64
+dd KernelReadLoop    ; + 12 =18
 
 
 times 446 - ($ - $$) db 0

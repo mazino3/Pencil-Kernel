@@ -2,6 +2,7 @@
 #define __THREAD_H__
 
 #include "global.h"
+#include "list.h"
 #include "stdint.h"
 
 typedef void thread_function(void*);
@@ -77,6 +78,9 @@ struct task_struct
     uint8_t priority;        /* 优先级 */
     uint8_t ticks;           /* 在CPU上运行的时间 */
     uint32_t elapsed_ticks;  /* 总共运行的时间 */
+
+    struct list_elem gernel_tag; /* 用于加入全部线程队列 */
+    struct list_elem ready_tag;  /* 用于加入就绪线程队列 */
 
     uint32_t* page_dir;      /* 线程的页表 */
 

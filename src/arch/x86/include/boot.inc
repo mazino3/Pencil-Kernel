@@ -85,18 +85,11 @@ KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要
 
 KernelStackTop equ 0x7000     ;kernel栈顶在0x7000,虚拟地址是0xc0007000
 
-Lable_LoaderStartSec      equ (0x7c00 + 400 +  0)
-Lable_LoaderSectors       equ (0x7c00 + 400 +  4)
-Lable_LoaderBaseAddress   equ (0x7c00 + 400 +  8)
-Lable_LoaderOffsetAddress equ (0x7c00 + 400 + 12)
-Lable_LoaderStackTop      equ (0x7c00 + 400 + 16)
+;Lable
 
-Lable_KernelStartSec    equ (0x7c00 + 400 + 20)
-Lable_KernelBlockSize   equ (0x7c00 + 400 + 24)
-Lable_KernelReadLoop    equ (0x7c00 + 400 + 28)
+Lable_LoaderStartSec    equ (0x7c00 + 400 +  0)
+Lable_LoaderSectors     equ (0x7c00 + 400 +  4)
 
-Lable_KernelBufAddress  equ (0x7c00 + 400 + 32)
-Lable_KernelBaseAddress equ (0x7c00 + 400 + 36)
-
-Lable_KernelStackTop    equ (0x7c00 + 400 + 40)
+Lable_KernelStartSec    equ (0x7c00 + 400 + 8)
+Lable_KernelReadLoop    equ (0x7c00 + 400 +12)
 

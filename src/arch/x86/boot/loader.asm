@@ -181,19 +181,19 @@ Start:
 
         sti
         ; ;到这里已经是 Unreal Mode
-        mov dx,KernelBaseAddress >> 4
+        mov dx,KernelBaseAddress >> 4 ;内核基地址
         mov es,dx
-        mov eax,KernelStartSec
-        mov ecx,KernelBlockSize
-        mov ebx,0
-        mov di,KernelReadLoop
+        mov eax,[Lable_KernelStartSec] ;内核起始扇区数
+        mov bx,0                       ;内核偏移地址
+        mov ecx,KernelBlockSize        ;内核块大小
+        mov di,[Lable_KernelReadLoop]  ;内核块数量
         .readloop:
             call ReadSector
             add eax,KernelBlockSize
-            add dx,((512 * KernelBlockSize) >> 4)
+            add dx,((512 * KernelBlockSize) >> 4) ;计算内核下次读取的基地址
             mov es,dx
-            dec di
-            cmp di,0
+            dec di   ;di--
+            cmp di,0 ;全部读取结束后,di变为0
             ja .readloop
 
         ; .move_kernel:
@@ -238,7 +238,6 @@ Start:
             jmp .set_display_mode_next
         %endif
         %ifdef __UI_GRAPHIC__
-            ;打算尝试三种显示模式
             ;检查VBE是否存在
             mov ax,0x0050
             mov es,ax ;eax左移4位后是0x500
@@ -252,6 +251,7 @@ Start:
             cmp ax,0x0200
             jb .vbe_version_too_old ;如果ax小于0x0200,跳转到.vbe_version_too_old
             ;设置VBE模式
+            ;打算尝试三种显示模式,都失败的话只能进入文本模式
             .try_Mode1:
                 mov cx,VBE_MODE1
                 call Checking_VBE_Mode
@@ -273,6 +273,7 @@ Start:
                 ;VBE模式切换
                 mov bx,VBE_MODE3 + 0x4000 ;0x4000:使用线性帧缓存区
                 jmp .set_vbe_mode
+            ;所有显示模式相关的错误都会到这里
             .without_vbe:
             .vbe_version_too_old:
             .err:
