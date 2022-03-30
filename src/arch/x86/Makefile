@@ -95,9 +95,9 @@ $(v_disk): vhd.asm
 #command:
 #clean: delet all obj file
 #dump
-#img: build system and delet obj file
+#img: build system (reserved obj file)
 #run: perform the "img" and start qenu run Pencil-Kernel
-#system: like "img" but reserved obj file
+#system: build kernel
 
 .PHONY: clean debug dump img run system
 
@@ -134,7 +134,6 @@ img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
 	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=200 seek=72 conv=notrunc
-	@$(MAKE) -r clean
 
 run: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)

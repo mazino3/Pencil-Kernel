@@ -89,14 +89,14 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
     thread_init(thread,name,priority);
     thread_create(thread,func,arg);
     /* 准备加入队列 */
-    (thread->gernel_tag).data = thread;
+    (thread->general_tag).data = thread;
     (thread->ready_tag).data = thread;
     /* 加入就绪队列 */
     list_append(&ready_list,&(thread->ready_tag));
     ASSERT(list_find(&ready_list,&(thread->ready_tag)));
     /* 加入线程队列 */
-    list_append(&all_list,&(thread->gernel_tag));
-    ASSERT(list_find(&all_list,&(thread->gernel_tag)));
+    list_append(&all_list,&(thread->general_tag));
+    ASSERT(list_find(&all_list,&(thread->general_tag)));
     return thread;
 }
 
@@ -104,8 +104,9 @@ static void make_main_thread(void)
 {
     main_thread = running_thread();
     thread_init(main_thread,"main",31);
-    main_thread->gernel_tag.data = main_thread;
+    main_thread->general_tag.data = main_thread;
     main_thread->ready_tag.data = main_thread;
+    list_append(&all_list,&main_thread->general_tag);
     return;
 }
 void schedule()
