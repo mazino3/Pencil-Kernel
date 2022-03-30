@@ -56,6 +56,7 @@ current support:`x86` <br />
 
 ### 目标 Goal
 进行中:<br />
+- [ ] 实现锁
 - [ ] 实现用户进程
 ***
 - [ ] 在文件系统中加载loader和内核
@@ -80,8 +81,5 @@ current support:`x86` <br />
 网站: ~~https://pencil.cnurl.tk~~ (暂时关闭中)<br/>
 E-mail: zpojia@hotmail.com<br />
 bilibili: @Linevtnpu
-***
-### LICENSE
-注意:LICENSE仅适用于src目录中的代码,其他文件请在法律允许的范围内使用
 ***
 &copy; 2021-2022 Pencil-Kernel developers,All rights reserved.
