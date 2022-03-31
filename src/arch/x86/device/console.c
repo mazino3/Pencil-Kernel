@@ -27,7 +27,7 @@ void console_str(uint8_t color,const char* str)
     return;
 }
 
-void colsole_int(uint8_t color,int num,int base)
+void console_int(uint8_t color,int num,int base)
 {
     lock_acquire(&console_lock);
     put_int(color,num,base);
@@ -35,7 +35,7 @@ void colsole_int(uint8_t color,int num,int base)
     return;
 }
 
-void colsole_uint(uint8_t color,unsigned int num,int base)
+void console_uint(uint8_t color,unsigned int num,int base)
 {
     lock_acquire(&console_lock);
     put_uint(color,num,base);

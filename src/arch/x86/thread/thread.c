@@ -89,14 +89,14 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
     thread_init(thread,name,priority);
     thread_create(thread,func,arg);
     /* 准备加入队列 */
+    (thread->all_tag).data = thread;
     (thread->general_tag).data = thread;
-    (thread->ready_tag).data = thread;
     /* 加入就绪队列 */
-    list_append(&ready_list,&(thread->ready_tag));
-    ASSERT(list_find(&ready_list,&(thread->ready_tag)));
+    ASSERT(!list_find(&ready_list,&(thread->general_tag)));
+    list_append(&ready_list,&(thread->general_tag));
     /* 加入线程队列 */
-    list_append(&all_list,&(thread->general_tag));
-    ASSERT(list_find(&all_list,&(thread->general_tag)));
+    ASSERT(!list_find(&all_list,&(thread->all_tag)));
+    list_append(&all_list,&(thread->all_tag));
     return thread;
 }
 
@@ -104,9 +104,9 @@ static void make_main_thread(void)
 {
     main_thread = running_thread();
     thread_init(main_thread,"main",31);
+    main_thread->all_tag.data = main_thread;
     main_thread->general_tag.data = main_thread;
-    main_thread->ready_tag.data = main_thread;
-    list_append(&all_list,&main_thread->general_tag);
+    list_append(&all_list,&main_thread->all_tag);
     return;
 }
 void schedule()
@@ -115,9 +115,12 @@ void schedule()
     if(cur_thread->status == TASK_RUNNING)
     {
         /* 防止重复添加 */
-        ASSERT(!(list_find(&ready_list,&(cur_thread->ready_tag))));
-        list_append(&ready_list,&(cur_thread->ready_tag));
-        cur_thread->ticks = cur_thread->priority;
+        ASSERT(!(list_find(&ready_list,&(cur_thread->general_tag))));
+        list_append(&ready_list,&(cur_thread->general_tag));
+        if(cur_thread->ticks == 0)
+        {
+            cur_thread->ticks = cur_thread->priority;
+        }
         cur_thread->status = TASK_RUNNING;
     }
     else
@@ -143,21 +146,24 @@ void thread_block(enum task_status status)
     enum intr_status old_status = intr_disable();
     struct task_struct* cur_thread = running_thread();
     cur_thread->status = status;
-    put_str(0x02,"block ");put_uint(0x02,(uint32_t)cur_thread,16);
     schedule();
     intr_set_status(old_status);
     return;
 }
 
-void thread_unblock(struct task_struct* thread)
+void thread_unblock(struct task_struct* pthread)
 {
     enum intr_status old_status = intr_disable();
-    ASSERT(thread->status != TASK_READY);
-    ASSERT(!list_find(&ready_list,&(thread->ready_tag)));
-    list_push(&ready_list,&(thread->ready_tag));
-    thread->status = TASK_READY;
-    ASSERT(list_find(&ready_list,&(thread->ready_tag)));
-    put_str(0x01,"unblock ");put_uint(0x01,(uint32_t)thread,16);
+    if(pthread->status != TASK_READY)
+    {
+        ASSERT(!list_find(&ready_list,&(pthread->general_tag)));
+        if(list_find(&ready_list,&(pthread->general_tag)))
+        {
+            PANIC("thread unblock: blocked thread in ready list");
+        }
+        list_push(&ready_list,&(pthread->general_tag));
+        pthread->status = TASK_READY;
+    };
     intr_set_status(old_status);
     return;
 }

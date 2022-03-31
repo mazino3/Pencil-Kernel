@@ -38,7 +38,7 @@ int fifo_put(struct FIFO* fifo,void* data)
     switch(fifo->type)
     {
         case 8:
-            fifo->buf8[fifo->nw] = *((uint8_t*)data);
+            fifo->buf8[fifo->nw] = *((uint8_t*)data); //这里产生了PG异常
             break;
         case 16:
             fifo->buf16[fifo->nw] = *((uint16_t*)data);

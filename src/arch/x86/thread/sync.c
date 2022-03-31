@@ -22,7 +22,6 @@ void lock_init(struct lock* plock)
     plock->holder = NULL;
     plock->holder_repeat_nr = 0;
     sema_init(&(plock->semaphore),1);
-    ASSERT(plock->semaphore.value == 1);
     return;
 }
 
@@ -32,7 +31,6 @@ void lock_init(struct lock* plock)
 void sema_down(struct semaphore* psema)
 {
     enum intr_status old_status = intr_disable();
-    ASSERT(psema->value <= 1);
     while(psema->value == 0)
     {
         ASSERT(!(list_find(&(psema->waiters),&(running_thread()->general_tag))));
@@ -72,14 +70,12 @@ void sema_up(struct semaphore* psema)
 */
 void lock_acquire(struct lock* plock)
 {
-    ASSERT(plock->semaphore.value <= 1);
     if(plock->holder != running_thread())
     {
         sema_down(&(plock->semaphore));
         plock->holder = running_thread();
         ASSERT(plock->holder_repeat_nr == 0);
         plock->holder_repeat_nr = 1;
-
     }
     else
     {

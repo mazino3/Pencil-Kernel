@@ -106,19 +106,19 @@ void general_intr_handler(uint8_t vector_nr)
     intr_disable();
     set_cursor(0);
     int i;
-    for(i = 0;i < 24 * 80;i++)
-    {
-        put_char(0x17,' ');
-    }
-    set_cursor(0);
-    put_str(0x17,
-    "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
-    "If this is the first time you've seen this stop error sereen, restart your computer."
-    "If this screen appers again,follow these steps:\n"
-    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
-    );
-    put_str(0x17,"\n ");
-    put_str(0x17,PKn_Version);
+    // for(i = 0;i < 24 * 80;i++)
+    // {
+    //     put_char(0x17,' ');
+    // }
+    // set_cursor(0);
+    // put_str(0x17,
+    // "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
+    // "If this is the first time you've seen this stop error sereen, restart your computer."
+    // "If this screen appers again,follow these steps:\n"
+    // " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
+    // );
+    // put_str(0x17,"\n ");
+    // put_str(0x17,PKn_Version);
     put_str(0x17,"\n intr: 0x");
     put_int(0x17,vector_nr,16);
     put_str(0x17,"\n ");

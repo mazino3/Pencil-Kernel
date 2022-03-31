@@ -519,7 +519,7 @@ SetupPage:
         add eax,0x1000
         loop .create_kernel_pde
 
-    ;%ifdef __UI_GRAPHIC__
+    %ifdef __UI_GRAPHIC__
         ;为显示缓存区映射
         mov eax,PAGE_DIR_TABLE_POS + 0x1000 ;第一个页表地址
         add eax,0xfe0 * 0x1000 ;0xfe000000以后16MB为显存
@@ -543,5 +543,5 @@ SetupPage:
             add eax,0x1000 ;指向下一个物理页地址
             inc esi
             loop .create_vram_pte
-    ;%endif
+    %endif
     ret
