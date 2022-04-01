@@ -216,6 +216,10 @@ int get_cursor()
 */
 void set_cursor(uint32_t cursor_pos)
 {
+    if(cursor_pos < 0)
+    {
+        cursor_pos = 0;
+    }
     /* 1. 设置高8位 */
     io_out8(0x03d4,0x0e);
     io_out8(0x03d5,(cursor_pos & 0xff00) >> 8);

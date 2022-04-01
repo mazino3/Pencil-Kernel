@@ -14,6 +14,21 @@
 void init_fifo(struct FIFO* fifo,void* buf,int type,int size)
 {
     fifo->type = type;
+    switch(type)
+    {
+        case 8:
+            fifo->buf8 = buf;
+            break;
+        case 16:
+            fifo->buf16 = buf;
+            break;
+        case 32:
+            fifo->buf32 = buf;
+            break;
+        case 64:
+            fifo->buf64 = buf;
+            break;
+    }
     fifo->size = size;
     fifo->free = size;
     fifo->nr = 0;
