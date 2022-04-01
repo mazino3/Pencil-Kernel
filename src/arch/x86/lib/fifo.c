@@ -3,6 +3,7 @@
 #include "global.h"
 #include "interrupt.h"
 #include "stdint.h"
+#include "sync.h"
 
 
 /* init_fifo
@@ -13,6 +14,7 @@
 */
 void init_fifo(struct FIFO* fifo,void* buf,int type,int size)
 {
+    lock_init(&(fifo->lock));
     fifo->type = type;
     switch(type)
     {
@@ -42,11 +44,13 @@ void init_fifo(struct FIFO* fifo,void* buf,int type,int size)
 */
 int fifo_put(struct FIFO* fifo,void* data)
 {
-    enum intr_status old_status = intr_disable();
+    // enum intr_status old_status = intr_disable();
+    lock_acquire(&(fifo->lock));
     if(fifo->free == 0) /* 没有空余 */
     {
         fifo->flage = 0x01;
-        intr_set_status(old_status);
+        lock_release(&(fifo->lock));
+        // intr_set_status(old_status);
         return -1;
     }
     fifo->free--;
@@ -65,27 +69,26 @@ int fifo_put(struct FIFO* fifo,void* data)
             fifo->buf64[fifo->nw] = *((uint64_t*)data);
             break;
         default:
-            intr_set_status(old_status);
+            // intr_set_status(old_status);
+            lock_release(&(fifo->lock));
             return -1;
     }
-    // fifo->nw = (fifo->nw + 1 == fifo->size ? 0 : fifo->nw + 1);
-    fifo->nw++;
-    if(fifo->nw == fifo->size)
-    {
-        fifo->nw = 0;
-    }
-    intr_set_status(old_status);
+    fifo->nw = (fifo->nw + 1) % fifo->size;
+    // intr_set_status(old_status);
+    lock_release(&(fifo->lock));
     return 0;
 }
 
 
 int fifo_get(struct FIFO* fifo,void* data)
 {
-    enum intr_status old_status = intr_disable();
+    // enum intr_status old_status = intr_disable();
+    lock_acquire(&(fifo->lock));
     ASSERT(!(fifo->free == fifo->size));
     if(fifo->free == fifo->size)
     {
-        intr_set_status(old_status);
+        lock_release(&(fifo->lock));
+        //intr_set_status(old_status);
         return -1;
     }
     fifo->free++;
@@ -104,13 +107,9 @@ int fifo_get(struct FIFO* fifo,void* data)
             *((uint64_t*)data) = fifo->buf64[fifo->nr];
             break;
     }
-    // fifo->nr = (fifo->nr + 1 == fifo->size ? 0 : fifo->nr + 1);
-    fifo->nr++;
-    if(fifo->nr == fifo->size)
-    {
-        fifo->nr = 0;
-    }
-    intr_set_status(old_status);
+    fifo->nr = (fifo->nr + 1) % fifo->size;
+    lock_release(&(fifo->lock));
+    // intr_set_status(old_status);
     return 0;
 }
 

@@ -3,9 +3,11 @@
 
 #include "global.h"
 #include "stdint.h"
+#include "sync.h"
 
 struct FIFO
 {
+    struct lock lock;
     union
     {
         uint8_t* buf8;
