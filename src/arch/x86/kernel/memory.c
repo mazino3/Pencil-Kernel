@@ -15,6 +15,27 @@ struct MEMMAN user_vaddr;
 
 void init_memory()
 {
+    /* 判断是否要手动计算内存容量 */
+    if(TotalMem_l == 0 && TotalMem_h == 0)
+    {
+        struct ARDS* ards;
+        ards = (struct ARDS*)ARDS_BUF;
+        int i;
+        uint64_t total_size = 0;
+        for(i = 0;i < ARDS_NR;i++)
+        {
+            if(ards->Type == 1)
+            {
+                total_size += ards->LengthLow + (((uint64_t)ards->LengthHigh) * ((uint64_t)0x100000000));
+            }
+            ards++;
+        }
+        if(total_size > 0x3fffffff)
+        {
+            total_size = 0x3fffffff;
+        }
+        TotalMem_l = total_size + 0x100000;
+    }
     uint32_t k_Total;
     uint32_t u_Total;
     k_Total = (TotalMem_l - 0x00a02000)/2;

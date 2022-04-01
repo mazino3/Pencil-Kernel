@@ -12,13 +12,7 @@
 #include "thread.h"
 #include "time.h"
 
-volatile struct TIME time;
-
-extern struct list ready_list;
-extern struct list all_list;
-
 void k_thread_a(void* arg);
-void k_thread_b(void* arg);
 
 void kernel_main(void)
 {
@@ -30,37 +24,36 @@ void kernel_main(void)
     set_cursor(0);
     init_all();
     intr_enable(); /* 开中断 */
-    put_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    put_str(0x07,"Copyright (c) 2021-2022 LinChenjun,All rights reserved.\n\n");
+    console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
+    console_str(0x07,"Copyright (c) 2021-2022 LinChenjun,All rights reserved.\n\n");
     
-    put_str(0x07,"CPU    :");cpu_info();put_char(0x07,'\n');
-    put_str(0x07,"Memory :");put_int(0x07,TotalMem_l / 1024 / 1024,10);put_str(0x07,"MB ( ");put_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
-    put_str(0x07,"Disk   :");put_int(0x07,DiskCnt,10);put_char(0x07,'\n');
+    console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
+    console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
+    console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
 
     // 异常处理测试
     // i = i / 0;                   // #DE
     // asm volatile("int $0xff");   // #GP
-    // *((uint32_t*)0x20220323) = 1;// #PF
+    // *((uint32_t*)0x12345678) = 1;// #PF
     
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 LinChenjun, All rights reserved.");
 
-    // thread_start("k_b",31,k_thread_b,"arg_B ");
-    // thread_start("k_a",31,k_thread_a,"arg_A ");
+    thread_start("k_a",31,k_thread_a,"arg_A ");
 
-    put_str(0x07,"PKn\n");
-    put_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07,"\n");
-    //RectangleFill(&(Screen.win),0x00ffffff,30,40,40,50);
-    // console_str(0x07,"Main ");
+    // put_str(0x07,"PKn\n");
+    console_str(0x07,"Kernel PCB at 0x");put_uint(0x07,(uint32_t)running_thread(),16);put_str(0x07,"\n");
+
     while(1) /* 这个死循环不能少 */
     {
-        
+        ;
     }
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
 }
 
 void k_thread_a(void* arg)
 {
+    struct TIME time;
     char buf[6] = "00000";
     uint32_t i = 0x00000000;
     int sec;
@@ -69,7 +62,7 @@ void k_thread_a(void* arg)
     get_time(&time);
     while(1)
     {
-        // console_str(0x70,"K-A ");
+
         sec = time.second;
         RectangleFill(&(Screen.win), 0x00848484,ScrnX - 212 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
         RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 212,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
@@ -101,12 +94,4 @@ void k_thread_a(void* arg)
             get_time(&time);
         }
     }
-}
-
-void k_thread_b(void* arg)
-{
-    while(1)
-    {
-    }
-    while(1);
 }

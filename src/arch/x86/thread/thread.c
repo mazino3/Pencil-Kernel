@@ -103,7 +103,7 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
 static void make_main_thread(void)
 {
     main_thread = running_thread();
-    thread_init(main_thread,"main",31);
+    thread_init(main_thread,"Main thread",31);
     main_thread->all_tag.data = main_thread;
     main_thread->general_tag.data = main_thread;
     list_append(&all_list,&main_thread->all_tag);

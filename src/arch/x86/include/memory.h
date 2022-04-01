@@ -8,6 +8,15 @@
 #define PDE_IDX(vaddr) ((vaddr & 0xffc00000) >> 22)
 #define PTE_IDX(vaddr) ((vaddr & 0x003ff000) >> 12)
 
+struct ARDS
+{
+    uint32_t BaseAddrLow;
+    uint32_t BaseAddrHigh;
+    uint32_t LengthLow;
+    uint32_t LengthHigh;
+    uint32_t Type;
+};
+
 struct MEMINFO
 {
     void* addr;    /* 一块内存的起始地址物理地址 */

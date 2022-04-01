@@ -70,20 +70,25 @@ Start:
             inc word [ards_nr] ;让ards_nr自增1
             cmp ebx,0
             jnz .e820_memory_get_loop
-        ;寻找内存容量,就是最大的那一块内存
-        mov cx,[ards_nr]
-        mov ebx,ards_buf
-        xor edx,edx       ;edx先清零
-        .find_max_memory: ;冒泡排序
-            mov eax,[ebx]
-            add eax,[ebx + 8]
-            add ebx,20
-            cmp edx,eax
-            jge .next_ards
-            mov edx,eax   ;edx是内存总大小
-        .next_ards:
-            loop .find_max_memory
-            jmp .memory_get_success
+        ;寻找内存容量,就是最大的那一块内存(交给Kernel来计算)
+        ; mov cx,[ards_nr]
+        ; mov ebx,ards_buf
+        ; xor edx,edx       ;edx先清零
+        ; .find_max_memory: ;冒泡排序
+        ;     mov eax,[ebx]
+        ;     add eax,[ebx + 8]
+        ;     add ebx,20
+        ;     cmp edx,eax
+        ;     jge .next_ards
+        ;     mov edx,eax   ;edx是内存总大小
+        ; .next_ards:
+        ;     loop .find_max_memory
+            mov dword [TotalMem_l],0
+            mov dword [TotalMem_h],0
+            mov dword [ARDS_BUF],ards_buf
+            mov dword [ARDS_NR],ards_nr
+            ;jmp .memory_get_success
+            jmp LoadKernel
 
         ;int 0x15 ax=0xe801:获取内存布局,最大4GB
         ;返回值:
