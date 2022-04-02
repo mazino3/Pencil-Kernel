@@ -1,5 +1,3 @@
-//copyright (c) 2022 Lin Chenjun
-
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -31,10 +29,9 @@ int main()
     {
         std::cout << std::endl << "open \'" << out_name <<"\' error";
     }
-    //out << "char HZK16[17*16*94*94] = \n{\n";
+    std::cout << "处理中...\n";
     hzk16_copy();
-    
-    out << "$";
+    std::cout << "处理完成,结果保存在" << out_name << "中.\n"; 
     return 0;
 }
 
@@ -44,19 +41,16 @@ void hzk16_copy()
     char o_buf[17] = {0};
     unsigned short key[16] = {0x0080,0x0040,0x0020,0x0010,0x0008,0x0004,0x0002,0x0001,0x8000,0x4000,0x2000,0x1000,0x0800,0x0400,0x0200,0x0100};
 
-    int i,j,k,l;//i索引区,j索引位,k作为偏移量
-    for(i = 0; i < 94; i++) //94个区
+    int i,j,k,l;
+    for(i = 0; i < 94; i++)
     {
-        for(j = 0; j < 94; j++) //共94位
+        for(j = 0; j < 94; j++)
         {
-            //一个字符是16*16=32个char
             hzk16.read((char*)buf,32);
-            //out << "    " << "//" << i+1 << "区" << j+1 << "位" << "\n";
-            out << ";" << i+1 << "区" << j+1 << "位" << "\n";
-            std::cout << "正在处理: "<< i+1 << "区" << j+1 << "位" << std::endl;
+            out << ";" << i+1 << " " << j + 1 << "\n";
             for(k = 0; k < 16; k++)
             {
-                std::memcpy(o_buf,"................",17);
+                memcpy(o_buf,"................",17);
                 for(l = 0; l < 16; l++)
                 {
                     if(buf[k] & key[l])
@@ -64,13 +58,10 @@ void hzk16_copy()
                         o_buf[l] = '#';
                     }
                 }
-                //std::cout << "char " << j << "k: " << k << std::endl;
-                //std::cout << o_buf << std::endl;
-                //out << "    " << '\"' << o_buf << "\",\n";
-                out << o_buf << "\n";
+                out << o_buf << ";\n";
             }
-            std::cout << endl;
             out << "\n";
         }
     }
 }
+

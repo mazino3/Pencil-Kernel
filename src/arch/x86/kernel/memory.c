@@ -22,29 +22,40 @@ void init_memory()
         ards = (struct ARDS*)ARDS_BUF;
         int i;
         uint64_t total_size = 0;
+        put_str(0x07,"Ards:\n");
         for(i = 0;i < ARDS_NR;i++)
         {
-            if(ards->Type == 1)
+                put_str(0x07," Base:\t\t0x");
+                put_uint(0x07,ards->BaseAddrLow,16);
+                put_str(0x07," \n Length:\t0x");
+                put_uint(0x07,ards->LengthLow,16);
+                put_str(0x07," \n type:\t\t");
+                put_uint(0x07,ards->Type,16);
+                put_str(0x07,"\n");
+                /* 0x100000以后的地址理论上是全部可用的 */
+            if(ards->BaseAddrLow == 0x100000 && ards->Type == 1)
             {
-                total_size += ards->LengthLow + (((uint64_t)ards->LengthHigh) * ((uint64_t)0x100000000));
+                total_size = ards->BaseAddrLow + ards->LengthLow;
+                break;
             }
             ards++;
+        }
+        if(total_size == 0)
+        {
+            PANIC("No Memory available!");
         }
         if(total_size > 0x3fffffff)
         {
             total_size = 0x3fffffff;
         }
-        TotalMem_l = total_size + 0x100000;
+        TotalMem_l = (total_size + 0x100000);
     }
     uint32_t k_Total;
     uint32_t u_Total;
-    k_Total = (TotalMem_l - 0x00a02000)/2;
+    k_Total = (TotalMem_l - 0x00a02000) / 2;
     u_Total = TotalMem_l - k_Total;
     mem_free_page(&kernel_pool,(void*)0x00a02000,k_Total);
     mem_free_page(&user_pool,(void*)(0x00a02000 + k_Total),u_Total);
-
-    //mem_free_page(&kernel_vaddr,(void*)0x00000000,0x00100000);
-    //mem_free_page(&kernel_vaddr,(void*)0xc0000000,0x3fffffff);
     mem_free_page(&kernel_vaddr,(void*)0xc0a02000,0x3dffffff);
     return;
 }
@@ -127,7 +138,9 @@ int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
         /* 可以和前面的归到一起 */
         if(((void*)((((uint8_t*)(memman->free[i - 1].addr)) + memman->free[i - 1].size))) == addr)
         {
+            /* 可用信息长度增加 */
             memman->free[i - 1].size += size;
+            /* 后面也可以合并 */
             if(i < (memman->frees))
             {
                 if(((void*)((uint8_t*)addr + size)) == memman->free[i].addr)

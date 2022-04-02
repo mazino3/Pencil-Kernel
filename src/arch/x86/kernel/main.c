@@ -56,14 +56,14 @@ void k_thread_a(void* arg)
     struct TIME time;
     char buf[6] = "00000";
     uint32_t i = 0x00000000;
-    int sec;
+    int min;
     int time_y = ScrnY - 1 - 33;
     int offset = 3;
     get_time(&time);
     while(1)
     {
 
-        sec = time.second;
+        min = time.minuet;
         RectangleFill(&(Screen.win), 0x00848484,ScrnX - 212 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
         RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 212,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
         
@@ -85,11 +85,7 @@ void k_thread_a(void* arg)
 
         itoa(time.minuet,buf,16);
         put_str_graphic(&(Screen.win), ScrnX - 62,time_y,0x00000000,buf);
-        put_char_graphic(&(Screen.win), ScrnX - 42,time_y,i,':');
-
-        itoa(time.second,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 32,time_y,0x00000000,buf);
-        while(time.second == sec) /* 时间发生变化时再刷新 */
+        while(time.minuet == min) /* 时间发生变化时再刷新 */
         {
             get_time(&time);
         }
