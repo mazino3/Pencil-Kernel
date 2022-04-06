@@ -55,7 +55,7 @@ void idt_desc_init(void)
     idt_table[0x27] = intr0x27_handler;
     for(i = 0;i < IDT_DESC_CNT;i++)
     {
-        set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32,AR_IDT_DESC_DPL0);
+        set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32_K,AR_IDT_DESC_DPL0);
     }
     return;
 }

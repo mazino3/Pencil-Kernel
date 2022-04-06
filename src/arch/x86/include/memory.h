@@ -2,6 +2,7 @@
 #define __MEMORY_H__
 
 #include "stdint.h"
+#include "sync.h"
 
 #define MEMMAN_MAX 4000
 
@@ -25,6 +26,7 @@ struct MEMINFO
 
 struct MEMMAN
 {
+    struct lock lock;
     uint32_t frees;                  /* 可用内存信息数量 */
     uint32_t maxfrees;               /* frees到达过的最大值(越大,内存越分散) */
     uint32_t lostsize;               /* 回收失败的内存大小 */
@@ -34,8 +36,8 @@ struct MEMMAN
 
 enum pool_flage
 {
-    Kernel_pool = 1,
-    User_pool,
+    KernelPool = 1,
+    UserPool,
 };
 
 /* 物理地址管理 */
@@ -58,4 +60,5 @@ void* pte_ptr(void* vaddr);
 void page_table_add(void* _vaddr,void* _paddr);
 void* page_alloc(enum pool_flage pf,uint32_t page_count);
 void* get_kernel_page(uint32_t page_count);
+void* addr_v2p(void* vaddr);
 #endif /* __MEMORY_H__ */

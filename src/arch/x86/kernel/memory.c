@@ -4,6 +4,8 @@
 #include "print.h"
 #include "stdint.h"
 #include "string.h"
+#include "sync.h"
+#include "thread.h"
 
 /* 物理地址管理 */
 struct MEMMAN kernel_pool;
@@ -54,9 +56,14 @@ void init_memory()
     uint32_t u_Total;
     k_Total = (TotalMem_l - 0x00a02000) / 2;
     u_Total = TotalMem_l - k_Total;
+    lock_init(&(kernel_pool.lock));
+    lock_init(&(kernel_vaddr.lock));
+
+    lock_init(&(user_pool.lock));
+    lock_init(&(user_vaddr.lock));
     mem_free_page(&kernel_pool,(void*)0x00a02000,k_Total);
     mem_free_page(&user_pool,(void*)(0x00a02000 + k_Total),u_Total);
-    mem_free_page(&kernel_vaddr,(void*)0xc0a02000,0x3dffffff);
+    mem_free_page(&kernel_vaddr,(void*)0xc0a02000,0x3d5fe);
     return;
 }
 
@@ -115,7 +122,11 @@ void* mem_alloc(struct MEMMAN* memman,uint32_t size)
 
 void* mem_alloc_page(struct MEMMAN* memman,uint32_t page_count)
 {
-    return mem_alloc(memman,page_count * 0x1000);
+    void* addr;
+    lock_acquire(&(memman->lock));
+    addr = mem_alloc(memman,page_count * 0x1000);
+    lock_release(&(memman->lock));
+    return addr;
 }
 
 int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
@@ -192,7 +203,11 @@ int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
 
 int mem_free_page(struct MEMMAN* memman,void* addr,uint32_t page_count)
 {
-    return mem_free(memman,addr,page_count * 0x1000);
+    int status;
+    lock_acquire(&(memman->lock));
+    status = mem_free(memman,addr,page_count * 0x1000);
+    lock_release(&(memman->lock));
+    return status;
 }
 
 void* pde_ptr(void* vaddr)
@@ -239,9 +254,9 @@ void* page_alloc(enum pool_flage pf,uint32_t page_count)
     uint32_t vaddr;
     void* paddr;
     uint32_t count = page_count;
-    struct MEMMAN* memory_pool = (pf == Kernel_pool ? &kernel_pool : &user_pool);
-
-    vaddr_start = (void*)mem_alloc_page(memory_pool,page_count);
+    struct MEMMAN* memory_pool = (pf == KernelPool ? &kernel_pool : &user_pool);
+    struct MEMMAN* vaddr_pool = (pf == KernelPool ? &kernel_vaddr : &user_vaddr);
+    vaddr_start = (void*)mem_alloc_page(vaddr_pool,page_count);
     if(vaddr_start == NULL)
     {
         return NULL;
@@ -263,13 +278,48 @@ void* page_alloc(enum pool_flage pf,uint32_t page_count)
 
 void* get_kernel_page(uint32_t page_count)
 {
-    void* vaddr = page_alloc(Kernel_pool,page_count);
+    void* vaddr = page_alloc(KernelPool,page_count);
     if(vaddr != NULL)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
-    put_str(0x07,"Mem_alloc: 0x");
-    put_uint(0x07,(unsigned int)vaddr,16);
-    put_char(0x07,'\n');
     return vaddr;
+}
+
+void* get_user_page(uint32_t page_count)
+{
+    void* vaddr = page_alloc(UserPool,page_count);
+    if(vaddr != NULL)
+    {
+        memset(vaddr,0,page_count * PG_SIZE);
+    }
+    return vaddr;
+}
+
+void* get_a_page(enum pool_flage pf,void* vaddr)
+{
+    struct MEMMAN* memory_pool = (pf == KernelPool ? &kernel_pool : &user_pool);
+    struct task_struct* cur = running_thread();
+    if(cur->page_dir != NULL && pf == UserPool)
+    {
+        mem_alloc_page(&cur->prog_vaddr,1);
+    }
+    else if(cur->page_dir == NULL && pf == KernelPool)
+    {
+        mem_alloc_page(&kernel_vaddr,1);
+    }
+    else
+    {
+        PANIC("get_a_page: not allow kernel alloc userspace or user alloc kernelspace by get_a_page()");
+    }
+    void* page_paddr = mem_alloc_page(memory_pool,1);
+    ASSERT(page_paddr != NULL);
+    page_table_add((void*)vaddr,page_paddr);
+    return vaddr;
+}
+
+void* addr_v2p(void* vaddr)
+{
+    uint32_t* pte = pte_ptr(vaddr);
+    return (void*)((*pte & 0xfffff000) | ((uint32_t)vaddr & 0x00000fff));
 }

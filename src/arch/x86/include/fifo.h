@@ -4,10 +4,13 @@
 #include "global.h"
 #include "stdint.h"
 #include "sync.h"
+#include "thread.h"
 
 struct FIFO
 {
     struct lock lock;
+    struct task_struct* producer; /* 缓冲区的生产者 */
+    struct task_struct* consumer; /* 缓冲区的消费者 */
     union
     {
         uint8_t* buf8;
@@ -20,7 +23,6 @@ struct FIFO
     int free;
     int nr;
     int nw;
-    int flage; /* 状态标记 */
 };
 
 void init_fifo(struct FIFO* fifo,void* buf,int type,int size);

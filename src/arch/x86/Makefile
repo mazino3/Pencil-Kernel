@@ -22,6 +22,7 @@ INCLUDE_DIR := include/
 KERNEL_DIR := kernel/
 LIB_DIR := lib/
 THREAD_DIR := thread/
+USERPROG_DIR := userprog/
 
 #exec
 MBR := $(BOOT_DIR)mbr.bin
@@ -48,7 +49,8 @@ $(THREAD_DIR)sync.co        \
 $(THREAD_DIR)thread.ao      \
 $(THREAD_DIR)thread.co      \
 $(DEVICE_DIR)time.co        \
-$(DEVICE_DIR)timer.co
+$(DEVICE_DIR)timer.co       \
+$(USERPROG_DIR)tss.co
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(LIBS)
 KERNEL_OBJ_FILE := $(KERNEL_DIR)/kernel.o
@@ -122,7 +124,7 @@ clean:
 	@$(CD) $(LIB_DIR) && $(DELET) *.co
 	@$(CD) $(LIB_DIR) && $(DELET) *.s
 
-	@$(CD) $(THREAD_DIR) && $(DELET) *.ao
+	@$(CD) $(THREAD_DIR) && $(DELET) *.ao 
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
 	
@@ -141,6 +143,6 @@ run: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
 	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
-system: $(OBJ_FILE)
+system: $(OBJ_FILE) kernel.lds
 	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds
 	@$(OBJCOPY) -I $(OBJ_FORMAT) -S -R ".eh_frame" -R ".comment" -O binary $(KERNEL_OBJ_FILE) $(KERNEL)

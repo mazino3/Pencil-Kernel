@@ -8,11 +8,13 @@
 #include "print.h"
 #include "thread.h"
 #include "timer.h"
+#include "tss.h"
 
 void init_all()
 {
     put_str(0x02,"[inin]:all\n");
     init_idt();
+    init_tss();
     init_pit();
     init_memory();
     init_keyboard();

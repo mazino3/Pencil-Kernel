@@ -5,14 +5,6 @@ extern kernel_main
 section .text
 global _start
 _start:
-    ; mov ax,SelectorVideo
-    ; mov gs,ax
-    ; mov byte [gs:((160*7)+ 0)],'K'
-    ; mov byte [gs:((160*7)+ 2)],'e'
-    ; mov byte [gs:((160*7)+ 4)],'r'
-    ; mov byte [gs:((160*7)+ 6)],'n'
-    ; mov byte [gs:((160*7)+ 8)],'e'
-    ; mov byte [gs:((160*7)+10)],'l'
     ;初始化寄存器
     mov ax,SelectorData32
     mov ds,ax
@@ -25,8 +17,10 @@ _start:
     jmp kernel_main       ;跳转到内核主函数,接下来就是C语言的部分了.
     jmp $          ;正常情况下不会到这里,因为main函数不能返回
 
-section .data
-    %include "protect.inc"
+; section .data align=16
+     %include "protect.inc"
+    global _GDT
+    _GDT:
     GDT_BASE: SEGMDESC 0,0,0
     SectionCode32:     SEGMDESC 0x00000000,0xfffff,AR_CODE32 ;32位代码段
     SectionData32:     SEGMDESC 0x00000000,0xfffff,AR_DATA32 ;32位数据段
@@ -35,7 +29,6 @@ section .data
 
     GDT_SIZE equ ($ - GDT_BASE)
     GDT_LIMIT equ GDT_SIZE - 1
-
     times 60 dq 0;预留60个描述符
 
     ;段选择子
