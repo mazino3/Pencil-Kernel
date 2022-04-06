@@ -302,7 +302,7 @@ void* get_a_page(enum pool_flage pf,void* vaddr)
     struct task_struct* cur = running_thread();
     if(cur->page_dir != NULL && pf == UserPool)
     {
-        mem_alloc_page(&cur->prog_vaddr,1);
+        // mem_alloc_page(&cur->prog_vaddr,1);
     }
     else if(cur->page_dir == NULL && pf == KernelPool)
     {
