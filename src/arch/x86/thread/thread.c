@@ -6,17 +6,18 @@
 #include "list.h"
 #include "memory.h"
 #include "print.h"
+#include "process.h"
 #include "stdint.h"
 #include "string.h"
 
 struct task_struct* main_thread;
 
-struct list ready_list;
-struct list all_list;
+PUBLIC struct list ready_list;
+PUBLIC struct list all_list;
 
-struct list_elem* this_thread_tag;
+PRIVATE struct list_elem* this_thread_tag;
 
-static void make_main_thread();
+PRIVATE void make_main_thread();
 
 void init_thread()
 {
@@ -40,7 +41,7 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
     }
     thread->priority = priority;
     thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
-    // mem_free_page(thread->prog_vaddr,0x00000000,0xc0000);
+    thread->page_dir = NULL;
     thread->stack_magic = 0x12345678;
     return;
 }
@@ -110,6 +111,7 @@ static void make_main_thread(void)
     list_append(&all_list,&main_thread->all_tag);
     return;
 }
+
 void schedule()
 {
     struct task_struct* cur_thread = running_thread();
@@ -137,6 +139,8 @@ void schedule()
     this_thread_tag = list_pop(&ready_list);
     next = this_thread_tag->data;
     next->status = TASK_RUNNING;
+
+    process_activate(next);
     switch_to(cur_thread,next);
     return;
 }

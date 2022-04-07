@@ -67,9 +67,9 @@ void init_memory()
     init_memman(&user_pool,upinfo);
     init_memman(&user_vaddr,uvinfo);
 
-    mem_free_page(&kernel_pool,(void*)0x00402000,k_Total);
-    mem_free_page(&user_pool,(void*)(0x00402000 + k_Total),u_Total);
-    mem_free_page(&kernel_vaddr,(void*)0xc0402000,0x3fbfe);
+    mem_free_page(&kernel_pool,(void*)0x00402000,k_Total / PG_SIZE);
+    mem_free_page(&user_pool,(void*)(0x00402000 + k_Total),u_Total / PG_SIZE);
+    mem_free_page(&kernel_vaddr,(void*)0xc0402000,(0xfe000000 - 0xc0402000) / PG_SIZE);
     return;
 }
 
@@ -80,6 +80,7 @@ void init_memman(struct MEMMAN* memman,struct MEMINFO* free)
     memman->maxfrees = 0;
     memman->lostsize = 0;
     memman->lostcnt = 0;
+    ASSERT(free != NULL);
     memman->free = free;
     return;
 }

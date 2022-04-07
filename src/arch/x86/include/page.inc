@@ -1,6 +1,6 @@
 ;page.inc
 
-PAGE_DIR_TABLE_POS equ 0x400000 ;页目录表存放在0xa00000地址处
+PAGE_DIR_TABLE_POS equ 0x400000 ;页目录表存放在0x400000地址处
 
 ;属性
 PG_P equ 0x1

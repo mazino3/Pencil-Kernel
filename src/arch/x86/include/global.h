@@ -56,7 +56,7 @@ struct SEGMDESC
 #define AR_IDT_DESC_DPL0 (AR_P | AR_DPL_0 | AR_DESC_32)
 #define AR_IDT_DESC_DPL3 (AR_P | AR_DPL_3 | AR_DESC_32)
 
-#define KERNEL_PAGE_DIR_TABLE_POS 0x400000
+#define KERNEL_PAGE_DIR_TABLE_POS 0x00400000
 
 #define PG_SIZE 4096
 #define PCB_SIZE (PG_SIZE * 1)
@@ -129,6 +129,8 @@ enum Display
 #ifndef nop
     #define nop() __asm__ __volatile__ ("nop;");
 #endif
+ /* 向上取整 */
+#define DIV_ROUND_UP(X ,STEP) (((X) + ((STEP) - 1)) / (STEP))
 
 #ifndef PUBLIC
     #define PUBLIC

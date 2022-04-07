@@ -88,6 +88,9 @@ struct task_struct
     uint32_t stack_magic;    /* 用于检测是否栈溢出 */
 };
 
+extern struct list ready_list;
+extern struct list all_list;
+
 void init_thread();
 void thread_init(struct task_struct* thread,char* name,uint8_t priority);
 struct task_struct* running_thread();

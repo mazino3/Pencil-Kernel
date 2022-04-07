@@ -39,7 +39,7 @@ void kernel_main(void)
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     // put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
 
-    thread_start("k_a",31,k_thread_a,"arg_A ");
+    // thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("k_b",31,k_thread_b,"arg_B ");
 
     while(1); /* 这个死循环不能少 */
@@ -98,10 +98,6 @@ void k_thread_b(void* arg)
         {
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
-            if(data == 0x1c)
-            {
-                console_str(0x07,"[User]:");
-            }
         }
     }
 }
