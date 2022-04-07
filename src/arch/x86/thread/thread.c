@@ -39,7 +39,7 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
         thread->status = TASK_READY;
     }
     thread->priority = priority;
-    thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PG_SIZE)); /* 线程内核态下的栈顶地址 */
+    thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
     // mem_free_page(thread->prog_vaddr,0x00000000,0xc0000);
     thread->stack_magic = 0x12345678;
     return;

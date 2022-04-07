@@ -15,6 +15,11 @@ struct MEMMAN user_pool;
 struct MEMMAN kernel_vaddr;
 struct MEMMAN user_vaddr;
 
+struct MEMINFO kpinfo[MEMMAN_MAX];
+struct MEMINFO kvinfo[MEMMAN_MAX];
+struct MEMINFO upinfo[MEMMAN_MAX];
+struct MEMINFO uvinfo[MEMMAN_MAX];
+
 void init_memory()
 {
     /* 判断是否要手动计算内存容量 */
@@ -56,23 +61,26 @@ void init_memory()
     uint32_t u_Total;
     k_Total = (TotalMem_l - 0x00a02000) / 2;
     u_Total = TotalMem_l - k_Total;
-    lock_init(&(kernel_pool.lock));
-    lock_init(&(kernel_vaddr.lock));
 
-    lock_init(&(user_pool.lock));
-    lock_init(&(user_vaddr.lock));
-    mem_free_page(&kernel_pool,(void*)0x00a02000,k_Total);
-    mem_free_page(&user_pool,(void*)(0x00a02000 + k_Total),u_Total);
-    mem_free_page(&kernel_vaddr,(void*)0xc0a02000,0x3d5fe);
+    init_memman(&kernel_pool,kpinfo);
+    init_memman(&kernel_vaddr,kvinfo);
+    init_memman(&user_pool,upinfo);
+    init_memman(&user_vaddr,uvinfo);
+
+    mem_free_page(&kernel_pool,(void*)0x00402000,k_Total);
+    mem_free_page(&user_pool,(void*)(0x00402000 + k_Total),u_Total);
+    mem_free_page(&kernel_vaddr,(void*)0xc0402000,0x3fbfe);
     return;
 }
 
-void init_memmam(struct MEMMAN* memman)
+void init_memman(struct MEMMAN* memman,struct MEMINFO* free)
 {
+    lock_init(&(memman->lock));
     memman->frees = 0;
     memman->maxfrees = 0;
     memman->lostsize = 0;
     memman->lostcnt = 0;
+    memman->free = free;
     return;
 }
 

@@ -1,4 +1,4 @@
-﻿#include "console.h"
+#include "console.h"
 #include "cpu.h"
 #include "debug.h"
 #include "fifo.h"
@@ -30,29 +30,27 @@ void kernel_main(void)
     init_all();
     intr_enable(); /* 开中断 */
     console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    console_str(0x07,"Copyright (c) 2021-2022 LinChenjun,All rights reserved.\n\n");
+    // console_str(0x07,"Copyright (c) 2021-2022 Pencil-Kernel developers,All rights reserved.\n\n");
     
     console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
     console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
     console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
 
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
-    put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 LinChenjun, All rights reserved.");
+    // put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("k_b",31,k_thread_b,"arg_B ");
 
-    while(1) /* 这个死循环不能少 */
-    {
-        ;
-    }
+    while(1); /* 这个死循环不能少 */
+
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
 }
 
 void k_thread_a(void* arg)
 {
     struct TIME time;
-    char buf[6] = "00000";
+    char buf[6];
     uint32_t i = 0x00000000;
     int min;
     int time_y = ScrnY - 1 - 33;
@@ -100,6 +98,10 @@ void k_thread_b(void* arg)
         {
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
+            if(data == 0x1c)
+            {
+                console_str(0x07,"[User]:");
+            }
         }
     }
 }

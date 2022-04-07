@@ -56,7 +56,10 @@ struct SEGMDESC
 #define AR_IDT_DESC_DPL0 (AR_P | AR_DPL_0 | AR_DESC_32)
 #define AR_IDT_DESC_DPL3 (AR_P | AR_DPL_3 | AR_DESC_32)
 
+#define KERNEL_PAGE_DIR_TABLE_POS 0x400000
+
 #define PG_SIZE 4096
+#define PCB_SIZE (PG_SIZE * 1)
 
 #define PG_P 0x1
 #define PG_RW_R 0x0
@@ -68,11 +71,11 @@ struct SEGMDESC
 #define TSS_D_0 0
 #define AR_TSS32 (AR_G_4K | TSS_D_0 | AR_L | AR_AVL | AR_P | AR_DPL_0 | AR_S_SYS | AR_TYPE_TSS)
 
-#define EFLAGES_MBS (1 << 1)
-#define EFLAGES_IF_1 (1 << 9)
-#define EFLAGES_IF_0 (0 << 9)
-#define EFLAGES_IOPL_0 (0 << 12)
-#define EFLAGES_IOPL_3 (3 << 12)
+#define EFLAGS_MBS (1 << 1)
+#define EFLAGS_IF_1 (1 << 9)
+#define EFLAGS_IF_0 (0 << 9)
+#define EFLAGS_IOPL_0 (0 << 12)
+#define EFLAGS_IOPL_3 (3 << 12)
 
 #define LoaderBaseAddress 0x1000  /* loader加载到0x1000地址处 */
 #define LoaderOffsetAddress 0x500 /* loader前0x4ff字节是数据,代码正式开始是0x500字节 */

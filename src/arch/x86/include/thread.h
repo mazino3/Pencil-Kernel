@@ -84,7 +84,7 @@ struct task_struct
     struct list_elem general_tag;  /* 用于加入就绪线程队列 */
 
     uint32_t* page_dir;      /* 线程的页表 */
-    // struct MEMMAN prog_vaddr;
+    struct MEMMAN prog_vaddr;
     uint32_t stack_magic;    /* 用于检测是否栈溢出 */
 };
 

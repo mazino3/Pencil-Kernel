@@ -1,5 +1,5 @@
 # Pencil-Kernel Makefile
-# 反汇编内核: objdump -D $(KERNEL_OBJ_FILE) > kernel.asm
+# 反汇编内核: objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 
 # tools
 TOOL_DIR := ../../../tools/
@@ -30,29 +30,36 @@ BOOT := $(BOOT_DIR)boot.bin
 LOADER := $(BOOT_DIR)loader.bin
 
 #obj
-LIBS := $(LIB_DIR)bitmap.co \
-$(DEVICE_DIR)console.co     \
-$(DEVICE_DIR)cpu.co         \
+OBJS :=                     \
 $(KERNEL_DIR)debug.co       \
-$(LIB_DIR)fifo.co           \
-$(LIB_DIR)font.co           \
-$(GRAPHIC_DIR)graphic.co    \
 $(KERNEL_DIR)init.co        \
 $(KERNEL_DIR)interrupt.ao   \
 $(KERNEL_DIR)interrupt.co   \
-$(DEVICE_DIR)keyboard.co    \
-$(LIB_DIR)list.co           \
 $(KERNEL_DIR)memory.co      \
-$(LIB_DIR)print.co          \
-$(LIB_DIR)string.co         \
+                            \
 $(THREAD_DIR)sync.co        \
 $(THREAD_DIR)thread.ao      \
 $(THREAD_DIR)thread.co      \
+$(USERPROG_DIR)tss.co       \
+$(USERPROG_DIR)process.co   \
+                            \
+$(DEVICE_DIR)console.co     \
+$(DEVICE_DIR)cpu.co         \
+$(DEVICE_DIR)keyboard.co    \
 $(DEVICE_DIR)time.co        \
 $(DEVICE_DIR)timer.co       \
-$(USERPROG_DIR)tss.co
+                            \
+$(LIB_DIR)bitmap.co         \
+$(LIB_DIR)fifo.co           \
+$(LIB_DIR)font.co           \
+$(LIB_DIR)list.co           \
+$(LIB_DIR)print.co          \
+$(LIB_DIR)string.co         \
+                            \
+$(GRAPHIC_DIR)graphic.co    \
 
-OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(LIBS)
+
+OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
 KERNEL_OBJ_FILE := $(KERNEL_DIR)/kernel.o
 KERNEL := $(KERNEL_DIR)/kernel.bin
 #file
@@ -124,16 +131,19 @@ clean:
 	@$(CD) $(LIB_DIR) && $(DELET) *.co
 	@$(CD) $(LIB_DIR) && $(DELET) *.s
 
+	@$(CD) $(USERPROG_DIR) && $(DELET) *.co
+	@$(CD) $(USERPROG_DIR) && $(DELET) *.s
+
 	@$(CD) $(THREAD_DIR) && $(DELET) *.ao 
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
 	
 #	@$(DELET) $(v_disk).lock
 
-debug: img
-	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c -S
+# debug: img
+#	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c -S
 
-# 将文件写入后删除
+# 将文件写入
 img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc

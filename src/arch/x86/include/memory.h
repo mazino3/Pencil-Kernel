@@ -31,7 +31,7 @@ struct MEMMAN
     uint32_t maxfrees;               /* frees到达过的最大值(越大,内存越分散) */
     uint32_t lostsize;               /* 回收失败的内存大小 */
     uint32_t lostcnt;                /* 回收失败的次数 */
-    struct MEMINFO free[MEMMAN_MAX]; /* 内存使用信息 */
+    struct MEMINFO* free; /* 内存使用信息 */
 };
 
 enum pool_flage
@@ -49,7 +49,7 @@ extern struct MEMMAN kernel_vaddr;
 extern struct MEMMAN user_vaddr;
 
 void init_memory();
-void init_memman(struct MEMMAN* memman);
+void init_memman(struct MEMMAN* memman,struct MEMINFO* free);
 uint32_t TotalFreeSize(struct MEMMAN* memman);
 void* mem_alloc(struct MEMMAN* memman,uint32_t size);
 void* mem_alloc_page(struct MEMMAN* memman,uint32_t size);
@@ -60,5 +60,8 @@ void* pte_ptr(void* vaddr);
 void page_table_add(void* _vaddr,void* _paddr);
 void* page_alloc(enum pool_flage pf,uint32_t page_count);
 void* get_kernel_page(uint32_t page_count);
+void* get_user_page(uint32_t page_count);
+void* get_a_page(enum pool_flage pf,void* vaddr);
 void* addr_v2p(void* vaddr);
+
 #endif /* __MEMORY_H__ */
