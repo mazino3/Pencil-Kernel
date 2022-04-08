@@ -292,6 +292,8 @@ void* get_kernel_page(uint32_t page_count)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
+    put_str(0x07," Memalloc: ");
+    put_uint(0x07,(uint32_t)vaddr,16);
     return vaddr;
 }
 

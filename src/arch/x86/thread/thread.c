@@ -115,15 +115,12 @@ static void make_main_thread(void)
 void schedule()
 {
     struct task_struct* cur_thread = running_thread();
+    ASSERT(cur_thread->stack_magic == 0x12345678);
     if(cur_thread->status == TASK_RUNNING)
     {
         /* 防止重复添加 */
         ASSERT(!(list_find(&ready_list,&(cur_thread->general_tag))));
         list_append(&ready_list,&(cur_thread->general_tag));
-        if(cur_thread->ticks == 0)
-        {
-            cur_thread->ticks = cur_thread->priority;
-        }
         cur_thread->status = TASK_RUNNING;
     }
     else
@@ -140,7 +137,20 @@ void schedule()
     next = this_thread_tag->data;
     next->status = TASK_RUNNING;
 
-    process_activate(next);
+    uint32_t* pgdir;
+    __asm__ __volatile__
+    (
+        "movl %%cr3,%0"
+        :"=r"(pgdir)
+        :
+        :"memory"
+    );
+    /* 更新页表 */
+    if(next->page_dir != NULL && pgdir != next->page_dir)
+    {
+        put_str(0x70,"user_prog");
+        // process_activate(next);
+    }
     switch_to(cur_thread,next);
     return;
 }

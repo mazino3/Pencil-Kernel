@@ -1,1 +1,2 @@
-cmd.exe
+@prompt [root@localhost $P]#
+@cmd.exe

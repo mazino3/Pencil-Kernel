@@ -4,6 +4,7 @@
 # tools
 TOOL_DIR := ../../../tools/
 AS := $(TOOL_DIR)as
+BOCHS := $(TOOL_DIR)Bochs-2.7\bochsdbg
 CC1 := $(TOOL_DIR)cc1
 DD := $(TOOL_DIR)dd
 GCC := $(TOOL_DIR)gcc
@@ -41,7 +42,6 @@ $(THREAD_DIR)sync.co        \
 $(THREAD_DIR)thread.ao      \
 $(THREAD_DIR)thread.co      \
 $(USERPROG_DIR)tss.co       \
-$(USERPROG_DIR)process.co   \
                             \
 $(DEVICE_DIR)console.co     \
 $(DEVICE_DIR)cpu.co         \
@@ -151,7 +151,8 @@ img: $(v_disk) $(BOOT) $(LOADER) system
 
 run: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
-	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
+	@$(BOCHS) -q -f bochsrc.bxrc
+#	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
 	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds

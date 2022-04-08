@@ -9,6 +9,7 @@
 #include "io.h"
 #include "memory.h"
 #include "print.h"
+#include "process.h"
 #include "string.h"
 #include "thread.h"
 #include "time.h"
@@ -18,6 +19,7 @@ extern struct FIFO keybuf;
 
 void k_thread_a(void* arg);
 void k_thread_b(void* arg);
+void u_prog_a(void);
 
 void kernel_main(void)
 {
@@ -39,8 +41,11 @@ void kernel_main(void)
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     // put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
 
-    // thread_start("k_a",31,k_thread_a,"arg_A ");
+    thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("k_b",31,k_thread_b,"arg_B ");
+
+    // process_execute(u_prog_a,"user_prog");
+    // thread_start("k_c",31,k_thread_c,"arg_C ");
 
     while(1); /* 这个死循环不能少 */
 
@@ -58,7 +63,6 @@ void k_thread_a(void* arg)
     get_time(&time);
     while(1)
     {
-
         min = time.minuet;
         RectangleFill(&(Screen.win), 0x00848484,ScrnX - 182 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
         RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 182,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
@@ -87,7 +91,7 @@ void k_thread_a(void* arg)
         }
     }
 }
-
+int ta = 0;
 void k_thread_b(void* arg)
 {
     char data;
@@ -99,5 +103,15 @@ void k_thread_b(void* arg)
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
         }
+        // console_int(0x70,ta,10);
+        // console_str(0x07," ");
+    }
+}
+
+void u_prog_a(void)
+{
+    while(1)
+    {
+        ta++;
     }
 }

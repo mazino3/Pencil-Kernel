@@ -6,8 +6,8 @@ display_library: win32
 memory: host=512, guest=512
 
 # file后面的换成实际的路径
-romimage: file="G:\Bochs-2.7/BIOS-bochs-latest", address=0x00000000, options=none
-vgaromimage: file="G:\Bochs-2.7/VGABIOS-lgpl-latest"
+romimage: file="..\..\..\tools\Bochs-2.7/BIOS-bochs-latest", address=0x00000000, options=none
+vgaromimage: file="..\..\..\tools\Bochs-2.7/VGABIOS-lgpl-latest"
 
 boot: disk
 floppy_bootsig_check: disabled=0
@@ -16,7 +16,7 @@ floppya: type=1_44
 ata0: enabled=true, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 
 # file后面的换成实际的路径
-ata0-master: type=disk, path="G:\Pencil-Kernel\src\arch\x86\a.img", mode=flat, cylinders=130, heads=16, spt=63, sect_size=512, model="Generic 1234", biosdetect=auto, translation=auto
+ata0-master: type=disk, path="a.img", mode=flat, cylinders=130, heads=16, spt=63, sect_size=512, model="Generic 1234", biosdetect=auto, translation=auto
 ata0-slave: type=none
 ata1: enabled=true, ioaddr1=0x170, ioaddr2=0x370, irq=15
 ata1-master: type=none

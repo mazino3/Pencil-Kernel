@@ -5,6 +5,7 @@
 #include "interrupt.h"
 #include "list.h"
 #include "memory.h"
+#include "print.h"
 #include "string.h"
 #include "thread.h"
 #include "tss.h"
@@ -41,18 +42,16 @@ void start_process(void* process_name)
 */
 void page_dir_activate(struct task_struct* pthread)
 {
-    uint32_t page_dir_table_pos = KERNEL_PAGE_DIR_TABLE_POS;
-    if(pthread->page_dir != NULL)
-    {
-        page_dir_table_pos = (uint32_t)addr_v2p(pthread->page_dir);
-    }
-    // __asm__ __volatile__
-    // (
-    //     "movl %0,%%cr3"
-    //     :
-    //     :"r"(page_dir_table_pos)
-    //     :"memory"
-    // );
+    ASSERT(pthread->page_dir != NULL);
+    uint32_t page_dir_table_pos;
+    page_dir_table_pos = (uint32_t)addr_v2p(pthread->page_dir);
+    __asm__ __volatile__
+    (
+        "movl %0,%%cr3"
+        :
+        :"r"(page_dir_table_pos)
+        :"memory"
+    );
     return;
 }
 
@@ -81,7 +80,7 @@ uint32_t* create_page_dir(void)
         console_str(0x04,"create_page_dir: get kernel page failed!\n");
         return NULL;
     }
-    memcpy(((uint32_t*)(uint32_t)pgdir_v + 0x300 * 4),((uint32_t*)(0xfffff000 + 0x300 * 4)),1024);
+    memcpy(((uint32_t*)(pgdir_v + 0x300)),((uint32_t*)(0xfffff000 + 0x300 * 4)),1024); // 这里导致PG异常
     uint32_t pgdir_p = (uint32_t)addr_v2p(pgdir_v);
     pgdir_v[1023] = (pgdir_p | PG_US_U | PG_RW_W | PG_P);
     return pgdir_v;
@@ -104,10 +103,15 @@ void process_execute(void* process_name,char* name)
     create_user_vaddr_memman(pthread);
     thread_create(pthread,start_process,process_name);
     pthread->page_dir = create_page_dir();
+    put_str(0x70,"prog PCB: ");
+    put_uint(0x70,(uint32_t)pthread,16);
 
+    put_str(0x70," prog pgdir: ");
+    put_uint(0x70,(uint32_t)pthread->page_dir,16);
     /* 加入队列,等待调度 */
     pthread->general_tag.data = pthread;
     pthread->all_tag.data = pthread;
+
     enum intr_status status = intr_disable();
     ASSERT(!(list_find(&all_list,&(pthread->all_tag))));
     list_append(&all_list,&(pthread->all_tag));
