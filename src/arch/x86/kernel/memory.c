@@ -156,14 +156,14 @@ int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
     if(i > 0)
     {
         /* 可以和前面的归到一起 */
-        if(((void*)((((uint8_t*)(memman->free[i - 1].addr)) + memman->free[i - 1].size))) == addr)
+        if(((memman->free[i - 1].addr) + memman->free[i - 1].size) == addr)
         {
             /* 可用信息长度增加 */
             memman->free[i - 1].size += size;
             /* 后面也可以合并 */
             if(i < (memman->frees))
             {
-                if(((void*)((uint8_t*)addr + size)) == memman->free[i].addr)
+                if(((ptr_t)addr + size) == memman->free[i].addr)
                 {
                     memman->free[i - 1].size += memman->free[i].size;
                     memman->frees--;
@@ -180,7 +180,7 @@ int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
     /* 不能和前面归到一起的话会来到这里 */
     if(i < (memman->frees))
     {
-        if(((void*)((uint8_t*)addr + size)) == memman->free[i].addr)
+        if(((ptr_t)addr + size) == memman->free[i].addr)
         {
             memman->free[i].addr = addr;
             memman->free[i].size += size;

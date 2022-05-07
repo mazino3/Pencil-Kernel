@@ -15,4 +15,7 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long int uint64_t;
 
+// 不知道这个要定义在哪里,所以就放在这里了
+typedef uint32_t ptr_t;
+
 #endif /* __STDINT_H_ */

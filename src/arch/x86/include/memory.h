@@ -20,7 +20,7 @@ struct ARDS
 
 struct MEMINFO
 {
-    void* addr;    /* 一块内存的起始地址物理地址 */
+    ptr_t addr;    /* 一块内存的起始地址物理地址 */
     uint32_t size; /* 大小(单位:页) */
 };
 
