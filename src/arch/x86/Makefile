@@ -42,6 +42,7 @@ $(THREAD_DIR)sync.co        \
 $(THREAD_DIR)thread.ao      \
 $(THREAD_DIR)thread.co      \
 $(USERPROG_DIR)tss.co       \
+$(USERPROG_DIR)process.co   \
                             \
 $(DEVICE_DIR)console.co     \
 $(DEVICE_DIR)cpu.co         \
@@ -60,8 +61,8 @@ $(GRAPHIC_DIR)graphic.co    \
 
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
-KERNEL_OBJ_FILE := $(KERNEL_DIR)/kernel.o
-KERNEL := $(KERNEL_DIR)/kernel.bin
+KERNEL_OBJ_FILE := $(KERNEL_DIR)kernel.o
+KERNEL := $(KERNEL_DIR)kernel.bin
 #file
 v_disk := a.img
 

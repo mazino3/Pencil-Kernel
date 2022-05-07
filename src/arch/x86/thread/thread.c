@@ -149,7 +149,7 @@ void schedule()
     if(next->page_dir != NULL && pgdir != next->page_dir)
     {
         put_str(0x70,"user_prog");
-        // process_activate(next);
+        process_activate(next);
     }
     switch_to(cur_thread,next);
     return;
