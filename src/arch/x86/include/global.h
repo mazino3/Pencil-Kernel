@@ -79,8 +79,8 @@ struct SEGMDESC
 
 #define LoaderBaseAddress 0x1000  /* loader加载到0x1000地址处 */
 #define LoaderOffsetAddress 0x500 /* loader前0x4ff字节是数据,代码正式开始是0x500字节 */
-extern struct SEGMDESC _GDT[];
-
+// extern struct SEGMDESC _GDT[];
+#define _GDT ((struct SEGMDESC*)LoaderBaseAddress)
 /*
 * loader向内核传递的参数的地址
 */

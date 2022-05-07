@@ -86,11 +86,20 @@ void put_char_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,cha
 
 void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,char* str)
 {
+    int pos_x = x;
+    int pos_y = y;
     while(*str != '\0')
     {
-        put_char_graphic(rectangle,x,y,color,*str);
+        switch(*str)
+        {
+            case '\n':
+                pos_y += 16;
+                pos_x = x;
+                break;
+        }
+        put_char_graphic(rectangle,pos_x,pos_y,color,*str);
         str++;
-        x+=8;
+        pos_x += 8;
     }
     
     return;

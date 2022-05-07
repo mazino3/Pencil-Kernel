@@ -21,6 +21,14 @@ section .text
         mov ds,ax
         mov es,ax
         call [idt_table + %1 * 4]
+        jmp intr_exit
+section .data
+    dd asm_intr%1_handler
+%endmacro
+
+section .text
+    global intr_exit
+    intr_exit:
         add esp,4
         popad
         pop gs
@@ -29,9 +37,6 @@ section .text
         pop ds
         add esp,4
         iretd
-section .data
-    dd asm_intr%1_handler
-%endmacro
 
 VECTOR 0x00,push 0
 VECTOR 0x01,push 0
@@ -81,15 +86,3 @@ VECTOR 0x2c,push 0    ;ps/2鼠标
 VECTOR 0x2d,push 0    ;fpu浮点单元异常
 VECTOR 0x2e,push 0    ;硬盘
 VECTOR 0x2f,push 0    ;保留
-
-section .text
-    global intr_exit
-    intr_exit:
-        add esp,4
-        popad
-        pop gs
-        pop fs
-        pop es
-        pop ds
-        add esp,4
-        iretd

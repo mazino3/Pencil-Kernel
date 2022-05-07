@@ -127,12 +127,15 @@ void k_thread_b(void* arg)
 {
     char data;
     console_str(0x07,"[User]:");
+
     while(1)
     {
         if(!fifo_empty(&keybuf))
         {
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
+            RectangleFill(&(Screen.win),0x00848484,10,30,18,46);
+            put_char_graphic(&(Screen.win),10,30,0x00ffffff,data);
         }
         // console_int(0x70,ta,10);
         // console_str(0x07," ");

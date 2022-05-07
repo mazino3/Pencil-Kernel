@@ -66,7 +66,7 @@ void init_memory()
 
     mem_free_page(&kernel_pool,(void*)0x00600000,k_Total / PG_SIZE);
     mem_free_page(&user_pool,(void*)(0x00600000 + k_Total),u_Total / PG_SIZE);
-    mem_free_page(&kernel_vaddr,(void*)0xc0600000,(0xfe000000 - 0xc0600000) / PG_SIZE);
+    mem_free_page(&kernel_vaddr,(void*)0xc0600000,(0xe0000000 - 0xc0600000) / PG_SIZE);
     return;
 }
 

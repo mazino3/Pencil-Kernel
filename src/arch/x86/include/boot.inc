@@ -32,13 +32,9 @@ DrvNum equ 0x7b00
     ;0x145,1280 * 1024
     ;0x18c,2560 * 1600
     ;这里挑3个来尝试,总会有一个可以的吧?
-    %ifdef __BOOT_ON_VIR_MACHINE__
         VBE_MODE1 equ 0x143 ;首选模式号
-        VBE_MODE2 equ 0x180 ;备选号1
+        VBE_MODE2 equ 0x142 ;备选号1
         VBE_MODE3 equ 0x140 ;备选号2
-    %else
-        VBE_MODE1 equ 0x180
-    %endif
 %endif
 
 ;BootLoader的信息

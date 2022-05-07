@@ -8,7 +8,7 @@
 #include "stdint.h"
 #include "timer.h"
 
-struct gate_desc idt[IDT_DESC_CNT];         /* idt描述符 */
+struct gate_desc* idt = (struct gate_desc*)0x7f00;         /* idt描述符 */
 void* idt_table[IDT_DESC_CNT];
 extern void* intr_entry_table[IDT_DESC_CNT];/* interrupt.asm中的中断程序入口地址表 */
 char* intr_name[IDT_DESC_CNT];              /* 保存异常的名字 */
@@ -85,7 +85,8 @@ void init_idt()
 {
     idt_desc_init();
     init_pic();
-    uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
+    // uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
+    uint64_t idt_ptr = (((sizeof(struct gate_desc) * IDT_DESC_CNT) -1) | ((uint64_t)((0x7f00) << 16)));
     exception_init();
     __asm__ __volatile__
     (
@@ -103,20 +104,21 @@ void init_idt()
 */
 void general_intr_handler(uint8_t vector_nr)
 {
+    char str[64];
     intr_disable();
-    // set_cursor(0);
-    // int i;
-    // for(i = 0;i < 24 * 80;i++)
-    // {
-    //     put_char(0x17,' ');
-    // }
-    // set_cursor(0);
-    // put_str(0x17,
-    // "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
-    // "If this is the first time you've seen this stop error sereen, restart your computer."
-    // "If this screen appers again,follow these steps:\n"
-    // " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
-    // );
+    set_cursor(0);
+    int i;
+    for(i = 0;i < 24 * 80;i++)
+    {
+        put_char(0x17,' ');
+    }
+    set_cursor(0);
+    put_str(0x17,
+    "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
+    "If this is the first time you've seen this stop error sereen, restart your computer."
+    "If this screen appers again,follow these steps:\n"
+    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
+    );
     put_str(0x17,"\n ");
     put_str(0x17,PKn_Version);
     put_str(0x17,"\n intr: 0x");
@@ -126,9 +128,9 @@ void general_intr_handler(uint8_t vector_nr)
     {
         put_str(0x17,intr_name[vector_nr]);
     }
+    void* page_fault_vaddr = NULL;
     if(vector_nr== 14)
     {
-        void* page_fault_vaddr = NULL;
         __asm__ __volatile__
         (
             "movl %%cr2,%[page_fault_vaddr];"
@@ -140,6 +142,27 @@ void general_intr_handler(uint8_t vector_nr)
     }
     put_str(0x17,"\n CPU :");
     cpu_info();
+    /* 图形界面的handler */
+    RectangleFill(&(Screen.win),0x000000ff,0,0,ScrnX - 1,ScrnY - 1);
+    put_str_graphic(&(Screen.win),10,10,0x00ffffff,
+    "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
+    "If this is the first time you've seen this stop error sereen, restart your computer.\n"
+    "If this screen appers again,follow these steps:\n"
+    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
+    );
+    put_str_graphic(&(Screen.win),10,90,0x00ffffff,PKn_Version);
+    sprintf(str,"intr: 0x%02x",vector_nr);
+    put_str_graphic(&(Screen.win),10,106,0x00ffffff,str);
+    if(vector_nr >= 0 && vector_nr < 20)
+    {
+        put_str_graphic(&(Screen.win),10,122,0x00ff00ff,intr_name[vector_nr]);
+    }
+    if(vector_nr == 14)
+    {
+        sprintf(str,"( Fault address: 0x%08x )",page_fault_vaddr);
+        put_str_graphic(&(Screen.win),10,138,0x00ffffff,str);
+
+    }
     while(1)
     {
         ;

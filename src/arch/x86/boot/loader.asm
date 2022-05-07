@@ -9,10 +9,6 @@ org LoaderBaseAddress
 GDT_BASE: SEGMDESC 0,0,0
 SectionCode32:     SEGMDESC 0x00000000,0xfffff,AR_CODE32 ;32位代码段
 SectionData32:     SEGMDESC 0x00000000,0xfffff,AR_DATA32 ;32位数据段
-; SectionVideo:      SEGMDESC 0x000b8000,0x00007,AR_DATA32 ;文字显存
-
-; 下面这个段似乎没用,先删了吧
-; SectionColorVideo: SEGMDESC 0x000a0000,0x0000e,AR_DATA32 ;彩色显存
 
 GDT_SIZE equ ($ - GDT_BASE)
 GDT_LIMIT equ GDT_SIZE - 1
@@ -42,7 +38,7 @@ MemSuccessMsg db "Get total memory bytes success!";31
 LoadKernelMsg db "Loading Kernel...";17
 LoadKernelSuccessMsg db "Load Kernel success!";20
 
-OffsetOfKernelAt1M dd 100000
+OffsetOfKernel dd 0x100000
 
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处
 
@@ -157,7 +153,6 @@ Start:
         ;就能在实模式下访问1MB以上内存空间了
         ;进入Unreal Mode的基本过程:
         ;打开a20地址线 -> 加载GDT -> 向段寄存器加载段描述符 -> 退出保护模式
-        ;注:内核目前在前1MB内存里.(详细信息看include/boot.inc)
         mov bp,LoadKernelMsg
         mov cx,17;17个字符
         mov ax,0x1301
@@ -194,27 +189,35 @@ Start:
         mov di,[Lable_KernelReadLoop]  ;内核块数量
         .readloop:
             call ReadSector
+
+            push dx
+            push esi
+            push edi
+            push ecx
+
+            mov ecx,KernelBlockSize * 512
+            mov edi,dword [OffsetOfKernel]
+            mov ax,0
+            mov ds,ax
+            mov esi,0x7f00
+            .mov_kernel:
+                mov al,[ds:esi]
+                mov [fs:edi],al
+                inc esi
+                inc edi
+                loop .mov_kernel
+                mov dword [OffsetOfKernel],edi
+            pop ecx
+            pop edi
+            pop esi
+            pop dx
+
             add eax,KernelBlockSize
             add dx,((512 * KernelBlockSize) >> 4) ;计算内核下次读取的基地址
             mov es,dx
             dec di   ;di--
             cmp di,0 ;全部读取结束后,di变为0
             ja .readloop
-
-        ; .move_kernel:
-        ;     mov dx,KernelBaseAddress >> 4
-        ;     mov es,dx
-        ;     mov eax,KernelStartSec
-        ;     mov ecx,KernelBlockSize
-        ;     mov ebx,0
-        ;     mov di,KernelReadLoop
-        ;     mov esi,0
-        ;     .moveloop:
-        ;         mov al,byte [ds:esi]
-        ;         mov byte [fs:edi],al
-        ;         inc esi
-        ;         inc edi
-        ;         ja .moveloop
 
         .kernel_load_success:
             mov bp,LoadKernelSuccessMsg
@@ -223,11 +226,6 @@ Start:
             mov bx,0x0002;第0页,黑底绿字
             mov dx,0x0400;4行,0列
             int 0x10
-
-        ; mov eax,KernelStartSec + KernelSectors
-        ; mov ecx,KernelSectors
-        ; mov ebx,KernelBaseAddress + 0x8000
-        ; call ReadSector
 
     ;设置显示模式
     SetDisplayMode:
@@ -478,7 +476,7 @@ DiskAddressPacket:
         mov byte [gs:((160*6)+18)],'d'
         mov byte [gs:((160*6)+20)],'e'
 
-        jmp 0xc0000000+KernelBaseAddress
+        jmp 0xc0100000
 SetupPage:
     ;1. 先将页目录表所用的内存空间清零
     mov ecx,4096
