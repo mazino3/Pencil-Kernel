@@ -126,7 +126,7 @@ int ta = 0;
 void k_thread_b(void* arg)
 {
     char data;
-    console_str(0x07,"[User]:");
+    console_str(0x07,"\n[User]:");
 
     while(1)
     {

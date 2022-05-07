@@ -8,8 +8,8 @@
 %define __BOOT_HARDDISK__
 
 ;界面,同样只能选一个,同时选择将使用文本界面
-;%define __UI_TEXT__
-%define __UI_GRAPHIC__
+%define __UI_TEXT__
+;%define __UI_GRAPHIC__
 
 
 %ifdef __BOOT_FLOPPY__
@@ -74,9 +74,9 @@ ScrnY       equ 0x7c24 ; + 28 对于文本模式,这是指行数;对于图形模
 KernelStartSec equ 0x48   
 
 ;KernelSectors equ 256         ;Kernel占用128扇区(Max:128)注意:启动时不能超过128(实体机<= 64),不然有重启现象
-;7f00 ~ 9fb00
+;7f00 ~ 87f00
 KernelBlockSize equ 64
-KernelReadLoop equ 18
+KernelReadLoop equ 16
 
 KernelBufAddress equ 0x7f00   ;Kernel临时转存区
 KernelBaseAddress equ 0x7f00  ;Kernel从物理地址0x7F00开始,虚拟地址要加上0xc0000000

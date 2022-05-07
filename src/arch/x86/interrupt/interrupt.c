@@ -8,7 +8,8 @@
 #include "stdint.h"
 #include "timer.h"
 
-struct gate_desc* idt = (struct gate_desc*)0x7f00;         /* idt描述符 */
+// struct gate_desc* idt = (struct gate_desc*)0x87f00;         /* idt描述符 */
+struct gate_desc idt[IDT_DESC_CNT];
 void* idt_table[IDT_DESC_CNT];
 extern void* intr_entry_table[IDT_DESC_CNT];/* interrupt.asm中的中断程序入口地址表 */
 char* intr_name[IDT_DESC_CNT];              /* 保存异常的名字 */
@@ -85,8 +86,8 @@ void init_idt()
 {
     idt_desc_init();
     init_pic();
-    // uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
-    uint64_t idt_ptr = (((sizeof(struct gate_desc) * IDT_DESC_CNT) -1) | ((uint64_t)((0x7f00) << 16)));
+    // uint64_t idt_ptr = (((sizeof(struct gate_desc) * IDT_DESC_CNT) -1) | ((uint64_t)((0x87f00) << 16)));
+    uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
     exception_init();
     __asm__ __volatile__
     (

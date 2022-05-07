@@ -189,29 +189,32 @@ Start:
         mov di,[Lable_KernelReadLoop]  ;内核块数量
         .readloop:
             call ReadSector
+            ;如果要把内核放在1MB以上,请把下面的%if 0 改为 %if 1
+            ;同时要修改kernel.lds (. = 0xc0007f00 改为 . = 0xc0100000).
+            ;还有下面的jmp 0xc0007f00改为0xc0100000
+            %if 0
+                push dx
+                push esi
+                push edi
+                push ecx
 
-            push dx
-            push esi
-            push edi
-            push ecx
-
-            mov ecx,KernelBlockSize * 512
-            mov edi,dword [OffsetOfKernel]
-            mov ax,0
-            mov ds,ax
-            mov esi,0x7f00
-            .mov_kernel:
-                mov al,[ds:esi]
-                mov [fs:edi],al
-                inc esi
-                inc edi
-                loop .mov_kernel
-                mov dword [OffsetOfKernel],edi
-            pop ecx
-            pop edi
-            pop esi
-            pop dx
-
+                mov ecx,KernelBlockSize * 512
+                mov edi,dword [OffsetOfKernel]
+                mov ax,0
+                mov ds,ax
+                mov esi,0x7f00
+                .mov_kernel:
+                    mov al,[ds:esi]
+                    mov [fs:edi],al
+                    inc esi
+                    inc edi
+                    loop .mov_kernel
+                    mov dword [OffsetOfKernel],edi
+                pop ecx
+                pop edi
+                pop esi
+                pop dx
+            %endif
             add eax,KernelBlockSize
             add dx,((512 * KernelBlockSize) >> 4) ;计算内核下次读取的基地址
             mov es,dx
@@ -476,7 +479,7 @@ DiskAddressPacket:
         mov byte [gs:((160*6)+18)],'d'
         mov byte [gs:((160*6)+20)],'e'
 
-        jmp 0xc0100000
+        jmp 0xc0007f00
 SetupPage:
     ;1. 先将页目录表所用的内存空间清零
     mov ecx,4096
