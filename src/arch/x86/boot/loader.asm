@@ -527,10 +527,10 @@ SetupPage:
     %ifdef __UI_GRAPHIC__
         ;为显示缓存区映射
         mov eax,PAGE_DIR_TABLE_POS + 0x1000 ;第一个页表地址
-        add eax,0xfe0 * 0x1000 ;0xfe000000以后16MB为显存
+        add eax,0xe00 * 0x1000 ;0xe0000000以后16MB为显存
         or eax,PG_US_S | PG_RW_W | PG_P
         mov ebx,PAGE_DIR_TABLE_POS
-        mov esi,1016
+        mov esi,896
         mov ecx,4 ;显存占用4个页目录
         .create_vram_pde:
             mov [ebx + esi * 4],eax
@@ -538,7 +538,7 @@ SetupPage:
             inc esi
             loop .create_vram_pde
         
-        mov ebx,PAGE_DIR_TABLE_POS + 0x1000 + 0xfe0 * 0x1000
+        mov ebx,PAGE_DIR_TABLE_POS + 0x1000 + 0xe00 * 0x1000
         mov ecx,4096
         mov esi,0
         mov eax,[Vram_l]

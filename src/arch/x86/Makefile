@@ -20,8 +20,11 @@ BOOT_DIR := boot/
 DEVICE_DIR := device/
 GRAPHIC_DIR := graphic/
 INCLUDE_DIR := include/
+INTERRUPT_DIR := interrupt/
 KERNEL_DIR := kernel/
 LIB_DIR := lib/
+LIBC_DIR := libc/
+MEMORY_DIR := memory/
 THREAD_DIR := thread/
 USERPROG_DIR := userprog/
 
@@ -31,33 +34,34 @@ BOOT := $(BOOT_DIR)boot.bin
 LOADER := $(BOOT_DIR)loader.bin
 
 #obj
-OBJS :=                     \
-$(KERNEL_DIR)debug.co       \
-$(KERNEL_DIR)init.co        \
-$(KERNEL_DIR)interrupt.ao   \
-$(KERNEL_DIR)interrupt.co   \
-$(KERNEL_DIR)memory.co      \
-                            \
-$(THREAD_DIR)sync.co        \
-$(THREAD_DIR)thread.ao      \
-$(THREAD_DIR)thread.co      \
-$(USERPROG_DIR)tss.co       \
-$(USERPROG_DIR)process.co   \
-                            \
-$(DEVICE_DIR)console.co     \
-$(DEVICE_DIR)cpu.co         \
-$(DEVICE_DIR)keyboard.co    \
-$(DEVICE_DIR)time.co        \
-$(DEVICE_DIR)timer.co       \
-                            \
-$(LIB_DIR)bitmap.co         \
-$(LIB_DIR)fifo.co           \
-$(LIB_DIR)font.co           \
-$(LIB_DIR)list.co           \
-$(LIB_DIR)print.co          \
-$(LIB_DIR)string.co         \
-                            \
-$(GRAPHIC_DIR)graphic.co    \
+OBJS :=                      \
+$(KERNEL_DIR)debug.co        \
+$(KERNEL_DIR)init.co         \
+$(INTERRUPT_DIR)interrupt.ao \
+$(INTERRUPT_DIR)interrupt.co \
+$(MEMORY_DIR)memory.co       \
+\
+$(THREAD_DIR)sync.co      \
+$(THREAD_DIR)thread.ao    \
+$(THREAD_DIR)thread.co    \
+$(USERPROG_DIR)tss.co     \
+$(USERPROG_DIR)process.co \
+\
+$(DEVICE_DIR)console.co  \
+$(DEVICE_DIR)cpu.co      \
+$(DEVICE_DIR)keyboard.co \
+$(DEVICE_DIR)time.co     \
+$(DEVICE_DIR)timer.co    \
+\
+$(LIB_DIR)bitmap.co  \
+$(DEVICE_DIR)fifo.co    \
+$(LIB_DIR)font.co    \
+$(LIB_DIR)list.co    \
+$(LIB_DIR)print.co   \
+$(LIBC_DIR)string.co \
+$(LIBC_DIR)stdio.co  \
+\
+$(GRAPHIC_DIR)graphic.co \
 
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
@@ -122,6 +126,12 @@ clean:
 	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.s
 	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.co
 
+	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.ao
+	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.bin
+	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.co
+	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.o
+	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.s
+
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.bin
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.co
@@ -132,6 +142,14 @@ clean:
 	@$(CD) $(LIB_DIR) && $(DELET) *.co
 	@$(CD) $(LIB_DIR) && $(DELET) *.s
 
+	@$(CD) $(LIBC_DIR) && $(DELET) *.ao
+	@$(CD) $(LIBC_DIR) && $(DELET) *.co
+	@$(CD) $(LIBC_DIR) && $(DELET) *.s
+
+	@$(CD) $(MEMORY_DIR) && $(DELET) *.ao
+	@$(CD) $(MEMORY_DIR) && $(DELET) *.co
+	@$(CD) $(MEMORY_DIR) && $(DELET) *.s
+
 	@$(CD) $(USERPROG_DIR) && $(DELET) *.co
 	@$(CD) $(USERPROG_DIR) && $(DELET) *.s
 
@@ -141,8 +159,9 @@ clean:
 	
 #	@$(DELET) $(v_disk).lock
 
-# debug: img
-#	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c -S
+debug: img
+	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
+	@$(BOCHS) -q -f bochsrc.bxrc
 
 # 将文件写入
 img: $(v_disk) $(BOOT) $(LOADER) system
@@ -151,9 +170,9 @@ img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=200 seek=72 conv=notrunc
 
 run: img
-	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
-	@$(BOCHS) -q -f bochsrc.bxrc
-#	@$(TOOL_DIR)qemu-new\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
+#	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
+#	@$(BOCHS) -q -f bochsrc.bxrc
+	@$(TOOL_DIR)qemu\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
 	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds

@@ -44,7 +44,10 @@ debugger_log: -
 magic_break: enabled=0
 port_e9_hack: enabled=0
 private_colormap: enabled=0
-clock: sync=none, time0=local, rtc_sync=0
+
+# sync=realtime rtc_sync=true:使用实时时间(default: sync=done,rtc_sync=0)
+clock: sync=realtime, time0=local, rtc_sync=1
+
 # no cmosimage
 log: -
 logprefix: %t%e%d

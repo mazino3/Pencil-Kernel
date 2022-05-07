@@ -6,7 +6,7 @@
 #include "io.h"
 #include "thread.h"
 
-int ticks = 0;
+volatile int ticks = 0;
 int i = 0;
 void init_pit(void)
 {

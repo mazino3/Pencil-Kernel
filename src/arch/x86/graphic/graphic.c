@@ -41,7 +41,7 @@ void init_screen(struct Window* scrn)
     if(DisplayMode == _GRAPHIC)
     {
         int offset = 3;
-        init_Rectangle(&(scrn->win),(uint32_t*)0xfe000000,ScrnX,ScrnY,0,0);
+        init_Rectangle(&(scrn->win),(uint32_t*)0xe0000000,ScrnX,ScrnY,0,0);
         RectangleFill(&(scrn->win),0x00008484,0,0,ScrnX - 1,ScrnY - 1 - 50);
         /* 底部的任务栏 */
         RectangleFill(&(scrn->win),0x00c6c6c6,0,ScrnY - 1 - 50,ScrnX - 1,ScrnY - 1);
@@ -90,7 +90,7 @@ void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,char
     {
         put_char_graphic(rectangle,x,y,color,*str);
         str++;
-        x+=10;
+        x+=8;
     }
     
     return;

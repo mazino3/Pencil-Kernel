@@ -10,6 +10,7 @@
 #include "memory.h"
 #include "print.h"
 #include "process.h"
+#include "stdio.h"
 #include "string.h"
 #include "thread.h"
 #include "time.h"
@@ -52,43 +53,73 @@ void kernel_main(void)
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
 }
 
+extern volatile int ticks;
 void k_thread_a(void* arg)
 {
-    struct TIME time;
-    char buf[6];
-    uint32_t i = 0x00000000;
-    int min;
-    int time_y = ScrnY - 1 - 33;
+    struct TIME startTime; /* 启动时从CMOS获取的BCD时间 */
+    struct TIME time;  /* 十进制表示的现实时间 */
+    get_time(&startTime);
+    int old_tickes = ticks;
+    /* BCD转10进制 */
+    time.second = (startTime.second & 0x0f) + ((startTime.second >> 4) & 0x0f) * 10;
+    time.minuet = (startTime.minuet & 0x0f) + ((startTime.minuet >> 4) & 0x0f) * 10;
+    time.hour = (startTime.hour & 0x0f) + ((startTime.hour >> 4) & 0x0f) * 10;
+    time.day = (startTime.day & 0x0f) + ((startTime.day >> 4) & 0x0f) * 10;
+    time.month = (startTime.month & 0x0f) + ((startTime.month >> 4) & 0x0f) * 10;
+    time.year = (startTime.year & 0x000f) + ((startTime.year >> 4) & 0x000f) * 10 + ((startTime.year >> 8) & 0x000f) * 100 + ((startTime.year >> 12) & 0x000f) * 1000;
+    char str[32];
     int offset = 3;
-    get_time(&time);
+    RectangleFill(&(Screen.win), 0x00848484,ScrnX - 182 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
+    RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 182,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
     while(1)
     {
-        min = time.minuet;
-        RectangleFill(&(Screen.win), 0x00848484,ScrnX - 182 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
-        RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 182,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
-        
-        itoa(time.year,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 172,time_y,0x00000000,buf);
-        put_char_graphic(&(Screen.win), ScrnX - 132,time_y,i,'/');
-
-        itoa(time.month,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 122,time_y,0x00000000,buf);
-        put_char_graphic(&(Screen.win), ScrnX - 102,time_y,i,'/');
-
-        itoa(time.day,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 92,time_y,0x00000000,buf);
-        put_char_graphic(&(Screen.win), ScrnX - 72,time_y,i,'|');
-
-        itoa(time.hour,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 62,time_y,0x00000000,buf);
-        put_char_graphic(&(Screen.win), ScrnX - 42,time_y,i,':');
-
-        itoa(time.minuet,buf,16);
-        put_str_graphic(&(Screen.win), ScrnX - 32,time_y,0x00000000,buf);
-        while(time.minuet == min) /* 时间发生变化时再刷新 */
+        sprintf(str,"%04d/%02d/%02d %02d:%02d:%02d",time.year,time.month,time.day,time.hour,time.minuet,time.second);
+        RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 172,ScrnY - 1 - 33,ScrnX - 10,ScrnY - 1 - 17);
+        put_str_graphic(&(Screen.win),ScrnX - 172,ScrnY - 1 - 33,0x00000000,str);
+        while(ticks <= old_tickes + 100) /* 时间发生变化时再刷新 */
         {
-            get_time(&time);
+            ;
         }
+        old_tickes += 100;
+        /* 时间步进 */
+        (++time.second > 59 ? time.second = 0 || time.minuet++ : 0);
+        (time.minuet > 59 ? time.minuet = 0 || time.hour++ : 0);
+        (time.hour > 24 ? time.hour = 0 || time.day++ : 0);
+        /* 天的步进要看月份 */
+        switch(time.month)
+        {
+            /* 小月 */
+            case 4:
+            case 6:
+            case 9:
+            case 11:
+                (time.day > 30 ? time.day = 1 || time.month++ : 0);
+                break;
+            /* 大月 */
+            case 1:
+            case 3:
+            case 5:
+            case 7:
+            case 8:
+            case 10:
+            case 12:
+                (time.day > 31 ? time.day = 1 || time.month++ : 0);
+                break;
+            case 2:
+                /* 如果是二月,还要判断是否是闰年 */
+                /* 闰年:能被4整除,但不能被100整除 */
+                /* 能被400整除 */
+                if((time.year % 4 == 0 && time.year% 100 != 0) || (time.year % 400 == 0))
+                {
+                    (time.day > 29 ? time.day = 1 || time.month++ : 0);
+                }
+                else
+                {
+                    (time.day > 28 ? time.day = 1 || time.month++ : 0);
+                }
+                break;
+        }
+        (time.month > 12 ? time.month = 1 || time.year++ : 0);
     }
 }
 int ta = 0;
