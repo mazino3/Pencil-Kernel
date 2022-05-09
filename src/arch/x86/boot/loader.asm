@@ -307,6 +307,13 @@ Start:
                 mov dword [Vram_h],0
                 jmp .set_display_mode_next
         %endif
+
+VedioModeListLen equ 3
+VedioModeList:
+    dw 0x143
+    dw 0x140
+    dw 0x180
+
     .set_display_mode_next:
         ;要向内核传递的其他参数
         mov eax,0
