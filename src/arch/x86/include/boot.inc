@@ -8,8 +8,8 @@
 %define __BOOT_HARDDISK__
 
 ;界面,同样只能选一个,同时选择将使用文本界面
-%define __UI_TEXT__
-;%define __UI_GRAPHIC__
+;%define __UI_TEXT__
+%define __UI_GRAPHIC__
 
 
 %ifdef __BOOT_FLOPPY__
@@ -33,7 +33,7 @@ DrvNum equ 0x7b00
     ;0x18c,2560 * 1600
     ;这里挑3个来尝试,总会有一个可以的吧?
         VBE_MODE1 equ 0x143 ;首选模式号
-        VBE_MODE2 equ 0x142 ;备选号1
+        VBE_MODE2 equ 0x118 ;备选号1
         VBE_MODE3 equ 0x140 ;备选号2
 %endif
 

@@ -257,27 +257,19 @@ Start:
             cmp ax,0x0200
             jb .vbe_version_too_old ;如果ax小于0x0200,跳转到.vbe_version_too_old
             ;设置VBE模式
-            ;打算尝试三种显示模式,都失败的话只能进入文本模式
-            .try_Mode1:
-                mov cx,VBE_MODE1
+            mov ebx,VideoModeList
+            mov esi,0
+            .retry:
+                cmp si,VideoModeListLen
+                je .err
+                mov cx,word [ebx + esi * 2]
+                inc esi
                 call Checking_VBE_Mode
-                jcxz .try_Mode2 ;jcxz: jump if cx is zero?,cx等于0则跳转
+                jcxz .retry ;jcxz: jump if cx is zero?,cx等于0则跳转
                 ;VBE模式切换
-                mov bx,VBE_MODE1 + 0x4000 ;0x4000:使用线性帧缓存区
-                jmp .set_vbe_mode
-            .try_Mode2:
-                mov cx,VBE_MODE2
-                call Checking_VBE_Mode
-                jcxz .try_Mode3
-                ;VBE模式切换
-                mov bx,VBE_MODE2 + 0x4000 ;0x4000:使用线性帧缓存区
-                jmp .set_vbe_mode
-            .try_Mode3:
-                mov cx,VBE_MODE3
-                call Checking_VBE_Mode
-                jcxz .err
-                ;VBE模式切换
-                mov bx,VBE_MODE3 + 0x4000 ;0x4000:使用线性帧缓存区
+                mov bx,cx
+                add bx,0x4000 ;0x4000:使用线性帧缓存区
+                
                 jmp .set_vbe_mode
             ;所有显示模式相关的错误都会到这里
             .without_vbe:
@@ -307,7 +299,9 @@ Start:
                 mov dword [Vram_h],0
                 jmp .set_display_mode_next
         %endif
-    .set_display_mode_next:
+        jmp .set_display_mode_next
+        .set_display_mode_next:
+    
         ;要向内核传递的其他参数
         mov eax,0
         mov byte al,[0x475]
@@ -426,6 +420,13 @@ DiskAddressPacket:
     dw 0    ;+ 6 传送缓冲区基地址   (buf(seg))
     dq 0    ;+ 8 扇区起始号(LBA模式)(Start Sector number(LBA mode))
     dq 0    ;+10 64位缓冲区地址拓展 (未始用)(64-bit buffer address extension(unusing))
+
+VideoModeList:
+    dw 000
+    dw 0x143
+    dw 0x140
+    dw 0x118
+VideoModeListLen equ ($ - VideoModeList)/2
 
 [bits 32]
 

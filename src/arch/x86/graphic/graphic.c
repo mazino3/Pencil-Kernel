@@ -98,6 +98,7 @@ void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,char
                 break;
             default:
                 put_char_graphic(rectangle,pos_x,pos_y,color,*str);
+                pos_x+= 8;
                 break;
         }
         str++;
