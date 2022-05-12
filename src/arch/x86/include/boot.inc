@@ -61,10 +61,11 @@ TotalMem_h    equ 0x7c0c ; +  4 总内存容量高32位(对于32位系统,这个
 DiskCnt       equ 0x7c10 ; +  8 磁盘数量
 ;显示相关
 DisplayMode equ 0x7c14 ; + 12 显示模式(文本(0)或图形(1))
-Vram_l      equ 0x7c18 ; + 16 显存地址低32位
-Vram_h      equ 0x7c1c ; + 20 显存地址高32位(对于32位系统,这个值没有意义)
-ScrnX       equ 0x7c20 ; + 24 对于文本模式,这是指列数;对于图形模式,这是指x轴方向上的像素数
-ScrnY       equ 0x7c24 ; + 28 对于文本模式,这是指行数;对于图形模式,这是指y轴方向上的像素数
+VideoMode   equ 0x7c18
+Vram_l      equ 0x7c1c ; + 16 显存地址低32位
+Vram_h      equ 0x7c20 ; + 20 显存地址高32位(对于32位系统,这个值没有意义)
+ScrnX       equ 0x7c24 ; + 24 对于文本模式,这是指列数;对于图形模式,这是指x轴方向上的像素数
+ScrnY       equ 0x7c28 ; + 28 对于文本模式,这是指行数;对于图形模式,这是指y轴方向上的像素数
 
 
 ; %ifdef __BOOT_FLOPPY__

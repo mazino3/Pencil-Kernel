@@ -48,8 +48,11 @@ VideoModeList:
     dw 0x144
     dw 0x142
     dw 0x140
+    dw 0x11b
+    dw 0x11a
+    dw 0x119
     dw 0x118
-VideoModeListEnd equ ($ - VideoModeList)
+VideoModeListEnd equ $
 
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处
 
@@ -269,6 +272,7 @@ Start:
             jb .vbe_version_too_old ;如果ax小于0x0200,跳转到.vbe_version_too_old
             ;设置VBE模式
             mov esi,VideoModeList
+            mov ecx,0
             .retry:
                 cmp si,VideoModeListEnd
                 je .err
@@ -277,6 +281,7 @@ Start:
                 call Checking_VBE_Mode
                 jcxz .retry ;jcxz: jump if cx is zero?,cx等于0则跳转
                 ;VBE模式切换
+                mov dword [VideoMode],ecx
                 mov bx,cx
                 add bx,0x4000 ;0x4000:使用线性帧缓存区
                 jmp .set_vbe_mode

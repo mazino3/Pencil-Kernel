@@ -93,10 +93,11 @@ struct SEGMDESC
 #define DiskCnt    (*((uint32_t*)(0x7c00 + 0x010)))
 /* 显示相关 */
 #define DisplayMode (*((uint32_t*)(0x7c00 + 0x014)))
-#define Vram_l      (*((uint32_t*)(0x7c00 + 0x018)))
-#define Vram_h      (*((uint32_t*)(0x7c00 + 0x01c)))
-#define ScrnX       (*((uint32_t*)(0x7c00 + 0x020)))
-#define ScrnY       (*((uint32_t*)(0x7c00 + 0x024)))
+#define VideoMode   (*((uint32_t*)(0x7c00 + 0x018)))
+#define Vram_l      (*((uint32_t*)(0x7c00 + 0x01c)))
+#define Vram_h      (*((uint32_t*)(0x7c00 + 0x020)))
+#define ScrnX       (*((uint32_t*)(0x7c00 + 0x024)))
+#define ScrnY       (*((uint32_t*)(0x7c00 + 0x028)))
 
 /* 参数的取值 */
 enum Display

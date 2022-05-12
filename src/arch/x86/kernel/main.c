@@ -7,6 +7,7 @@
 #include "init.h"
 #include "interrupt.h"
 #include "io.h"
+#include "keyboard.h"
 #include "memory.h"
 #include "print.h"
 #include "process.h"
@@ -25,6 +26,7 @@ void u_prog_a(void);
 void kernel_main(void)
 {
     int i;
+    char str[64];
     for(i = 0;i < 35;i++)
     {
         put_char(0x07,'\n');
@@ -40,6 +42,8 @@ void kernel_main(void)
     console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
 
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
+    sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d", VideoMode, ScrnX, ScrnY);
+    put_str_graphic(&(Screen.win), 20, 36, 0x00ffffff, str);
     // put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
@@ -82,7 +86,8 @@ void k_thread_a(void* arg)
         }
         old_tickes += 100;
         /* 时间步进 */
-        (++time.second > 59 ? time.second = 0 || time.minuet++ : 0);
+        time.second++;
+        (time.second > 59 ? time.second = 0 || time.minuet++ : 0);
         (time.minuet > 59 ? time.minuet = 0 || time.hour++ : 0);
         (time.hour > 24 ? time.hour = 0 || time.day++ : 0);
         /* 天的步进要看月份 */
@@ -127,15 +132,21 @@ void k_thread_b(void* arg)
 {
     char data;
     console_str(0x07,"\n[User]:");
-
+    int pos_x = 20;
+    int pos_y = 100;
     while(1)
     {
         if(!fifo_empty(&keybuf))
         {
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
-            RectangleFill(&(Screen.win),0x00848484,10,30,18,46);
-            put_char_graphic(&(Screen.win),10,30,0x00ffffff,data);
+            put_char_graphic(&(Screen.win),pos_x,pos_y,0x00ffffff,data);
+            pos_x += 8;
+            if (data == enter)
+            {
+             pos_x = 20;
+             pos_y += 16;
+            }
         }
         // console_int(0x70,ta,10);
         // console_str(0x07," ");
