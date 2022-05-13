@@ -60,7 +60,7 @@ Start:
             je .err
             cmp byte [ebx + 0],0x80
             jnz .fail ;不是活动分区
-            mov eax,[part1 + 8] ;分区起始lba扇区号
+            mov eax,[ebx + 8] ;分区起始lba扇区号
             jmp .load_boot
             .fail:
                 add ebx,0x10 ;下一个分区表项
