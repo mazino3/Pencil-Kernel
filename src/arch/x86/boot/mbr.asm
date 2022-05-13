@@ -11,7 +11,7 @@
 section .text
 [bits 16]
 Start:
-    mov byte [BootDrv],di
+    mov byte [BootDrv],dl ;保存dl中的驱动器号,为读取磁盘做准备
     ;初始化寄存器 (Initialize registers)
     mov ax,cs
     mov ds,ax
@@ -31,15 +31,15 @@ Start:
     rep movsw ;从ds:si复制一个字(word)到es:di,复制次数:cx的值
              ;每次复制后,si和di的值会对应数据大小增加(df位为1时会减小)
         mov bp,Msg
-        mov cx,3      ;3个字符 (chars:3)
+        mov cx,MsgLen
         mov ax,0x1301
         mov bx,0x0007 ;第0页,黑底白字 (Page:0,Background color:black)
         mov dx,0x0000 ;行,列 (row and col)
         int 0x10
 
-    jmp 0x700:next
+    jmp 0x700:next ;跳转到移动后的mbr
     next: ;这里就是复制到0x7000后的mbr了
-        mov ax,cs
+        mov ax,cs ;cs理应为0x700
         mov ds,ax ;向ds载入段值
         mov es,ax
         mov ss,ax
@@ -78,7 +78,7 @@ Start:
             mov bx,0
             mov dl,byte [BootDrv]
             call ReadSector
-            mov dl, byte [BootDrv]
+            mov dl,byte [BootDrv] ;给boot传递驱动器号
             jmp 0x07c0:0x0000
 
 ;Function: ReadSector
@@ -161,6 +161,7 @@ DiskAddressPacket:
     dq 0    ;+10 64位缓冲区地址拓展 (未始用)(64-bit buffer address extension(unusing))
 
 Msg db "MBR"
+MsgLen equ ($ - Msg)
 times 446 - ($ - $$) db 0
 ;硬盘分区表
 part1:
