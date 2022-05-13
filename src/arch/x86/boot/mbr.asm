@@ -4,13 +4,14 @@
 
 ;大致的执行过程:
 ; 1. 初始化寄存器
-; 2. 把自己搬到0x7f00地址处,并跳过去执行(搬到哪无所谓,主要是腾出0x7c00~0x7dff这512字节)
+; 2. 把自己搬到0x7000地址处,并跳过去执行(搬到哪无所谓,主要是腾出0x7c00~0x7dff这512字节)
 ; 3. 寻找可引导分区,把分区前512字节加载到0x7c00地址处
 ; 4. 跳转到0x7c00,mbr结束
 
-org 0x7c00
+section .text
 [bits 16]
 Start:
+    mov byte [BootDrv],di
     ;初始化寄存器 (Initialize registers)
     mov ax,cs
     mov ds,ax
@@ -18,10 +19,10 @@ Start:
     mov ss,ax
     mov fs,ax
     mov sp,0x7f00
-    ;2.把自己搬到0x7f00地址处 
+    ;2.把自己搬到0x7000地址处 
     mov ax,0x7c0
     mov ds,ax
-    mov ax,0x7f0
+    mov ax,0x700
     mov es,ax
     mov cx,256
     mov di,0
@@ -36,10 +37,8 @@ Start:
         mov dx,0x0000 ;行,列 (row and col)
         int 0x10
 
-    jmp next
-Go equ $
-org 0x7f00 + Go
-    next: ;这里就是复制到0x7f00后的mbr了
+    jmp 0x700:next
+    next: ;这里就是复制到0x7000后的mbr了
         mov ax,cs
         mov ds,ax ;向ds载入段值
         mov es,ax
@@ -54,27 +53,32 @@ org 0x7f00 + Go
         int 0x10
 
         ;接下来要寻找活动分区
-        ;只管第一分区
-        .check_part1:
-            cmp byte [part1 + 0],0x80
-            jnz .part2 ;第一分区不是活动分区,看看第二分区
-            cmp byte [part1 + 4],0x95 ;分区类型,0x95是EPFS
-            jnz .part2 ;第一分区不是EPFS,看看第二分区
-            ;到了这里,就说明第一分区可引导,马上加载引导程序
+        ;以bx作为变址进行寻址
+        mov ebx,part1 ;向ebx带入part1的值
+        .retry:
+            cmp ebx,End
+            je .err
+            cmp byte [ebx + 0],0x80
+            jnz .fail ;不是活动分区
             mov eax,[part1 + 8] ;分区起始lba扇区号
             jmp .load_boot
-        .check_part2:;暂时不管第二分区
+            .fail:
+                add ebx,0x10 ;下一个分区表项
+                jmp .retry
+            .err:
             mov ax,0xb800
             mov gs,ax
-        mov byte [gs: 0x00],'E'
-        mov byte [gs: 0x01],0x04
+            mov byte [gs: 0x00],'E'
+            mov byte [gs: 0x01],0x04
             jmp $
         .load_boot
             mov cx,1 ;1扇区
             mov bx,0x7c0
             mov es,bx
             mov bx,0
+            mov dl,byte [BootDrv]
             call ReadSector
+            mov dl, byte [BootDrv]
             jmp 0x07c0:0x0000
 
 ;Function: ReadSector
@@ -142,7 +146,11 @@ ReadSector:
         ret
     %endif
 
+section .data
 align 4
+
+BootDrv db 0
+
 DiskAddressPacket:
     db 0x10 ;+ 0 硬盘地址包大小     (Size of DiskAddressPacket(bytes))
     db 0    ;+ 1 保留,必须为0       (Reserved,must be 0)
@@ -167,4 +175,5 @@ part1:
     dd 0x3f
     dd ((64*1024*1024)/512) - 0x3f ;分区大小
 times 510 - ($ - $$) db 0;这段空间会被硬盘分区表填充
+End equ $
 db 0x55,0xaa
