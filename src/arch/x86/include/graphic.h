@@ -7,6 +7,8 @@
 #define rgb(R,G,B) ((uint32_t)(0x00000000 |( R << 16 | G << 8 | B << 0 )))
 #define rgba(R,G,B,A) ((uint32_t)(0x00000000 |( A << 24 | R << 16 | G << 8 | B << 0 )))
 
+typedef uint32_t pixel_t;
+
 /* Rectangle
 * 长方形,矩形
 */
