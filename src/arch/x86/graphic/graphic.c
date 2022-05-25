@@ -84,7 +84,7 @@ void put_char_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,cha
     return;
 }
 
-void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,char* str)
+void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,const char* str)
 {
     int pos_x = x;
     int pos_y = y;

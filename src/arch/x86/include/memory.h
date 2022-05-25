@@ -53,7 +53,7 @@ void init_memman(struct MEMMAN* memman,struct MEMINFO* free);
 uint32_t TotalFreeSize(struct MEMMAN* memman);
 void* mem_alloc(struct MEMMAN* memman,uint32_t size);
 void* mem_alloc_page(struct MEMMAN* memman,uint32_t size);
-int mem_free(struct MEMMAN* memman,void* addr,uint32_t size);
+int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size);
 int mem_free_page(struct MEMMAN* memman,void* addr,uint32_t size);
 void* pde_ptr(void* vaddr);
 void* pte_ptr(void* vaddr);

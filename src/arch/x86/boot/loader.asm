@@ -43,7 +43,16 @@ OffsetOfKernel dd 0x100000
 ;Vbe 模式号列表
 VideoModeList:
     dw 0x143
-    dw 0x18c
+    ; 2560 * 1600
+    ; dw 0x18b
+    ; dw 0x18c
+    ; 1920 * 1200
+    ; dw 0x188
+    ; dw 0x189
+    ; 1920 * 1080
+    dw 0x191
+    dw 0x192
+
     dw 0x145
     dw 0x144
     dw 0x142

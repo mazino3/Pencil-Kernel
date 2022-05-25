@@ -95,7 +95,7 @@ uint32_t TotalFreeSize(struct MEMMAN* memman)
 
 void* mem_alloc(struct MEMMAN* memman,uint32_t size)
 {
-    void* addr;
+    ptr_t addr;
     int i;
     int j;
     /* 遍历所有内存使用信息,找到合适的大小 */
@@ -120,7 +120,7 @@ void* mem_alloc(struct MEMMAN* memman,uint32_t size)
                     memman->free[j] = memman->free[j + 1];
                 }
             }
-            return addr;
+            return (void*)addr;
         }
     }
     return NULL;
@@ -135,11 +135,12 @@ void* mem_alloc_page(struct MEMMAN* memman,uint32_t page_count)
     return addr;
 }
 
-int mem_free(struct MEMMAN* memman,void* addr,uint32_t size)
+int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size)
 {
     int i;
     int j;
     int k;
+    ptr_t addr = (ptr_t)paddr;
     /* 寻找memman->free[i],使memman->free[i - 1].addr < addr < free[i].addr */
     for(i = 0;i < (memman->frees);i++)
     {
