@@ -9,6 +9,25 @@
 
 typedef uint32_t pixel_t;
 
+struct viewBlock
+{
+    struct list_elem tag;
+    pixel_t* buf;
+    int x;
+    int y;
+    uint32_t xsize;
+    uint32_t ysize;
+};
+
+struct viewCtl
+{
+    struct list views;
+    pixel_t* vram;
+    int xsize;
+    int ysize;
+    ptr_t* map;
+};
+
 /* Rectangle
 * 长方形,矩形
 */

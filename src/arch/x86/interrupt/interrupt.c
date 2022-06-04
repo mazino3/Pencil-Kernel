@@ -6,6 +6,7 @@
 #include "keyboard.h"
 #include "print.h"
 #include "stdint.h"
+#include "stdio.h"
 #include "timer.h"
 
 // struct gate_desc* idt = (struct gate_desc*)0x87f00;         /* idt描述符 */
@@ -144,8 +145,8 @@ void general_intr_handler(uint8_t vector_nr)
     put_str(0x17,"\n CPU :");
     cpu_info();
     /* 图形界面的handler */
-    RectangleFill(&(Screen.win),0x000000ff,0,0,ScrnX - 1,ScrnY - 1);
-    put_str_graphic(&(Screen.win),10,10,0x00ffffff,
+    RectangleFill(&(Screen.win),rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
+    put_str_graphic(&(Screen.win),10,10,rgb(255,255,255),
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer.\n"
     "If this screen appers again,follow these steps:\n"
@@ -156,12 +157,12 @@ void general_intr_handler(uint8_t vector_nr)
     put_str_graphic(&(Screen.win),10,106,0x00ffffff,str);
     if(vector_nr >= 0 && vector_nr < 20)
     {
-        put_str_graphic(&(Screen.win),10,122,0x00ff00ff,intr_name[vector_nr]);
+        put_str_graphic(&(Screen.win),10,122,rgb(255,0,255),intr_name[vector_nr]);
     }
     if(vector_nr == 14)
     {
-        sprintf(str,"( Fault address: 0x%08x )",page_fault_vaddr);
-        put_str_graphic(&(Screen.win),10,138,0x00ffffff,str);
+        sprintf(str,"( Fault address: %p )",page_fault_vaddr);
+        put_str_graphic(&(Screen.win),10,138,rgb(255,255,255),str);
 
     }
     while(1)

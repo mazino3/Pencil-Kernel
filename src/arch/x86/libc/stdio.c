@@ -89,6 +89,11 @@ int vsprintf(char* buf,const char* fmt,va_list ap)
         case 'o': /* %o */
             itoa(va_arg(ap,int),digits,8);
             break;
+        case 'p':
+            digits[0] = '0';
+            digits[1] = 'x';
+            utoa((ptr_t)va_arg(ap,void*),digits+2,16);
+            break;
         case 's': /* %s */
             s = va_arg(ap,char*);
             strcpy(str,s);
