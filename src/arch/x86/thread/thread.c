@@ -155,6 +155,16 @@ void schedule()
     return;
 }
 
+__asm__ __volatile__
+(
+    "_switch_to:"
+    "push esi;"
+    "push edi;"
+    "push ebx;"
+    "push ebp;"
+    "movl 14(%%esp),%%eax;"
+);
+
 void thread_block(enum task_status status)
 {
     ASSERT(status != TASK_RUNNING && status != TASK_READY);
