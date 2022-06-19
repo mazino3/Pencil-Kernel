@@ -158,11 +158,19 @@ void schedule()
 __asm__ __volatile__
 (
     "_switch_to:"
-    "push esi;"
-    "push edi;"
-    "push ebx;"
-    "push ebp;"
-    "movl 14(%%esp),%%eax;"
+    "push %%esi;"
+    "push %%edi;"
+    "push %%ebx;"
+    "push %%ebp;"
+    "movl 20(%%esp),%%eax;"
+    "movl %%esp,(%%eax);"
+    "movl 24(%%esp),%%eax;"
+    "movl (%%eax),%%esp;"
+    "popl %%ebp;"
+    "popl %%ebx;"
+    "popl %%edi;"
+    "popl %%esi;"
+    "ret"
 );
 
 void thread_block(enum task_status status)
