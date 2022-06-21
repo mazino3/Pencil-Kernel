@@ -154,7 +154,8 @@ void schedule()
     switch_to(cur_thread,next);
     return;
 }
-/* void _switch_to(struct thread_struct* current,struct thread_struct* next)
+
+/* void _switch_to(struct thread_struct* current,struct thread_struct* next) */
 __asm__ __volatile__
 (
     "_switch_to:"
