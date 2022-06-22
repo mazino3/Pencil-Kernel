@@ -534,7 +534,6 @@ SetupPage:
     or eax,PG_US_U | PG_RW_W | PG_P
     mov ebx,PAGE_DIR_TABLE_POS
     mov ecx,254 ;769~1022的页目录项指向内核,共254页.(1023页目录指向页表本身)
-    ;mov ecx,247
     mov esi,769 ;从769也就是0xc00开始
     .create_kernel_pde:
         mov [ebx + esi * 4],eax

@@ -33,7 +33,8 @@ void init_pic();
 void idt_desc_init(void);
 void set_gatedesc(struct gate_desc* gd,void* func,int selector,int ar);
 void init_idt();
-void general_intr_handler(uint8_t vector_nr);
+//void general_intr_handler(uint8_t vector_nr);
+void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t ebp,uint32_t esp,uint32_t ebx,uint32_t edx,uint32_t ecx,uint32_t eax,uint32_t gs,uint32_t fs,uint32_t es,uint32_t ds,uint32_t errorcode,uint32_t eip,uint32_t cs);
 void exception_init();
 void register_handler(int vector_no,void* func);
 
@@ -41,7 +42,5 @@ enum intr_status intr_enable();
 enum intr_status intr_disable();
 enum intr_status intr_set_status(enum intr_status status);
 enum intr_status intr_get_status();
-
-extern void asm_intr0x20_handler();
 
 #endif /* __INTERRUPT_H__ */

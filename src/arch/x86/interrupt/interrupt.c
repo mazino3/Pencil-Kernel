@@ -104,9 +104,9 @@ void init_idt()
 * 功能:通用的中断处理函数
 * vector_nr :中断号,由interrupt.asm中的对应函数压入栈中
 */
-void general_intr_handler(uint8_t vector_nr)
+void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t ebp,uint32_t esp,uint32_t ebx,uint32_t edx,uint32_t ecx,uint32_t eax,uint32_t gs,uint32_t fs,uint32_t es,uint32_t ds,uint32_t errorcode,uint32_t eip,uint32_t cs)
 {
-    char str[64];
+    char str[255];
     intr_disable();
     set_cursor(0);
     int i;
@@ -119,13 +119,10 @@ void general_intr_handler(uint8_t vector_nr)
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer."
     "If this screen appers again,follow these steps:\n"
-    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
+    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
     );
-    put_str(0x17,"\n ");
-    put_str(0x17,PKn_Version);
-    put_str(0x17,"\n intr: 0x");
-    put_int(0x17,vector_nr,16);
-    put_str(0x17,"\n ");
+    sprintf(str," %s\n intr: 0x%02x\n CS:EIP  0x%x:%08p\n",PKn_Version,vector_nr,cs,eip);
+    put_str(0x17,str);
     if(vector_nr >= 0 && vector_nr < 20)
     {
         put_str(0x17,intr_name[vector_nr]);
@@ -150,7 +147,7 @@ void general_intr_handler(uint8_t vector_nr)
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer.\n"
     "If this screen appers again,follow these steps:\n"
-    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on bochs or other virtual machine.\n"
+    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
     );
     put_str_graphic(&(Screen.win),10,90,0x00ffffff,PKn_Version);
     sprintf(str,"intr: 0x%02x",vector_nr);

@@ -42,7 +42,6 @@ $(INTERRUPT_DIR)interrupt.co \
 $(MEMORY_DIR)memory.co       \
 \
 $(THREAD_DIR)sync.co      \
-$(THREAD_DIR)thread.ao    \
 $(THREAD_DIR)thread.co    \
 $(USERPROG_DIR)tss.co     \
 $(USERPROG_DIR)process.co \
@@ -95,14 +94,14 @@ MAKE_DIR := md
 # -fno-strict-aliasing: 禁用严格别名规则
 # -m32: 编译32位代码
 # -Os: 启用优化,优化等级介于-O2和-O3之间
-# -quiet: 不显示多余的信息?
+# -quiet: 不显示多余的信息
 # -Wall: 发出警告
 
 # as参数说明:
 # --32: 编译为32位文件
 
 %.co: %.c Makefile
-	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -m32 -Os -quiet -Wall  -o $*.s $*.c
+	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 -m32 -Os -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
 $(v_disk): vhd.asm
@@ -163,11 +162,13 @@ debug: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
 	@$(BOCHS) -q -f bochsrc.bxrc
 
+dump:
+	..\..\..\tools\objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 # 将文件写入
 img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
-	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=200 seek=72 conv=notrunc
+	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=1000 seek=72 conv=notrunc
 
 run: img
 #	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)

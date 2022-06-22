@@ -10,13 +10,13 @@ intr_entry_table:
 section .text
     global asm_intr%1_handler
     asm_intr%1_handler:
-        %2
+        %2          ;错误码
         push ds
         push es
         push fs
         push gs
         pushad
-        push %1
+        push %1 ;中断号
         mov ax,ss
         mov ds,ax
         mov es,ax
@@ -35,7 +35,7 @@ section .text
         pop fs
         pop es
         pop ds
-        add esp,4
+        add esp,4 ;跳过错误码
         iretd
 
 VECTOR 0x00,push 0

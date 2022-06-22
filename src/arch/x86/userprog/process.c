@@ -26,9 +26,9 @@ void start_process(void* process_name)
     proc_stack->ecx = 0;
     proc_stack->eax = 0;
     proc_stack->gs = 0;
-    proc_stack->ds = SelectorData32_U;
-    proc_stack->es = SelectorData32_U;
     proc_stack->fs = SelectorData32_U;
+    proc_stack->es = SelectorData32_U;
+    proc_stack->ds = SelectorData32_U;
     proc_stack->eip = func;
     proc_stack->cs = SelectorCode32_U;
     proc_stack->eflags = (EFLAGS_IOPL_0 | EFLAGS_MBS | EFLAGS_IF_1);
@@ -42,9 +42,11 @@ void start_process(void* process_name)
 */
 void page_dir_activate(struct task_struct* pthread)
 {
-    ASSERT(pthread->page_dir != NULL);
-    uint32_t page_dir_table_pos;
-    page_dir_table_pos = (uint32_t)addr_v2p(pthread->page_dir);
+    uint32_t page_dir_table_pos = KERNEL_PAGE_DIR_TABLE_POS;
+    if(pthread->page_dir != NULL)
+    {
+        page_dir_table_pos = addr_v2p(pthread->page_dir);
+    }
     __asm__ __volatile__
     (
         "movl %0,%%cr3"
@@ -80,7 +82,7 @@ uint32_t* create_page_dir(void)
         console_str(0x04,"create_page_dir: get kernel page failed!\n");
         return NULL;
     }
-    memcpy(((uint32_t*)(pgdir_v + 0x300)),((uint32_t*)(0xfffff000 + 0x300 * 4)),1024); // 这里导致PG异常
+    memcpy(((uint32_t*)((uint32_t)pgdir_v + 0x300 * 4)),((uint32_t*)(0xfffff000 + 0x300 * 4)),1024); // 这里导致PG异常
     uint32_t pgdir_p = (uint32_t)addr_v2p(pgdir_v);
     pgdir_v[1023] = (pgdir_p | PG_US_U | PG_RW_W | PG_P);
     return pgdir_v;
@@ -92,7 +94,6 @@ uint32_t* create_page_dir(void)
 void create_user_vaddr_memman(struct task_struct* user_prog)
 {
     init_memman(&(user_prog->prog_vaddr),get_kernel_page(DIV_ROUND_UP(MEMMAN_MAX * sizeof(struct MEMINFO),PG_SIZE)));
-    // memman_free(&(user_prog->prog_vaddr),)
     return;
 }
 

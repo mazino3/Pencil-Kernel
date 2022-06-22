@@ -127,7 +127,7 @@ void k_thread_a(void* arg)
         (time.month > 12 ? time.month = 1 || time.year++ : 0);
     }
 }
-int ta = 0;
+volatile int ta = 0;
 void k_thread_b(void* arg)
 {
     char data;

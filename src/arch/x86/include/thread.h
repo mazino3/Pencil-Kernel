@@ -98,7 +98,7 @@ void kernel_thread(thread_function* func,void* arg);
 void thread_create(struct task_struct* thread,thread_function func,void* arg);
 struct task_struct* thread_start(char* name,uint8_t priority,thread_function func,void* arg);
 void schedule();
-void switch_to(struct task_struct* cur_thread,struct task_struct* next);
+extern void switch_to(uint32_t** cur_kstack,uint32_t** next_kstack);
 
 void thread_block(enum task_status status);
 void thread_unblock(struct task_struct* thread);

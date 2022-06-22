@@ -136,43 +136,12 @@ void schedule()
     this_thread_tag = list_pop(&ready_list);
     next = this_thread_tag->data;
     next->status = TASK_RUNNING;
-
-    uint32_t* pgdir;
-    __asm__ __volatile__
-    (
-        "movl %%cr3,%0"
-        :"=r"(pgdir)
-        :
-        :"memory"
-    );
     /* 更新页表 */
-    if(next->page_dir != NULL && pgdir != next->page_dir)
-    {
-        put_str(0x70,"user_prog");
-        process_activate(next);
-    }
-    switch_to(cur_thread,next);
+    process_activate(next);
+
+    switch_to(&cur_thread->self_kstack,&next->self_kstack);
     return;
 }
-
-/* void _switch_to(struct thread_struct* current,struct thread_struct* next) */
-__asm__ __volatile__
-(
-    "_switch_to:"
-    "push %%esi;"
-    "push %%edi;"
-    "push %%ebx;"
-    "push %%ebp;"
-    "movl 20(%%esp),%%eax;"
-    "movl %%esp,(%%eax);"
-    "movl 24(%%esp),%%eax;"
-    "movl (%%eax),%%esp;"
-    "popl %%ebp;"
-    "popl %%ebx;"
-    "popl %%edi;"
-    "popl %%esi;"
-    "ret"
-);
 
 void thread_block(enum task_status status)
 {
@@ -201,3 +170,22 @@ void thread_unblock(struct task_struct* pthread)
     intr_set_status(old_status);
     return;
 }
+
+/* void _switch_to(struct thread_struct* current,struct thread_struct* next) */
+__asm__
+(
+    "switch_to:"
+    "push %esi;"
+    "push %edi;"
+    "push %ebx;"
+    "push %ebp;"
+    "movl 20(%esp),%eax;"
+    "movl %esp,(%eax);"
+    "movl 24(%esp),%eax;"
+    "movl (%eax),%esp;"
+    "popl %ebp;"
+    "popl %ebx;"
+    "popl %edi;"
+    "popl %esi;"
+    "ret"
+);
