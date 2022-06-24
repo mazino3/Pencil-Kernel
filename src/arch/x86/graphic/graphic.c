@@ -4,6 +4,7 @@
 
 struct Window Screen;
 extern unsigned char PKnFont[256][16];
+// extern unsigned char* PKnFont;
 
 void RectangleFill(struct Rectangle* rectangle,uint32_t color,int x0,int y0,int x1,int y1)
 {

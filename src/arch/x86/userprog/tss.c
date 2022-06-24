@@ -19,7 +19,7 @@ static void set_segmdesc(struct SEGMDESC* desc,uint32_t base,uint32_t limit,uint
 
 void init_tss()
 {
-    // ASSERT(_GDT != NULL);
+    ASSERT(_GDT != NULL);
     uint32_t tss_size = sizeof(tss);
     memset(&tss,0,tss_size);
     tss.ss0 = SelectorData32_K;

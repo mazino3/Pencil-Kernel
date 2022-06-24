@@ -6,14 +6,14 @@
 
 int main(int argc,char* argv[])
 {
-    int outbin = 1;
+    int outMode = 0;
     std::fstream in;
     std::fstream out;
     if(argc < 3)
     {
         /* default : Section_Name = .data ,Lable_Name = src */
         /* note : input Section_Name without '.' ! */
-        std::cout << ">makefont src obj [-asm Section_Name Lable_Name]\n";
+        std::cout << ">makefont src obj [(-asm Section_Name Lable_Name) | (-c Lable_Name)]\n";
         return 1;
     }
     in.open(argv[1],std::ios_base::in);
@@ -30,18 +30,22 @@ int main(int argc,char* argv[])
     }
     if(argc >= 4)
     {
-        std::string optasm;
-        optasm = argv[3];
-        if(optasm == "-asm")
+        std::string opt;
+        opt = argv[3];
+        if(opt == "-asm")
         {
-            outbin = 0;
+            outMode = 1;
+        }
+        if(opt == "-c")
+        {
+            outMode = 2;
         }
     }
     char s[32];
     char* c;
-    uint16_t i = 0;
-    if(outbin)
+    if(outMode == 0)
     {
+        uint16_t i = 0;
         do
         {
             in.getline(s,32);
@@ -73,7 +77,7 @@ int main(int argc,char* argv[])
 
         }while(!in.eof());
     }
-    else
+    else if(outMode == 1)
     {
         if(argc >= 5)
         {
@@ -121,6 +125,54 @@ int main(int argc,char* argv[])
             }
             out << '\t' << "dd " << s << "b\n"; 
         }while(!in.eof());
+    }
+    else if(outMode == 2)
+    {
+        if(argc >= 5)
+        {
+            out << "unsigned char " << argv[4] << "[][32]=\n{\n";
+        }
+        else
+        {
+            out << "unsigned char Font [][32]=\n{\n";
+        }
+        uint16_t i;
+        int loop;
+        do
+        {
+            out << "\t{";
+            for(loop = 0;loop < 16;loop++)
+            {
+                in.getline(s,32);
+                if(s[0] == '\n' || s[0] == ';' || s[0] == '\0')
+                {
+                    continue;
+                }
+                if(s[0] == '.' || s[0] == '#')
+                {
+                    i  = (s[ 0] == '#') << 7;
+                    i |= (s[ 1] == '#') << 6;
+                    i |= (s[ 2] == '#') << 5;
+                    i |= (s[ 3] == '#') << 4;
+                    i |= (s[ 4] == '#') << 3;
+                    i |= (s[ 5] == '#') << 2;
+                    i |= (s[ 6] == '#') << 1;
+                    i |= (s[ 7] == '#')     ;
+                    out << "0x" << std::hex << i << ',';
+                    i  = (s[ 0] == '#') << 7;
+                    i |= (s[ 1] == '#') << 6;
+                    i |= (s[ 2] == '#') << 5;
+                    i |= (s[ 3] == '#') << 4;
+                    i |= (s[ 4] == '#') << 3;
+                    i |= (s[ 5] == '#') << 2;
+                    i |= (s[ 6] == '#') << 1;
+                    i |= (s[ 7] == '#')     ;
+                    out << "0x" << std::hex << i << ',';
+                }
+            }
+            out << "},\n";
+        }while(!in.eof());
+        out << "};";
     }
     out.close();
     return 0;

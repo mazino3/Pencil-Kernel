@@ -42,10 +42,10 @@ void start_process(void* process_name)
 */
 void page_dir_activate(struct task_struct* pthread)
 {
-    uint32_t page_dir_table_pos = KERNEL_PAGE_DIR_TABLE_POS;
+    ptr_t page_dir_table_pos = KERNEL_PAGE_DIR_TABLE_POS;
     if(pthread->page_dir != NULL)
     {
-        page_dir_table_pos = addr_v2p(pthread->page_dir);
+        page_dir_table_pos = (ptr_t)addr_v2p(pthread->page_dir);
     }
     __asm__ __volatile__
     (
