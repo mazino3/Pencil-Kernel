@@ -22,8 +22,9 @@ SelectorData32     equ (0x0002 << 3 | TI_GDT | RPL0)
 ; SelectorColorVideo equ (0x0004 << 3 | TI_GDT | RPL0)
 
 ;gdt指针
-gdt_ptr dw GDT_LIMIT
-        dd GDT_BASE
+gdt_ptr:
+gdt_limit: dw GDT_LIMIT
+gdt_base:  dd GDT_BASE
 
 ;这里预留16个ards结构的空间
 ;就是20*16 = 320 = 0x140字节
@@ -469,12 +470,7 @@ DiskAddressPacket:
         call SetupPage
         ;先保存gdt地址,开启分页后重新加载
         sgdt [gdt_ptr]
-        ;将gdt段描述符中的显存段加上0xc0000000
-        ; mov ebx,[gdt_ptr + 2]
-        ; or dword [ebx + 0x18 + 4],0xc0000000;显存段是第3个段描述符,每个描述符8字节,3*8 = 0x18
-
-        ; add dword [gdt_ptr + 2],0xc0000000
-        ; add esp,0xc0000000
+        add dword [gdt_base],0xc0000000
         ;页目录表赋值给cr3
         mov eax,PAGE_DIR_TABLE_POS
         mov cr3,eax
@@ -483,6 +479,8 @@ DiskAddressPacket:
         mov eax,cr0
         or eax,0x80000000
         mov cr0,eax
+
+        lgdt [gdt_ptr]
 
         mov byte [gs:((160*6)+ 0)],'P'
         mov byte [gs:((160*6)+ 2)],'a'
