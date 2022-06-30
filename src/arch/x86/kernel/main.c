@@ -17,11 +17,10 @@
 #include "time.h"
 #include "tss.h"
 
-extern struct FIFO keybuf;
-
 void k_thread_a(void* arg);
 void k_thread_b(void* arg);
 void u_prog_a(void);
+void u_prog_b(void);
 
 void kernel_main(void)
 {
@@ -44,12 +43,13 @@ void kernel_main(void)
     put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
     sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d", VideoMode, ScrnX, ScrnY);
     put_str_graphic(&(Screen.win), 20, 36, 0x00ffffff, str);
-    // put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
+    put_str_graphic(&(Screen.win),20,40,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("k_b",31,k_thread_b,"arg_B ");
 
-    // process_execute(u_prog_a,"user_prog");
+    process_execute(u_prog_a,"user_prog");
+    process_execute(u_prog_b,"user_prog");
     // thread_start("k_c",31,k_thread_c,"arg_C ");
 
     while(1); /* 这个死循环不能少 */
@@ -148,15 +148,30 @@ void k_thread_b(void* arg)
              pos_y += 16;
             }
         }
-        // console_int(0x70,ta,10);
-        // console_str(0x07," ");
     }
 }
 
 void u_prog_a(void)
 {
+    __asm__ __volatile__
+    (
+        "int $0x4d"
+        :
+        :"a"(0)
+    );
     while(1)
     {
         ta++;
     }
+}
+
+void u_prog_b(void)
+{
+    __asm__ __volatile__
+    (
+        "int $0x4d"
+        :
+        :"a"(0)
+    );
+    while(1);
 }

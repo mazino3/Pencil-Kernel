@@ -18,13 +18,13 @@ times 60 dq 0;预留60个描述符
 ;段选择子
 SelectorCode32     equ (0x0001 << 3 | TI_GDT | RPL0)
 SelectorData32     equ (0x0002 << 3 | TI_GDT | RPL0)
-; SelectorVideo      equ (0x0003 << 3 | TI_GDT | RPL0)
-; SelectorColorVideo equ (0x0004 << 3 | TI_GDT | RPL0)
 
 ;gdt指针
-gdt_ptr:
-gdt_limit: dw GDT_LIMIT
-gdt_base:  dd GDT_BASE
+gdt_ptr dw GDT_LIMIT
+        dd GDT_BASE
+
+gdt_vptr dw GDT_LIMIT
+         dd (GDT_BASE + 0xc0000000)
 
 ;这里预留16个ards结构的空间
 ;就是20*16 = 320 = 0x140字节
@@ -455,22 +455,11 @@ DiskAddressPacket:
         mov es,ax
         mov ss,ax
         mov esp,LoaderStackTop
-        ; mov ax,SelectorData32
-        ; mov gs,ax
-        ; mov byte [gs:((160*5)+ 0)],'P'
-        ; mov byte [gs:((160*5)+ 2)],'r'
-        ; mov byte [gs:((160*5)+ 4)],'o'
-        ; mov byte [gs:((160*5)+ 6)],'t'
-        ; mov byte [gs:((160*5)+ 8)],'e'
-        ; mov byte [gs:((160*5)+10)],'c'
-        ; mov byte [gs:((160*5)+12)],'t'
 
     ;开启分页
     SetPagingMode:
         call SetupPage
-        ;先保存gdt地址,开启分页后重新加载
-        sgdt [gdt_ptr]
-        add dword [gdt_base],0xc0000000
+
         ;页目录表赋值给cr3
         mov eax,PAGE_DIR_TABLE_POS
         mov cr3,eax
@@ -480,19 +469,7 @@ DiskAddressPacket:
         or eax,0x80000000
         mov cr0,eax
 
-        lgdt [gdt_ptr]
-
-        mov byte [gs:((160*6)+ 0)],'P'
-        mov byte [gs:((160*6)+ 2)],'a'
-        mov byte [gs:((160*6)+ 4)],'g'
-        mov byte [gs:((160*6)+ 6)],'i'
-        mov byte [gs:((160*6)+ 8)],'n'
-        mov byte [gs:((160*6)+10)],'g'
-        mov byte [gs:((160*6)+12)],' '
-        mov byte [gs:((160*6)+14)],'M'
-        mov byte [gs:((160*6)+16)],'o'
-        mov byte [gs:((160*6)+18)],'d'
-        mov byte [gs:((160*6)+20)],'e'
+        lgdt [gdt_vptr]
 
         jmp 0xc0007f00
 SetupPage:

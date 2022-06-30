@@ -25,6 +25,7 @@ KERNEL_DIR := kernel/
 LIB_DIR := lib/
 LIBC_DIR := libc/
 MEMORY_DIR := memory/
+SYSCALL_DIR := syscall/
 THREAD_DIR := thread/
 USERPROG_DIR := userprog/
 
@@ -51,6 +52,8 @@ $(DEVICE_DIR)cpu.co      \
 $(DEVICE_DIR)keyboard.co \
 $(DEVICE_DIR)time.co     \
 $(DEVICE_DIR)timer.co    \
+\
+$(SYSCALL_DIR)syscall.co \
 \
 $(LIB_DIR)bitmap.co  \
 $(DEVICE_DIR)fifo.co    \
@@ -86,6 +89,7 @@ MAKE_DIR := md
 #.asm to .ao (elf)
 # -f elf32 :使用elf文件格式
 %.ao: %.asm Makefile
+	@$(ECHO) compile $<
 	@$(NASM) -f elf32 -I $(INCLUDE_DIR) -o $*.ao $*.asm
 
 #.c to .co (elf)
@@ -101,6 +105,7 @@ MAKE_DIR := md
 # --32: 编译为32位文件
 
 %.co: %.c Makefile
+	@$(ECHO) compile $<
 	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 -m32 -Os -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
@@ -152,6 +157,9 @@ clean:
 	@$(CD) $(USERPROG_DIR) && $(DELET) *.co
 	@$(CD) $(USERPROG_DIR) && $(DELET) *.s
 
+	@$(CD) $(SYSCALL_DIR) && $(DELET) *.co
+	@$(CD) $(SYSCALL_DIR) && $(DELET) *.s
+	
 	@$(CD) $(THREAD_DIR) && $(DELET) *.ao 
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
@@ -172,7 +180,6 @@ img: $(v_disk) $(BOOT) $(LOADER) system
 
 run: img
 #	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
-#	@$(BOCHS) -q -f bochsrc.bxrc
 	@$(TOOL_DIR)qemu\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds

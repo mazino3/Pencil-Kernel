@@ -20,8 +20,8 @@ struct ARDS
 
 struct MEMINFO
 {
-    ptr_t addr;    /* 一块内存的起始地址物理地址 */
-    uint32_t size; /* 大小(单位:页) */
+    int pg_nr;     /* 一块内存的起始地址页序号 */
+    uint32_t pg_cnt; /* 页数量 */
 };
 
 struct MEMMAN
@@ -36,8 +36,8 @@ struct MEMMAN
 
 enum pool_flage
 {
-    KernelPool = 1,
-    UserPool,
+    PF_KERNEL = 1,
+    PF_USER,
 };
 
 /* 物理地址管理 */
@@ -51,10 +51,10 @@ extern struct MEMMAN user_vaddr;
 void init_memory();
 void init_memman(struct MEMMAN* memman,struct MEMINFO* free);
 uint32_t TotalFreeSize(struct MEMMAN* memman);
-void* mem_alloc(struct MEMMAN* memman,uint32_t size);
-void* mem_alloc_page(struct MEMMAN* memman,uint32_t size);
-int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size);
-int mem_free_page(struct MEMMAN* memman,void* addr,uint32_t size);
+
+void* pgman_alloc(struct MEMMAN* memman,uint32_t pg_cnt);
+int pgman_free(struct MEMMAN* memman,void* pg_addr,uint32_t pg_cnt);
+
 void* pde_ptr(void* vaddr);
 void* pte_ptr(void* vaddr);
 void page_table_add(void* _vaddr,void* _paddr);

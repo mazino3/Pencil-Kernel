@@ -79,26 +79,27 @@ struct SEGMDESC
 
 #define LoaderBaseAddress 0x1000  /* loader加载到0x1000地址处 */
 #define LoaderOffsetAddress 0x500 /* loader前0x4ff字节是数据,代码正式开始是0x500字节 */
-// extern struct SEGMDESC _GDT[];
-#define _GDT ((struct SEGMDESC*)LoaderBaseAddress)
+
+#define GDT_PTR ((struct SEGMDESC*)(0xc0000000 + LoaderBaseAddress))
 /*
 * loader向内核传递的参数的地址
 */
-#define ARDS_BUF   (*((uint32_t*)(0x7c00 + 0x000)))
-#define ARDS_NR    (*((uint32_t*)(0x7c00 + 0x004)))
+#define ARDS_BUF   (*((uint32_t*)(0xc0007c00 + 0x000)))
+#define ARDS_NR    (*((uint32_t*)(0xc0007c00 + 0x004)))
 
-#define TotalMem_l (*((uint32_t*)(0x7c00 + 0x008)))
-#define TotalMem_h (*((uint32_t*)(0x7c00 + 0x00c)))
+#define TotalMem_l (*((uint32_t*)(0xc0007c00 + 0x008)))
+#define TotalMem_h (*((uint32_t*)(0xc0007c00 + 0x00c)))
 
-#define DiskCnt    (*((uint32_t*)(0x7c00 + 0x010)))
+#define DiskCnt    (*((uint32_t*)(0xc0007c00 + 0x010)))
 /* 显示相关 */
-#define DisplayMode (*((uint32_t*)(0x7c00 + 0x014)))
-#define VideoMode   (*((uint32_t*)(0x7c00 + 0x018)))
-#define Vram_l      (*((uint32_t*)(0x7c00 + 0x01c)))
-#define Vram_h      (*((uint32_t*)(0x7c00 + 0x020)))
-#define ScrnX       (*((uint32_t*)(0x7c00 + 0x024)))
-#define ScrnY       (*((uint32_t*)(0x7c00 + 0x028)))
-
+#define DisplayMode (*((uint32_t*)(0xc0007c00 + 0x014)))
+#define VideoMode   (*((uint32_t*)(0xc0007c00 + 0x018)))
+#define Vram_l      (*((uint32_t*)(0xc0007c00 + 0x01c)))
+#define Vram_h      (*((uint32_t*)(0xc0007c00 + 0x020)))
+#define ScrnX       (*((uint32_t*)(0xc0007c00 + 0x024)))
+#define ScrnY       (*((uint32_t*)(0xc0007c00 + 0x028)))
+/* 其他 */
+#define NEXT_PID    (*((uint32_t*)(0xc0007c00 + 0x02c)))
 /* 参数的取值 */
 enum Display
 {

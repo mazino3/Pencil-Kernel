@@ -8,7 +8,7 @@
 #define PIC_S_CTRL 0xa0	/* 8259A从片的控制端口是0xa0 */
 #define PIC_S_DATA 0xa1	/* 8259A从片的数据端口是0xa1 */
 
-#define IDT_DESC_CNT 0x2f /* 总共支持0x2f个中断 */
+#define IDT_DESC_CNT 0x4e /* 总共支持的中断数 */
 
 
 

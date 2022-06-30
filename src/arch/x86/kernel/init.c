@@ -6,6 +6,7 @@
 #include "keyboard.h"
 #include "memory.h"
 #include "print.h"
+#include "syscall.h"
 #include "thread.h"
 #include "timer.h"
 #include "tss.h"
@@ -21,6 +22,7 @@ void init_all()
     init_thread();
     init_console();
     init_screen(&Screen);
+    init_syscall();
     put_str(0x02,"[init]:init down.\n");
     return;
 }

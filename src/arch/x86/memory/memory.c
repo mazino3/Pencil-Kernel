@@ -57,16 +57,21 @@ void init_memory()
     }
     uint32_t k_Total;
     uint32_t u_Total;
-    k_Total = (TotalMem_l - (0x00400000 + 0x200000)) / 2;
-    u_Total = TotalMem_l - k_Total;
+    ptr_t freeMem = TotalMem_l - (KERNEL_PAGE_DIR_TABLE_POS + 0x200000);
+    k_Total = freeMem / 2;
+    u_Total = freeMem - k_Total;
 
     init_memman(&kernel_pool,kpinfo);
     init_memman(&kernel_vaddr,kvinfo);
     init_memman(&user_pool,upinfo);
 
-    mem_free_page(&kernel_pool,(void*)0x00600000,k_Total / PG_SIZE);
-    mem_free_page(&user_pool,(void*)(0x00600000 + k_Total),u_Total / PG_SIZE);
-    mem_free_page(&kernel_vaddr,(void*)0xc0600000,(0xe0000000 - 0xc0600000) / PG_SIZE);
+    pgman_free(&kernel_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS + 0x200000),k_Total / PG_SIZE);
+    pgman_free(&user_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS + 0x200000 + k_Total),u_Total / PG_SIZE);
+    /*
+    * 0x00000000 ~ 0x003fffff --> 0xc0000000 ~ 0xc03fffff
+    * 为了使虚拟地址连续,从0xc0400000开始
+     */
+    pgman_free(&kernel_vaddr,(void*)0xc0400000,(0xe0000000 - 0xc0400000) / PG_SIZE);
     return;
 }
 
@@ -88,64 +93,55 @@ uint32_t TotalFreeSize(struct MEMMAN* memman)
     int i;
     for(i = 0;i < (memman->frees);i++)
     {
-        total += memman->free[i].size;
+        total += memman->free[i].pg_cnt;
     }
     return total;
 }
 
-void* mem_alloc(struct MEMMAN* memman,uint32_t size)
+void* pgman_alloc(struct MEMMAN* memman,uint32_t pg_cnt)
 {
-    ptr_t addr;
+    ptr_t pg_nr;
     int i;
     int j;
     /* 遍历所有内存使用信息,找到合适的大小 */
     for(i = 0;i < (memman->frees);i++)
     {
         /* 如果大小合适 */
-        if(memman->free[i].size >= size)
+        if(memman->free[i].pg_cnt >= pg_cnt)
         {
             /* 记录可用空间的大小 */
-            addr = memman->free[i].addr;
+            pg_nr = memman->free[i].pg_nr;
             /* 可用地址向后推size大小 */
-            (memman->free[i].addr) += size;
+            (memman->free[i].pg_nr) += pg_cnt;
             /* 可用空间大小减小 */
-            memman->free[i].size -= size;
+            memman->free[i].pg_cnt -= pg_cnt;
             /* 如果没有可用空间,可用信息减掉一条 */
-            if(memman->free[i].size == 0)
+            if(memman->free[i].pg_cnt == 0)
             {
-                memman->frees --; /* 减一条 */
+                memman->frees--; /* 减一条 */
                 /* 把空的那一条覆盖掉 */
                 for(j = i;j < (memman->frees);j++)
                 {
                     memman->free[j] = memman->free[j + 1];
                 }
             }
-            return (void*)addr;
+            return (void*)(pg_nr * PG_SIZE); /* 返回找到地页的起始地址 */
         }
     }
     return NULL;
 }
 
-void* mem_alloc_page(struct MEMMAN* memman,uint32_t page_count)
-{
-    void* addr;
-    lock_acquire(&(memman->lock));
-    addr = mem_alloc(memman,page_count * 0x1000);
-    lock_release(&(memman->lock));
-    return addr;
-}
-
-int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size)
+int pgman_free(struct MEMMAN* memman,void* pg_addr,uint32_t pg_cnt)
 {
     int i;
     int j;
     int k;
-    ptr_t addr = (ptr_t)paddr;
-    /* 寻找memman->free[i],使memman->free[i - 1].addr < addr < free[i].addr */
+    int pg_nr = (ptr_t)pg_addr / PG_SIZE;
+    /* 寻找memman->free[i],使memman->free[i - 1].pg_nr < pg_nr < free[i].pg_nr */
     for(i = 0;i < (memman->frees);i++)
     {
-        /* memman->free[i].addr > addr,那么memman->free[i - 1] < addr */
-        if(memman->free[i].addr > addr)
+        /* memman->free[i].pg_nr > pg_nr,那么memman->free[i - 1].pg_nr < pg_nr */
+        if(memman->free[i].pg_nr > pg_nr)
         {
             break;
         }
@@ -154,16 +150,16 @@ int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size)
     if(i > 0)
     {
         /* 可以和前面的归到一起 */
-        if(((memman->free[i - 1].addr) + memman->free[i - 1].size) == addr)
+        if(((memman->free[i - 1].pg_nr) + memman->free[i - 1].pg_cnt) == pg_nr)
         {
             /* 可用信息长度增加 */
-            memman->free[i - 1].size += size;
+            memman->free[i - 1].pg_cnt += pg_cnt;
             /* 后面也可以合并 */
             if(i < (memman->frees))
             {
-                if(((ptr_t)addr + size) == memman->free[i].addr)
+                if((pg_nr + pg_cnt) == memman->free[i].pg_nr)
                 {
-                    memman->free[i - 1].size += memman->free[i].size;
+                    memman->free[i - 1].pg_cnt += memman->free[i].pg_cnt;
                     memman->frees--;
                     for(j = i;j < (memman->frees);j++)
                     {
@@ -178,10 +174,10 @@ int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size)
     /* 不能和前面归到一起的话会来到这里 */
     if(i < (memman->frees))
     {
-        if(((ptr_t)addr + size) == memman->free[i].addr)
+        if((pg_nr + pg_cnt) == memman->free[i].pg_nr)
         {
-            memman->free[i].addr = addr;
-            memman->free[i].size += size;
+            memman->free[i].pg_nr = pg_nr;
+            memman->free[i].pg_cnt += pg_cnt;
             return 0;
         }
     }
@@ -198,23 +194,15 @@ int mem_free(struct MEMMAN* memman,void* paddr,uint32_t size)
         {
             memman->maxfrees = memman->frees;
         }
-        memman->free[i].addr = addr;
-        memman->free[i].size = size;
+        memman->free[i].pg_nr = pg_nr;
+        memman->free[i].pg_cnt = pg_cnt;
         return 0;
     }
     /* 不能移动 */
+    PANIC("Page Free Error !");
     memman->lostcnt++;
-    memman->lostsize += size;
+    memman->lostsize += pg_cnt;
     return 1;
-}
-
-int mem_free_page(struct MEMMAN* memman,void* addr,uint32_t page_count)
-{
-    int status;
-    lock_acquire(&(memman->lock));
-    status = mem_free(memman,addr,page_count * 0x1000);
-    lock_release(&(memman->lock));
-    return status;
 }
 
 void* pde_ptr(void* vaddr)
@@ -247,7 +235,7 @@ void page_table_add(void* _vaddr,void* _paddr)
     }
     else
     {
-        void* pde_paddr = (void*)mem_alloc_page(&kernel_pool,1);
+        void* pde_paddr = (void*)pgman_alloc(&kernel_pool,1);
         *pde = ((uint32_t)pde_paddr | PG_US_U | PG_RW_W | PG_P);
         memset((void*)((int)pte & 0xfffff000),0,PG_SIZE);
         *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
@@ -261,9 +249,9 @@ void* page_alloc(enum pool_flage pf,uint32_t page_count)
     uint32_t vaddr;
     void* paddr;
     uint32_t count = page_count;
-    struct MEMMAN* memory_pool = (pf == KernelPool ? &kernel_pool : &user_pool);
-    struct MEMMAN* vaddr_pool = (pf == KernelPool ? &kernel_vaddr : &kernel_vaddr);
-    vaddr_start = (void*)mem_alloc_page(vaddr_pool,page_count);
+    struct MEMMAN* memory_pool = (pf == PF_KERNEL ? &kernel_pool : &user_pool);
+    struct MEMMAN* vaddr_pool = (pf == PF_KERNEL ? &kernel_vaddr : &kernel_vaddr);
+    vaddr_start = (void*)pgman_alloc(vaddr_pool,page_count);
     if(vaddr_start == NULL)
     {
         return NULL;
@@ -272,7 +260,7 @@ void* page_alloc(enum pool_flage pf,uint32_t page_count)
     while(count > 0)
     {
         count--;
-        paddr = (void*)mem_alloc_page(memory_pool,1);
+        paddr = (void*)pgman_alloc(memory_pool,1);
         if(paddr == NULL)
         {
             return NULL;
@@ -285,7 +273,7 @@ void* page_alloc(enum pool_flage pf,uint32_t page_count)
 
 void* get_kernel_page(uint32_t page_count)
 {
-    void* vaddr = page_alloc(KernelPool,page_count);
+    void* vaddr = page_alloc(PF_KERNEL,page_count);
     if(vaddr != NULL)
     {
         memset(vaddr,0,page_count * PG_SIZE);
@@ -297,7 +285,7 @@ void* get_kernel_page(uint32_t page_count)
 
 void* get_user_page(uint32_t page_count)
 {
-    void* vaddr = page_alloc(UserPool,page_count);
+    void* vaddr = page_alloc(PF_USER,page_count);
     if(vaddr != NULL)
     {
         memset(vaddr,0,page_count * PG_SIZE);
@@ -307,21 +295,21 @@ void* get_user_page(uint32_t page_count)
 
 void* get_a_page(enum pool_flage pf,void* vaddr)
 {
-    struct MEMMAN* memory_pool = (pf == KernelPool ? &kernel_pool : &user_pool);
+    struct MEMMAN* memory_pool = (pf == PF_KERNEL ? &kernel_pool : &user_pool);
     struct task_struct* cur = running_thread();
-    if(cur->page_dir != NULL && pf == UserPool)
+    if(cur->page_dir != NULL && pf == PF_USER)
     {
-        // mem_alloc_page(&cur->prog_vaddr,1);
+        pgman_alloc(&cur->prog_vaddr,1);
     }
-    else if(cur->page_dir == NULL && pf == KernelPool)
+    else if(cur->page_dir == NULL && pf == PF_KERNEL)
     {
-        mem_alloc_page(&kernel_vaddr,1);
+        pgman_alloc(&kernel_vaddr,1);
     }
     else
     {
         PANIC("get_a_page: not allow kernel alloc userspace or user alloc kernelspace by get_a_page()");
     }
-    void* page_paddr = mem_alloc_page(memory_pool,1);
+    void* page_paddr = pgman_alloc(memory_pool,1);
     ASSERT(page_paddr != NULL);
     page_table_add((void*)vaddr,page_paddr);
     return vaddr;

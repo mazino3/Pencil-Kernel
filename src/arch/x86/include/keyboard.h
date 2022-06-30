@@ -31,6 +31,7 @@
 #define ctrl_r_b 0xe09d
 #define casplock_m 0x3a
 
+extern struct FIFO keybuf;
 
 void init_keyboard();
 void intr0x21_handler(void);

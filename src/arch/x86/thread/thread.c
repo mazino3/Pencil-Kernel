@@ -15,6 +15,8 @@ struct task_struct* main_thread;
 PUBLIC struct list ready_list;
 PUBLIC struct list all_list;
 
+PRIVATE struct lock pid_lock;
+
 PRIVATE struct list_elem* this_thread_tag;
 
 PRIVATE void make_main_thread();
@@ -23,8 +25,20 @@ void init_thread()
 {
     list_init(&ready_list);
     list_init(&all_list);
+    NEXT_PID = 0;
+    lock_init(&pid_lock);
     make_main_thread();
     return;
+}
+
+PRIVATE pid_t alloc_pid()
+{
+    int pid;
+    lock_acquire(&pid_lock);
+    pid = NEXT_PID;
+    NEXT_PID = pid + 1;
+    lock_release(&pid_lock);
+    return pid;
 }
 
 void thread_init(struct task_struct* thread,char* name,uint8_t priority)
@@ -39,6 +53,7 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
     {
         thread->status = TASK_READY;
     }
+    thread->pid = alloc_pid();
     thread->priority = priority;
     thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
     thread->page_dir = NULL;

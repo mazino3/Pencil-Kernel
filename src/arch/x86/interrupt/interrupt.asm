@@ -86,3 +86,28 @@ VECTOR 0x2c,push 0    ;ps/2鼠标
 VECTOR 0x2d,push 0    ;fpu浮点单元异常
 VECTOR 0x2e,push 0    ;硬盘
 VECTOR 0x2f,push 0    ;保留
+
+[bits 32]
+extern syscall_table
+section .text
+global syscall_handler
+syscall_handler:
+    push 0
+
+    push ds
+    push es
+    push fs
+    push gs
+    pushad
+
+    push 0x4d
+
+    ;系统调用参数
+    push edx
+    push ecx
+    push ebx
+
+    call [syscall_table + eax * 4]
+    add esp,4 * 3
+    mov [esp + (8 * 4)],eax
+    jmp intr_exit

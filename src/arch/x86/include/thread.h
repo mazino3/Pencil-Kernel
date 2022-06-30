@@ -6,6 +6,7 @@
 #include "memory.h"
 #include "stdint.h"
 
+typedef uint32_t pid_t;
 typedef void thread_function(void*);
 
 /* 线程状态 */
@@ -72,20 +73,20 @@ struct thread_stack
 /* 程序控制块pcb */
 struct task_struct
 {
-    uint32_t* self_kstack;   /* 线程内核栈指针 */
+    uint32_t* self_kstack;            /* 线程内核栈指针 */
     volatile enum task_status status; /* 状态 */
-    char name[16];           /* 名称 */
+    pid_t pid;                        /* 进程或线程 pid */
+    char name[16];                    /* 名称 */
+    uint8_t priority;                 /* 优先级 */
+    uint8_t ticks;                    /* 在CPU上运行的时间 */
+    uint32_t elapsed_ticks;           /* 总共运行的时间 */
 
-    uint8_t priority;        /* 优先级 */
-    uint8_t ticks;           /* 在CPU上运行的时间 */
-    uint32_t elapsed_ticks;  /* 总共运行的时间 */
-
-    struct list_elem all_tag; /* 用于加入全部线程队列 */
+    struct list_elem all_tag;      /* 用于加入全部线程队列 */
     struct list_elem general_tag;  /* 用于加入就绪线程队列 */
 
-    uint32_t* page_dir;      /* 线程的页表 */
-    struct MEMMAN prog_vaddr;
-    uint32_t stack_magic;    /* 用于检测是否栈溢出 */
+    uint32_t* page_dir;       /* 线程的页表 */
+    struct MEMMAN prog_vaddr; /* 进程的虚拟地址 */
+    uint32_t stack_magic;     /* 用于检测是否栈溢出 */
 };
 
 extern struct list ready_list;

@@ -7,6 +7,7 @@
 #include "print.h"
 #include "stdint.h"
 #include "stdio.h"
+#include "syscall.h"
 #include "timer.h"
 
 // struct gate_desc* idt = (struct gate_desc*)0x87f00;         /* idt描述符 */
@@ -14,6 +15,8 @@ struct gate_desc idt[IDT_DESC_CNT];
 void* idt_table[IDT_DESC_CNT];
 extern void* intr_entry_table[IDT_DESC_CNT];/* interrupt.asm中的中断程序入口地址表 */
 char* intr_name[IDT_DESC_CNT];              /* 保存异常的名字 */
+
+extern uint32_t syscall_handler(void);
 
 void init_pic()
 {
@@ -59,6 +62,7 @@ void idt_desc_init(void)
     {
         set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32_K,AR_IDT_DESC_DPL0);
     }
+    set_gatedesc(&idt[SYSCALL_INTR],syscall_handler,SelectorCode32_K,AR_IDT_DESC_DPL3);
     return;
 }
 
