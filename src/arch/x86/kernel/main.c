@@ -167,11 +167,11 @@ void u_prog_a(void)
 
 void u_prog_b(void)
 {
-    __asm__ __volatile__
-    (
-        "int $0x4d"
-        :
-        :"a"(0)
-    );
+    // __asm__ __volatile__
+    // (
+    //     "int $0x4d"
+    //     :
+    //     :"a"(0)
+    // );
     while(1);
 }

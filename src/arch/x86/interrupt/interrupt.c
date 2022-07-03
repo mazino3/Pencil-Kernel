@@ -10,7 +10,6 @@
 #include "syscall.h"
 #include "timer.h"
 
-// struct gate_desc* idt = (struct gate_desc*)0x87f00;         /* idt描述符 */
 struct gate_desc idt[IDT_DESC_CNT];
 void* idt_table[IDT_DESC_CNT];
 extern void* intr_entry_table[IDT_DESC_CNT];/* interrupt.asm中的中断程序入口地址表 */
@@ -62,7 +61,7 @@ void idt_desc_init(void)
     {
         set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32_K,AR_IDT_DESC_DPL0);
     }
-    set_gatedesc(&idt[SYSCALL_INTR],syscall_handler,SelectorCode32_K,AR_IDT_DESC_DPL3);
+    set_gatedesc(&idt[SYSCALL_INTR],syscall_entry,SelectorCode32_K,AR_IDT_DESC_DPL3);
     return;
 }
 
@@ -92,15 +91,10 @@ void init_idt()
     idt_desc_init();
     init_pic();
     // uint64_t idt_ptr = (((sizeof(struct gate_desc) * IDT_DESC_CNT) -1) | ((uint64_t)((0x87f00) << 16)));
-    uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
+    // uint64_t idt_ptr = ((sizeof(idt)-1) | ((uint64_t)(((uint32_t)idt) << 16)));
+    uint64_t idt_ptr = (((uint64_t)0 + ((uint64_t)((uint32_t)idt))) << 16) | (sizeof(idt) - 1);
     exception_init();
-    __asm__ __volatile__
-    (
-        "lidt %0"
-        :
-        :"m"(idt_ptr)
-        :
-    );
+    __asm__ __volatile__ ("lidt %0"::"m"(idt_ptr):);
     return;
 }
 

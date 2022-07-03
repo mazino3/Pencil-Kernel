@@ -12,6 +12,7 @@ enum SYSCALL_NR
     SYS_BOTH,
 };
 
+extern syscall_entry(void); /* 其实syscall_entry有参数,但是这样写不影响 */
 void init_syscall();
 
 #endif /* __SYSCALL_H__ */

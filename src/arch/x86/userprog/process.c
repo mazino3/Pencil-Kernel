@@ -83,7 +83,7 @@ uint32_t* create_page_dir(void)
         console_str(0x04,"create_page_dir: get kernel page failed!\n");
         return NULL;
     }
-    memcpy(((uint32_t*)((uint32_t)pgdir_v)),((uint32_t*)(0xfffff000)),4);
+    // memcpy(((uint32_t*)((uint32_t)pgdir_v)),((uint32_t*)(0xfffff000)),4);
     memcpy(((uint32_t*)((uint32_t)pgdir_v + 0xc00)),((uint32_t*)(0xfffff000 + 0xc00)),1024);
     uint32_t pgdir_p = (uint32_t)addr_v2p(pgdir_v);
     pgdir_v[1023] = (pgdir_p | PG_US_U | PG_RW_W | PG_P);

@@ -88,10 +88,10 @@ VECTOR 0x2e,push 0    ;硬盘
 VECTOR 0x2f,push 0    ;保留
 
 [bits 32]
-extern syscall_table
+extern syscall_handler
 section .text
-global syscall_handler
-syscall_handler:
+global syscall_entry
+syscall_entry:
     push 0
 
     push ds
@@ -107,7 +107,8 @@ syscall_handler:
     push ecx
     push ebx
 
-    call [syscall_table + eax * 4]
+    ;call [syscall_table + eax * 4]
+    call syscall_handler
     add esp,4 * 3
     mov [esp + (8 * 4)],eax
     jmp intr_exit
