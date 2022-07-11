@@ -9,6 +9,7 @@
 void panic_spin(const char* file,int line,const char* func,const char* condition);
 
 #define PANIC(...) panic_spin(__FILE__,__LINE__,__func__,__VA_ARGS__)
+
 #define ASSERT(CONDITION)          \
             if(CONDITION)          \
             {                      \
@@ -22,5 +23,7 @@ void panic_spin(const char* file,int line,const char* func,const char* condition
     #undef ASSERT
     #define ASSERT(CONDITION) ((void)0)
 #endif /* NDEBUG */
+
+void log(char* info);
 
 #endif /* __DEBUG_H__ */

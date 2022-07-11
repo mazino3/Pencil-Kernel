@@ -83,7 +83,6 @@ uint32_t* create_page_dir(void)
         console_str(0x04,"create_page_dir: get kernel page failed!\n");
         return NULL;
     }
-    // memcpy(((uint32_t*)((uint32_t)pgdir_v)),((uint32_t*)(0xfffff000)),4);
     memcpy(((uint32_t*)((uint32_t)pgdir_v + 0xc00)),((uint32_t*)(0xfffff000 + 0xc00)),1024);
     uint32_t pgdir_p = (uint32_t)addr_v2p(pgdir_v);
     pgdir_v[1023] = (pgdir_p | PG_US_U | PG_RW_W | PG_P);
@@ -95,7 +94,7 @@ uint32_t* create_page_dir(void)
 */
 void create_user_vaddr_memman(struct task_struct* user_prog)
 {
-    init_memman(&(user_prog->prog_vaddr),get_kernel_page(DIV_ROUND_UP(MEMMAN_MAX * sizeof(struct MEMINFO),PG_SIZE)));
+    init_memman(&(user_prog->prog_vaddr),0xffffffff / PG_SIZE,get_kernel_page(DIV_ROUND_UP(MEMMAN_MAX * sizeof(struct MEMINFO),PG_SIZE)));
     pgman_free(&(user_prog->prog_vaddr),(void*)USER_VADDR_START,(0xc0000000 - USER_VADDR_START) / PG_SIZE);
     return;
 }
@@ -107,11 +106,8 @@ void process_execute(void* process_name,char* name)
     create_user_vaddr_memman(pthread);
     thread_create(pthread,start_process,process_name);
     pthread->page_dir = create_page_dir();
-    put_str(0x70,"prog PCB: ");
-    put_uint(0x70,(uint32_t)pthread,16);
+    init_block(pthread->u_desc);
 
-    put_str(0x70," prog pgdir: ");
-    put_uint(0x70,(uint32_t)pthread->page_dir,16);
     /* 加入队列,等待调度 */
     pthread->general_tag.data = pthread;
     pthread->all_tag.data = pthread;

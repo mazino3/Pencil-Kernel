@@ -33,12 +33,10 @@ void init_thread()
 
 PRIVATE pid_t alloc_pid()
 {
-    int pid;
     lock_acquire(&pid_lock);
-    pid = NEXT_PID;
-    NEXT_PID = pid + 1;
+    NEXT_PID++;
     lock_release(&pid_lock);
-    return pid;
+    return NEXT_PID;
 }
 
 void thread_init(struct task_struct* thread,char* name,uint8_t priority)
@@ -57,6 +55,7 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
     thread->priority = priority;
     thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
     thread->page_dir = NULL;
+    // list_init(&(thread->wait));
     thread->stack_magic = 0x12345678;
     return;
 }

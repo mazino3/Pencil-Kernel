@@ -121,5 +121,6 @@ int vsprintf(char* buf,const char* fmt,va_list ap)
         }
         
     }
+    *str = '\0';
     return strlen(buf);
 }

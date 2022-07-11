@@ -4,6 +4,7 @@
 #include "global.h"
 #include "list.h"
 #include "memory.h"
+#include "message.h"
 #include "stdint.h"
 
 typedef uint32_t pid_t;
@@ -86,6 +87,13 @@ struct task_struct
 
     uint32_t* page_dir;       /* 线程的页表 */
     struct MEMMAN prog_vaddr; /* 进程的虚拟地址 */
+    struct mem_desc u_desc[MEM_DESCS];
+
+    // uint32_t send_to;         /* 想向谁发送消息 PID */
+    // uint32_t receive_from;    /* 想从谁接收消息 PID */
+    // MESSAGE msg;              /* 收发用的消息 */
+    // struct list wait;         /* 等待接收的任务 */
+
     uint32_t stack_magic;     /* 用于检测是否栈溢出 */
 };
 

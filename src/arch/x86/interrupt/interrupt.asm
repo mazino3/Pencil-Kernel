@@ -87,11 +87,15 @@ VECTOR 0x2d,push 0    ;fpu浮点单元异常
 VECTOR 0x2e,push 0    ;硬盘
 VECTOR 0x2f,push 0    ;保留
 
+
+; syscall
+
 [bits 32]
-extern syscall_handler
+extern syscall_table
 section .text
 global syscall_entry
 syscall_entry:
+    sti
     push 0
 
     push ds
@@ -107,8 +111,7 @@ syscall_entry:
     push ecx
     push ebx
 
-    ;call [syscall_table + eax * 4]
-    call syscall_handler
+    call [syscall_table + eax * 4]
     add esp,4 * 3
     mov [esp + (8 * 4)],eax
     jmp intr_exit

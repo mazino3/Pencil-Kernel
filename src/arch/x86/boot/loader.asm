@@ -261,7 +261,7 @@ Start:
             mov bx,0xc108 ; or 0x4108?
             int 0x10
             mov dword [DisplayMode],0     ;文本模式
-            mov dword [Vram_l],0x000b8000 ;显存地址
+            mov dword [Vram_l],0xc00b8000 ;显存地址
             mov dword [Vram_h],0
             mov dword [ScrnX],80
             mov dword [ScrnY],25
@@ -455,7 +455,16 @@ DiskAddressPacket:
         mov es,ax
         mov ss,ax
         mov esp,LoaderStackTop
-
+        ;移动内核
+        mov ecx,KernelBlockSize * KernelReadLoop * 512
+        mov edi,0x100000
+        mov esi,0x7f00
+        .move_loop:
+            mov al,[ds:esi]
+            mov [ds:edi],al
+            inc esi
+            inc edi
+            loop .move_loop
     ;开启分页
     SetPagingMode:
         call SetupPage
@@ -471,7 +480,7 @@ DiskAddressPacket:
 
         lgdt [gdt_vptr]
 
-        jmp 0xc0007f00
+        jmp 0xc0100000
 SetupPage:
     ;1. 先将页目录表所用的内存空间清零
     mov ecx,4096

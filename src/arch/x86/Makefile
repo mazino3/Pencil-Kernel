@@ -40,30 +40,31 @@ $(KERNEL_DIR)debug.co        \
 $(KERNEL_DIR)init.co         \
 $(INTERRUPT_DIR)interrupt.ao \
 $(INTERRUPT_DIR)interrupt.co \
+$(MEMORY_DIR)arena.co        \
 $(MEMORY_DIR)memory.co       \
 \
-$(THREAD_DIR)sync.co      \
-$(THREAD_DIR)thread.co    \
-$(USERPROG_DIR)tss.co     \
-$(USERPROG_DIR)process.co \
+$(THREAD_DIR)sync.co         \
+$(THREAD_DIR)thread.co       \
+$(USERPROG_DIR)tss.co        \
+$(USERPROG_DIR)process.co    \
 \
-$(DEVICE_DIR)console.co  \
-$(DEVICE_DIR)cpu.co      \
-$(DEVICE_DIR)keyboard.co \
-$(DEVICE_DIR)time.co     \
-$(DEVICE_DIR)timer.co    \
+$(DEVICE_DIR)console.co      \
+$(DEVICE_DIR)cpu.co          \
+$(DEVICE_DIR)keyboard.co     \
+$(DEVICE_DIR)time.co         \
+$(DEVICE_DIR)timer.co        \
 \
-$(SYSCALL_DIR)syscall.co \
+$(SYSCALL_DIR)syscall.co     \
 \
-$(LIB_DIR)bitmap.co  \
-$(DEVICE_DIR)fifo.co    \
-$(LIB_DIR)font.co    \
-$(LIB_DIR)list.co    \
-$(LIB_DIR)print.co   \
-$(LIBC_DIR)string.co \
-$(LIBC_DIR)stdio.co  \
+$(LIB_DIR)bitmap.co          \
+$(DEVICE_DIR)fifo.co         \
+$(LIB_DIR)font.co            \
+$(LIB_DIR)list.co            \
+$(LIB_DIR)print.co           \
+$(LIBC_DIR)string.co         \
+$(LIBC_DIR)stdio.co          \
 \
-$(GRAPHIC_DIR)graphic.co \
+$(GRAPHIC_DIR)graphic.co     \
 
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
