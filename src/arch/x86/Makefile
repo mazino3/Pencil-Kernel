@@ -132,9 +132,7 @@ clean:
 	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.co
 
 	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.ao
-	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.bin
 	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.co
-	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.o
 	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.s
 
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
@@ -143,15 +141,12 @@ clean:
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.o
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.s
 
-	@$(CD) $(LIB_DIR) && $(DELET) *.ao
 	@$(CD) $(LIB_DIR) && $(DELET) *.co
 	@$(CD) $(LIB_DIR) && $(DELET) *.s
 
-	@$(CD) $(LIBC_DIR) && $(DELET) *.ao
 	@$(CD) $(LIBC_DIR) && $(DELET) *.co
 	@$(CD) $(LIBC_DIR) && $(DELET) *.s
 
-	@$(CD) $(MEMORY_DIR) && $(DELET) *.ao
 	@$(CD) $(MEMORY_DIR) && $(DELET) *.co
 	@$(CD) $(MEMORY_DIR) && $(DELET) *.s
 
@@ -160,12 +155,9 @@ clean:
 
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.co
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.s
-	
-	@$(CD) $(THREAD_DIR) && $(DELET) *.ao 
+
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
-	
-#	@$(DELET) $(v_disk).lock
 
 debug: img
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)

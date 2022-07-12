@@ -105,20 +105,8 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
     char str[255];
     intr_disable();
     set_cursor(0);
-    // int i;
-    // for(i = 0;i < 24 * 80;i++)
-    // {
-    //     put_char(0x17,' ');
-    // }
-    set_cursor(0);
-    /* put_str(0x17,
-    "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
-    "If this is the first time you've seen this stop error sereen, restart your computer."
-    "If this screen appers again,follow these steps:\n"
-    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
-    ); */
-    RectangleFill(&(Screen.win),rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
-    put_str_graphic(&(Screen.win),10,10,rgb(255,255,255),
+    viewFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
+    vput_str((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer.\n"
     "If this screen appers again,follow these steps:\n"
@@ -126,11 +114,11 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
     );
     sprintf(str," %s\n intr: 0x%02x\n CS:EIP  0x%x:%08p\n ",PKn_Version,vector_nr,cs,eip);
     put_str(0x17,str);
-    put_str_graphic(&(Screen.win),10,90,rgb(255,255,255),str);
+    vput_str((void*)0xe0000000,ScrnX,10,90,rgb(255,255,255),str);
     if(vector_nr >= 0 && vector_nr < 20)
     {
         put_str(0x14,intr_name[vector_nr]);
-        put_str_graphic(&(Screen.win),18,138,rgb(255,0,255),intr_name[vector_nr]);
+        vput_str((void*)0xe0000000,ScrnX,18,138,rgb(255,0,255),intr_name[vector_nr]);
     }
     void* page_fault_vaddr = NULL;
     if(vector_nr== 14)
@@ -144,7 +132,7 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
         );
         sprintf(str,"( Fault address: %p )",page_fault_vaddr);
         put_str(0x17,str);
-        put_str_graphic(&(Screen.win),10,154,rgb(255,255,255),str);
+        vput_str((void*)0xe0000000,ScrnX,10,154,rgb(255,255,255),str);
 
     }
     /* 图形界面的handler */

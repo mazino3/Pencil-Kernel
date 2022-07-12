@@ -162,12 +162,6 @@ void sys_free(void* vaddr)
     }
     else
     {
-        put_str(0x06,"b->free:");
-        put_uint(0x06,&(b->free),16);
-        put_char(0,'\n');
-        put_str(0x06,"a->desc->free_list:");
-        put_uint(0x06,&(a->desc->free_list),16);
-
         list_append(&(a->desc->free_list),&(b->free));
         a->cnt++;
         if(a->cnt == a->desc->blocks)

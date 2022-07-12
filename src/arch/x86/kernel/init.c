@@ -1,6 +1,7 @@
 #include "init.h"
 #include "console.h"
 #include "cpu.h"
+#include "debug.h"
 #include "graphic.h"
 #include "interrupt.h"
 #include "keyboard.h"
@@ -13,7 +14,7 @@
 
 void init_all()
 {
-    put_str(0x02,"[inin]:all\n");
+    log("init all");
     init_idt();
     init_tss();
     init_pit();
@@ -21,8 +22,8 @@ void init_all()
     init_keyboard();
     init_thread();
     init_console();
-    init_screen(&Screen);
+    init_screen();
     init_syscall();
-    put_str(0x02,"[init]:init down.\n");
+    log("init done");
     return;
 }

@@ -37,16 +37,15 @@ void kernel_main(void)
     init_all();
     intr_enable(); /* 开中断 */
     console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    // console_str(0x07,"Copyright (c) 2021-2022 Pencil-Kernel developers,All rights reserved.\n\n");
-    
+
     console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
     console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
     console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
 
-    put_str_graphic(&(Screen.win),20,20,0x00ffffff,"Pencil-Kernel (PKn) version 0.0.0 test");
+    vput_str((void*)0xe0000000,ScrnX,20,20,rgb(255,255,255),PKn_Version);
     sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d", VideoMode, ScrnX, ScrnY);
-    put_str_graphic(&(Screen.win), 20, 52, 0x00ffffff, str);
-    put_str_graphic(&(Screen.win),20,36,0x00ffffff,"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
+    vput_str((void*)0xe0000000,ScrnX,20,36,rgb(255,255,255),"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
+    vput_str((void*)0xe0000000,ScrnX,20,52,rgb(255,255,255),str);
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("shell",31,shell,NULL);
@@ -62,25 +61,24 @@ void kernel_main(void)
 extern volatile int ticks;
 void k_thread_a(void* arg)
 {
-//    struct TIME startTime; /* 启动时从CMOS获取的BCD时间 */
-    struct TIME time;  /* 十进制表示的现实时间 */
-    get_time(&time);
-    int old_tickes = ticks;
-    char str[32];
-    int offset = 3;
-    RectangleFill(&(Screen.win), 0x00848484,ScrnX - 158 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
-    RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 158,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
+    // struct TIME time;  /* 十进制表示的现实时间 */
+    // get_time(&time);
+    // int old_tickes = ticks;
+    // char str[32];
+    // int offset = 3;
+    // RectangleFill(&(Screen.win), 0x00848484,ScrnX - 158 + offset,ScrnY - 1 - 40 + offset,ScrnX - 10 + offset,ScrnY - 1 - 10 + offset);
+    // RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 158,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
     while(1)
     {
-        sprintf(str,"%04x/%02x/%02x %02x:%02x",time.year,time.month,time.day,time.hour,time.minuet);
-        RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 148,ScrnY - 1 - 33,ScrnX - 10,ScrnY - 1 - 17);
-        put_str_graphic(&(Screen.win),ScrnX - 148,ScrnY - 1 - 33,0x00000000,str);
-        while(ticks <= old_tickes + 100) /* 时间发生变化时再刷新 */
-        {
+        // sprintf(str,"%04x/%02x/%02x %02x:%02x",time.year,time.month,time.day,time.hour,time.minuet);
+        // RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 148,ScrnY - 1 - 33,ScrnX - 10,ScrnY - 1 - 17);
+        // put_str_graphic(&(Screen.win),ScrnX - 148,ScrnY - 1 - 33,0x00000000,str);
+        // while(ticks <= old_tickes + 100) /* 时间发生变化时再刷新 */
+        // {
             ;
-        }
-        old_tickes = ticks;
-        get_time(&time);
+        // }
+        // old_tickes = ticks;
+        // get_time(&time);
     }
 }
 volatile int ta = 0;
@@ -98,7 +96,7 @@ void shell(void* arg)
         {
             fifo_get(&keybuf,&data);
             console_char(0x07,data);
-            put_char_graphic(&(Screen.win),pos_x,pos_y,0x00ffffff,data);
+            vput_char((void*)0xe0000000,ScrnX,pos_x,pos_y,rgb(255,255,255),data);
             pos_x += 8;
             if (data == enter)
             {

@@ -9,54 +9,52 @@
 
 typedef uint32_t pixel_t;
 
-struct viewBlock
+struct viewblock
 {
-    struct list_elem tag;
-    pixel_t* buf;
-    int x;
-    int y;
-    uint32_t xsize;
-    uint32_t ysize;
+    struct viewctl* ctl;          /* 图层对应的ctl */
+    pixel_t* buf;                 /* 图层内容 */
+    int height;                   /* 图层高度 */
+    int x;                        /* 图层x坐标 */
+    int y;                        /* 图层y坐标 */
+    uint32_t xsize;               /* 图层x轴长度 */
+    uint32_t ysize;               /* 图层y轴长度 */
 };
 
-struct viewCtl
+struct viewctl
 {
-    struct list views;
-    pixel_t* vram;
-    int xsize;
-    int ysize;
-    ptr_t* map;
+    struct viewblock** view0; /* 存放排序好的view的指针 */
+    int views;                /* view个数 */
+    int top;                  /* 最上面的图层编号 + 1 */
+    pixel_t* vram;            /* 显存 */
+    int xsize;                /* x轴像素数 */
+    int ysize;                /* y轴像素数 */
+    ptr_t* map;               /* 刷新图层用的map */
 };
 
-/* Rectangle
-* 长方形,矩形
-*/
-struct Rectangle
-{
-    uint32_t* vram;     /* 显示缓冲区地址 */
-    uint32_t xsize;     /* x长度 */
-    uint32_t ysize;     /* y长度 */
-    uint32_t XPostiton; /* 左上x坐标 */
-    uint32_t YPostiton; /* 左上y坐标 */
-    struct list_elem tag; /* 所在的链表(矩形最终要在一个窗口中,链表用来连接所有图形) */
-};
+extern struct viewctl* Screen_Ctl;
 
-/* 窗口
-*/
-struct Window
-{
-    struct Rectangle win; /* 窗口本体 */
-    struct list graphic;  /* 窗口中的图形 */
-    struct Rectangle map; /* 刷新图形的用的map */
-    uint32_t graphics;    /* 图形数量 */
-};
-
-extern struct Window Screen;/* 屏幕定义为矩形,不支持奇形怪状的屏幕 */
-
-void init_Rectangle(struct Rectangle* rectangle,uint32_t* vram,int xsize,int ysize,int x,int y);
-void RectangleFill(struct Rectangle* rectangle,uint32_t color,int x0,int y0,int x1,int y1);
-void init_screen(struct Window* scrn);
-void put_char_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,char _font);
-void put_str_graphic(struct Rectangle* rectangle,int x,int y,uint32_t color,const char* str);
+void init_screen();
+/* 创建一个viewctl */
+struct viewctl* viewctl_init(pixel_t* vram,int xsize,int ysize,int views);
+/* 创建一个view */
+struct viewblock* viewblock_init(int xsize,int ysize);
+/* 释放view */
+void view_free(struct viewblock* view);
+/* 将view插入ctl的图层队列中 */
+void viewInsert(struct viewctl* ctl,struct viewblock* view);
+/* 将view移出队列 */
+void viewRemove(struct viewblock* view);
+/* 调整高度 */
+void viewUpdown(struct viewblock* view,int height);
+/* 移动图层 */
+void viewSlide(struct viewblock* view,int x,int y);
+/* 图层刷新 */
+void view_reflush(struct viewctl* ctl);
+/* 用color代表的颜色填充显存vram从(x0,y0)到(x1,y1)之间的区域 */
+void viewFill(pixel_t* vram,int xsize,pixel_t color,int x0,int y0,int x1,int y1);
+/* 将字符c以颜色color显示到显存的(x,y)处 */
+void vput_char(pixel_t* vram,int xsize,int x,int y,pixel_t color,char c);
+/* 将字符串str以颜色color显示到显存的(x,y)处 */
+void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str);
 
 #endif /* __GRAPHIC_H__ */
