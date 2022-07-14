@@ -51,6 +51,7 @@ $(USERPROG_DIR)process.co    \
 $(DEVICE_DIR)console.co      \
 $(DEVICE_DIR)cpu.co          \
 $(DEVICE_DIR)keyboard.co     \
+$(DEVICE_DIR)mouse.co        \
 $(DEVICE_DIR)time.co         \
 $(DEVICE_DIR)timer.co        \
 \

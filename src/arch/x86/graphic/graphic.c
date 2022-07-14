@@ -1,29 +1,37 @@
 #include "graphic.h"
+
 #include "global.h"
+#include "logo.h"
 #include "memory.h"
 #include "stdint.h"
+#include "sync.h"
 
 extern unsigned char PKnFont[256][16];
 // extern unsigned char* PKnFont;
 PUBLIC struct viewctl* Screen_Ctl;
+PUBLIC struct viewblock* background;
 
 struct viewctl* viewctl_init(pixel_t* vram,int xsize,int ysize,int views)
 {
     struct viewctl* ctl;
-    struct viewblock** tmp_view;
     ctl = (struct viewctl*)sys_malloc(sizeof(struct viewctl));
-    tmp_view = (struct viewblock**)sys_malloc(sizeof(struct viewblock*) * views);
-    if(ctl == NULL || tmp_view == NULL)
+    if(ctl == NULL)
     {
         return ctl;
     }
-    ctl->view0 = tmp_view;
+    ctl->view0 = (struct viewblock**)sys_malloc(sizeof(struct viewblock*) * views);
+    if(ctl->view0 == NULL)
+    {
+        sys_free(ctl);
+        return NULL;
+    }
     ctl->views = views;
     ctl->top = 0;
     ctl->vram = vram;
     ctl->xsize = xsize;
     ctl->ysize = ysize;
     ctl->map = (ptr_t*)sys_malloc((sizeof(pixel_t) * xsize * ysize));
+    // lock_init(&(ctl->lock));
     if((ctl->map) == NULL)
     {
         sys_free(ctl);
@@ -40,6 +48,11 @@ struct viewblock* viewblock_init(int xsize,int ysize)
         return NULL;
     }
     view->buf = sys_malloc(sizeof(pixel_t) * xsize * ysize);
+    if(view->buf == NULL)
+    {
+        sys_free(view);
+        return NULL;
+    }
     view->ctl = NULL;
     view->height = 0;
     view->x = 0;
@@ -54,9 +67,7 @@ void view_free(struct viewblock* view)
 {
     if(view->ctl != NULL)
     {
-        struct viewctl* ctl = view->ctl;
         viewRemove(view);
-        view_reflush(ctl);
     }
     sys_free(view->buf);
     sys_free(view);
@@ -65,26 +76,32 @@ void view_free(struct viewblock* view)
 
 void viewInsert(struct viewctl* ctl,struct viewblock* view)
 {
-    view->ctl = ctl;
+    // lock_acquire(&(ctl->lock));
     if(ctl->top <= ctl->views - 1)
     {
+        view->ctl = ctl;
         ctl->view0[ctl->top] = view;
         view->height = ctl->top;
         ctl->top++;
     }
+    // lock_release(&(ctl->lock));
     return;
 }
 
 void viewRemove(struct viewblock* view)
 {
     int i;
-    for(i = view->height;i < (view->ctl->top);i++)
+    // lock_acquire(&(view->ctl->lock));
+    for(i = view->height;i < (view->ctl->top - 1);i++)
     {
         view->ctl->view0[i] = view->ctl->view0[i - 1];
         view->ctl->view0[i]->height = i;
     }
     view->ctl->top--;
-    view_reflush(view->ctl);
+    view_reflushmap(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0);
+    view_reflushsub(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0,view->height);
+    // lock_release(&(view->ctl->lock));
+    view->height = 0;
     view->ctl = NULL;
     return;
 }
@@ -95,9 +112,10 @@ void viewUpdown(struct viewblock* view,int height)
     int i;
     int old_height = view->height;
     /* 修正高度 */
-    if(height > (ctl->top))
+    // lock_acquire(&(ctl->lock));
+    if(height > (ctl->top - 1))
     {
-        height = ctl->top;
+        height = ctl->top - 1;
     }
     if(height < 0)
     {
@@ -114,6 +132,10 @@ void viewUpdown(struct viewblock* view,int height)
             ctl->view0[i]->height = i;
         }
         ctl->view0[i] = view;
+        /* 刷新 */
+        view_reflushmap(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height + 1);
+        view_reflushsub(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height + 1,old_height);
+
     }
     /* 图层升高 */
     else if(old_height < height)
@@ -124,41 +146,121 @@ void viewUpdown(struct viewblock* view,int height)
             ctl->view0[i]->height = i;
         }
         ctl->view0[i] = view;
+        /* 刷新 */
+        view_reflushmap(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height);
+        view_reflushsub(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height,view->height);
     }
-    /* 刷新 */
-    view_reflush(ctl);
+    // lock_release(&(ctl->lock));
     return;
 }
 
 void viewSlide(struct viewblock* view,int x,int y)
 {
+    int x0 = view->x;
+    int y0 = view->y;
     view->x = x;
     view->y = y;
-    view_reflush(view->ctl);
+    view_reflushmap(view->ctl,x0,y0,x0 + (view->xsize),y0 + (view->ysize),0);
+    view_reflushmap(view->ctl,view->x,view->y,view->x + (view->xsize),view->y + (view->ysize),view->height);
+    view_reflushsub(view->ctl,x0,y0,x0 + (view->xsize),y0 + (view->ysize),0,view->height - 1);
+    view_reflushsub(view->ctl,view->x,view->y,view->x + (view->xsize),view->y + (view->ysize),view->height,view->height);
     return;
 }
 
-void view_reflush(struct viewctl* ctl)
+void view_reflush(struct viewblock* view,int x0,int y0,int x1,int y1)
 {
-    int h;
+    view_reflushsub(view->ctl,view->x + x0,view->y + y0,view->x + x1,view->y + y1,view->height,view->height);
+    return;
+}
+
+void view_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0,int h1)
+{
     int bx;
     int by;
-    int fx;
-    int fy;
+    int bx0;
+    int by0;
+    int bx1;
+    int by1;
+    int x;
+    int y;
+    int h;
     struct viewblock* view;
-    for(h = 0;h < (ctl->top);h++)
+    // lock_acquire(&(ctl->lock));
+    if(x0 < 0){ x0 = 0; }
+    if(y0 < 0){ y0 = 0; }
+    if(x1 > (ctl->xsize)){ x1 = ctl->xsize; }
+    if(y1 > (ctl->ysize)){ y1 = ctl->ysize; }
+    for(h = h0;h <= h1;h++)
     {
         view = ctl->view0[h];
-        for(by = 0;by < (view->ysize);by++)
+        bx0 = x0 - view->x;
+        by0 = y0 - view->y;
+        bx1 = x1 - view->x;
+        by1 = y1 - view->y;
+        if(bx0 < 0){ bx0 = 0; }
+        if(by0 < 0){ by0 = 0; }
+        if(bx1 > (view->xsize)){ bx1 = view->xsize; }
+        if(by1 > (view->ysize)){ by1 = view->ysize; }
+        for(by = by0;by < by1;by++)
         {
-            fy = view->y + by;
-            for(bx = 0;bx < (view->xsize);bx++)
+            y = (view->y) + by;
+            for(bx = bx0;bx < bx1;bx++)
             {
-                fx = view->x + bx;
-                ctl->vram[fy * (ctl->xsize) + fx] = view->buf[by * (view->xsize) + bx];
+                x = (view->x) + bx;
+                /* 根据map刷新 */
+                if(ctl->map[y * (ctl->xsize) + x] == (ptr_t)view)
+                {
+                    ctl->vram[y * (ctl->xsize) + x] = view->buf[by * (view->xsize) + bx];
+                }
             }
         }
     }
+    // lock_release(&(ctl->lock));
+    return;
+}
+
+void view_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0)
+{
+    int bx;
+    int by;
+    int bx0;
+    int by0;
+    int bx1;
+    int by1;
+    int x;
+    int y;
+    int h;
+    struct viewblock* view;
+    // lock_acquire(&(ctl->lock));
+    if(x0 < 0){ x0 = 0; }
+    if(y0 < 0){ y0 = 0; }
+    if(x1 > (ctl->xsize)){ x1 = ctl->xsize; }
+    if(y1 > (ctl->ysize)){ y1 = ctl->ysize; }
+    for(h = h0;h < (ctl->top);h++)
+    {
+        view = ctl->view0[h];
+        bx0 = x0 - view->x;
+        by0 = y0 - view->y;
+        bx1 = x1 - view->x;
+        by1 = y1 - view->y;
+        if(bx0 < 0){ bx0 = 0; }
+        if(by0 < 0){ by0 = 0; }
+        if(bx1 > (view->xsize)){ bx1 = view->xsize; }
+        if(by1 > (view->ysize)){ by1 = view->ysize; }
+        for(by = by0;by < by1;by++)
+        {
+            y = (view->y) + by;
+            for(bx = bx0;bx < bx1;bx++)
+            {
+                x = (view->x) + bx;
+                if((view->buf[by * (view->xsize) + bx] & 0xff000000) != 0xff000000)
+                {
+                    ctl->map[y * (ctl->xsize) + x] = (ptr_t)view;
+                }
+            }
+        }
+    }
+    // lock_release(&(ctl->lock));
     return;
 }
 
@@ -234,40 +336,30 @@ void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str)
 
 void init_screen()
 {
-    if(DisplayMode == _GRAPHIC)
+    Screen_Ctl = viewctl_init((void*)0xe0000000,ScrnX,ScrnY,512);
+    /* 创建背景 */
+    background = viewblock_init(ScrnX,ScrnY);
+    viewInsert(Screen_Ctl,background);
+
+    int x;
+    int y;
+    x = ScrnX / 2 - 7 * 20 - 10;
+    y = ScrnY / 2 - 7 * 20 - 10;
+    int i;
+    int j;
+    for(i = 0;i < 15;i++)
     {
-        Screen_Ctl = viewctl_init((void*)0xe0000000,ScrnX,ScrnY,1024);
-        /* 创建背景 */
-        struct viewblock* background = viewblock_init(ScrnX,ScrnY);
-        viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
-        viewInsert(Screen_Ctl,background);
-        viewUpdown(background,0);
-        view_reflush(Screen_Ctl);
-
-        // test
-        struct viewblock* v1 = viewblock_init(100,100);
-        viewFill(v1->buf,v1->xsize,rgb(0,0,132),0,0,v1->xsize - 1,v1->ysize - 1);
-        viewInsert(Screen_Ctl,v1);
-        viewUpdown(v1,1);
-        viewSlide(v1,10,10);
-
-        viewRemove(v1);
-        viewInsert(Screen_Ctl,v1);
-        viewUpdown(v1,1);
-    //     int offset = 3;
-    //     init_Rectangle(&(scrn->win),(uint32_t*)0xe0000000,ScrnX,ScrnY,0,0);
-    //     RectangleFill(&(scrn->win),0x00008484,0,0,ScrnX - 1,ScrnY - 1 - 50);
-    //     /* 底部的任务栏 */
-    //     RectangleFill(&(scrn->win),0x00c6c6c6,0,ScrnY - 1 - 50,ScrnX - 1,ScrnY - 1);
-    //     /* 左边相当于'开始'菜单的那个按钮 */
-    //     /* 按钮阴影 */
-    //     RectangleFill(&(scrn->win),0x00848484,10 + offset,ScrnY - 1- 40 + offset,40 + offset,ScrnY - 1 - 10 + offset);
-    //     /* 本体 */
-    //     RectangleFill(&(scrn->win),0x00ffffff,10,ScrnY - 1 - 40,40,ScrnY - 1 - 10);
-
-    //     /* 分隔符 */
-    //     RectangleFill(&(scrn->win),0x00848484,50 + offset,ScrnY - 1 - 40 + offset,55 + offset,ScrnY - 1 - 10 + offset);
-    //     RectangleFill(&(scrn->win),0x00ffffff,50,ScrnY - 1 - 40,55,ScrnY - 1 - 10);
+        for(j = 0;j < 15;j++)
+        {
+            if(PencilLogo[i][j] == '#')
+            {
+                viewFill((void*)0xe0000000,ScrnX,rgb(255,255,255),x + 20 * j,y + 20 * i,x + 20 * (j + 1),y + 20 * (i + 1));
+            }
+            else
+            {
+                viewFill((void*)0xe0000000,ScrnX,rgb(0,0,0),x + 20 * j,y + 20 * i,x + 20 * (j + 1),y + 20 * (i + 1));
+            }
+        }
     }
     return;
 }

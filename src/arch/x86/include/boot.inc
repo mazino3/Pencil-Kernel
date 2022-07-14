@@ -8,7 +8,7 @@
 %define __BOOT_HARDDISK__
 
 ;界面,同样只能选一个,同时选择将使用文本界面
-;%define __UI_TEXT__
+; %define __UI_TEXT__
 %define __UI_GRAPHIC__
 
 
@@ -31,10 +31,27 @@ DrvNum equ 0x7b00
     ;0x144,1024 * 768
     ;0x145,1280 * 1024
     ;0x18c,2560 * 1600
-    ;这里挑3个来尝试,总会有一个可以的吧?
-        VBE_MODE1 equ 0x143 ;首选模式号
-        VBE_MODE2 equ 0x118 ;备选号1
-        VBE_MODE3 equ 0x140 ;备选号2
+    %macro VIDEO_MODES 0
+        dw 0x143
+        ; 2560 * 1600
+        ; dw 0x18b
+        ; dw 0x18c
+        ; 1920 * 1200
+        ; dw 0x188
+        ; dw 0x189
+        ; 1920 * 1080
+        dw 0x191
+        dw 0x192
+
+        dw 0x145
+        dw 0x144
+        dw 0x142
+        dw 0x140
+        dw 0x11b
+        dw 0x11a
+        dw 0x119
+        dw 0x118
+    %endmacro
 %endif
 
 ;BootLoader的信息
@@ -67,15 +84,8 @@ Vram_h      equ 0x7c20 ; + 20 显存地址高32位(对于32位系统,这个值�
 ScrnX       equ 0x7c24 ; + 24 对于文本模式,这是指列数;对于图形模式,这是指x轴方向上的像素数
 ScrnY       equ 0x7c28 ; + 28 对于文本模式,这是指行数;对于图形模式,这是指y轴方向上的像素数
 
-
-; %ifdef __BOOT_FLOPPY__
-;     KernelStartSec equ 0x09   ;Kernel在9扇区(LBA)开始处
-; %endif
-; %ifdef __BOOT_HARDDISK__
 KernelStartSec equ 0x48   
 
-;KernelSectors equ 256         ;Kernel占用128扇区(Max:128)注意:启动时不能超过128(实体机<= 64),不然有重启现象
-;7f00 ~ 87f00
 KernelBlockSize equ 64
 KernelReadLoop equ 16
 

@@ -43,25 +43,7 @@ OffsetOfKernel dd 0x100000
 
 ;Vbe 模式号列表
 VideoModeList:
-    dw 0x143
-    ; 2560 * 1600
-    ; dw 0x18b
-    ; dw 0x18c
-    ; 1920 * 1200
-    ; dw 0x188
-    ; dw 0x189
-    ; 1920 * 1080
-    dw 0x191
-    dw 0x192
-
-    dw 0x145
-    dw 0x144
-    dw 0x142
-    dw 0x140
-    dw 0x11b
-    dw 0x11a
-    dw 0x119
-    dw 0x118
+    VIDEO_MODES
 VideoModeListEnd equ $
 
 times (LoaderOffsetAddress - ($ - $$)) db 0;将start对齐到文件起始LoaderOffsetAddress处

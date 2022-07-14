@@ -5,6 +5,10 @@
 #include "stdint.h"
 
 #define KEYBOARD_BUF_PORT 0x60
+#define KEYBOARD_WRITE_MD 0x60
+#define KEYBOARD_STA_PORT 0x64
+#define KEYBOARD_CMD_PORT 0x64
+#define KEYBOARD_NOTREADY 0x02
 
 /* 不可见字符 */
 #define esc '\033'
@@ -33,6 +37,7 @@
 
 extern struct FIFO keybuf;
 
+void wait_keyboard_ready();
 void init_keyboard();
 void intr0x21_handler(void);
 

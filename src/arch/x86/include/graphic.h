@@ -3,6 +3,7 @@
 
 #include "list.h"
 #include "stdint.h"
+#include "sync.h"
 
 #define rgb(R,G,B) ((uint32_t)(0x00000000 |( R << 16 | G << 8 | B << 0 )))
 #define rgba(R,G,B,A) ((uint32_t)(0x00000000 |( A << 24 | R << 16 | G << 8 | B << 0 )))
@@ -29,9 +30,11 @@ struct viewctl
     int xsize;                /* x轴像素数 */
     int ysize;                /* y轴像素数 */
     ptr_t* map;               /* 刷新图层用的map */
+    // struct lock lock;         /* 锁 */
 };
 
 extern struct viewctl* Screen_Ctl;
+extern struct viewblock* background;
 
 void init_screen();
 /* 创建一个viewctl */
@@ -49,7 +52,10 @@ void viewUpdown(struct viewblock* view,int height);
 /* 移动图层 */
 void viewSlide(struct viewblock* view,int x,int y);
 /* 图层刷新 */
-void view_reflush(struct viewctl* ctl);
+void view_reflush(struct viewblock* view,int x0,int y0,int x1,int y1);
+/* 刷新一部分 */
+void view_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0,int h1);
+void view_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0);
 /* 用color代表的颜色填充显存vram从(x0,y0)到(x1,y1)之间的区域 */
 void viewFill(pixel_t* vram,int xsize,pixel_t color,int x0,int y0,int x1,int y1);
 /* 将字符c以颜色color显示到显存的(x,y)处 */

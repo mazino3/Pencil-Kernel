@@ -4,6 +4,7 @@
 #include "global.h"
 #include "io.h"
 #include "keyboard.h"
+#include "mouse.h"
 #include "print.h"
 #include "stdint.h"
 #include "stdio.h"
@@ -32,8 +33,8 @@ void init_pic()
     io_out8(PIC_S_DATA, 0x02 ); /* PIC1 IRQ2 */
     io_out8(PIC_S_DATA, 0x01 ); /* 无缓冲区模式 */
 
-    io_out8(PIC_M_DATA, 0xfc ); /* 11111100 只打开时间和键盘中断 */
-    io_out8(PIC_S_DATA, 0xff ); /* 11111111 禁止所有中断 */
+    io_out8(PIC_M_DATA, 0xf8 ); /* 11111000 只打开时间和键盘中断 */
+    io_out8(PIC_S_DATA, 0xef ); /* 11101111 只打开鼠标中断 */
 
     return;
 }
@@ -57,6 +58,7 @@ void idt_desc_init(void)
     idt_table[0x20] = intr0x20_handler;
     idt_table[0x21] = intr0x21_handler;
     idt_table[0x27] = intr0x27_handler;
+    idt_table[0x2c] = intr0x2c_handler;
     for(i = 0;i < IDT_DESC_CNT;i++)
     {
         set_gatedesc(&idt[i],intr_entry_table[i],SelectorCode32_K,AR_IDT_DESC_DPL0);

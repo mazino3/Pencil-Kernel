@@ -80,8 +80,23 @@ static char keymap [][2] =
     { casplock, casplock}, /* 0x3a */
 };
 
+void wait_keyboard_ready()
+{
+    while(1)
+    {
+        if((io_in8(KEYBOARD_STA_PORT) & KEYBOARD_NOTREADY) == 0)
+        {
+            break;
+        }
+    }
+}
+
 void init_keyboard()
 {
+    wait_keyboard_ready();
+    io_out8(KEYBOARD_CMD_PORT,KEYBOARD_WRITE_MD);
+    wait_keyboard_ready();
+    io_out8(KEYBOARD_BUF_PORT,0x47);
     init_fifo(&keybuf,buf,8,64);
     return;
 }
