@@ -23,7 +23,7 @@
 
 void k_thread_a(void* arg);
 void shell(void* arg);
-void Mouse_thread(void* arg);
+void View_thread(void* arg);
 void k_thread_c(void* arg);
 void u_prog_a(void);
 void u_prog_b(void);
@@ -38,9 +38,9 @@ void kernel_main(void)
     }
     set_cursor(0);
     init_all();
+
     intr_enable(); /* 开中断 */
     console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-
     console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
     console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
     console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
@@ -53,7 +53,7 @@ void kernel_main(void)
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("shell",31,shell,NULL);
-    thread_start("Mouse",31,Mouse_thread,NULL);
+    thread_start("View",31,View_thread,NULL);
     process_execute(u_prog_a,"user_prog");
     process_execute(u_prog_b,"user_prog");
     // thread_start("k_c",31,k_thread_c,"arg_C ");
@@ -73,6 +73,21 @@ void k_thread_a(void* arg)
     viewFill(task_bar->buf,task_bar->xsize,rgb(132,132,132),10 + off,10 + off,40 + off,40 + off);
     viewFill(task_bar->buf,task_bar->xsize,rgb(255,255,255),      10,      10,      40,      40);
 
+    int logo_x = 10;
+    int logo_y = 10;
+    int x;
+    int y;
+    for(y = 0;y < 15;y++)
+    {
+        for(x = 0;x < 15;x++)
+        {
+            if(PencilLogo[y][x] == '#')
+            {
+                viewFill(task_bar->buf,task_bar->xsize,rgb(132,132,132),logo_x + 2 * x,logo_y + 2 * y,logo_x + 2 * (x + 1) ,logo_y + 2 * (y + 1));
+            }
+        }
+    }
+
     viewFill(task_bar->buf,task_bar->xsize,rgb(132,132,132),50 + off,10 + off,60 + off,40 + off);
     viewFill(task_bar->buf,task_bar->xsize,rgb(255,255,255),      50,      10,      60,      40);
 
@@ -80,14 +95,13 @@ void k_thread_a(void* arg)
     viewFill(task_bar->buf,task_bar->xsize,rgb(132,132,132),task_bar->xsize - 153 + off,task_bar->ysize - 41 + off,task_bar->xsize - 11 + off,task_bar->ysize - 11 + off);
     viewFill(task_bar->buf,task_bar->xsize,rgb(255,255,255),      task_bar->xsize - 153,      task_bar->ysize - 41,      task_bar->xsize - 11,      task_bar->ysize - 11);
 
-    viewInsert(Screen_Ctl,task_bar);
+    viewInsert(&Screen_Ctl,task_bar);
     viewSlide(task_bar,0,background->ysize - 50);
 
     struct TIME time;  /* 十进制表示的现实时间 */
     get_time(&time);
     int old_tickes = ticks;
     char str[32];
-    // RectangleFill(&(Screen.win), 0x00ffffff,ScrnX - 158,ScrnY - 1 - 40,ScrnX - 10,ScrnY - 1 - 10);
     while(1)
     {
         sprintf(str,"%04x/%02x/%02x %02x:%02x",time.year,time.month,time.day,time.hour,time.minuet);
@@ -126,29 +140,10 @@ void shell(void* arg)
     }
 }
 
-void Mouse_thread(void* arg)
+void View_thread(void* arg)
 {
     struct viewblock* mouse = viewblock_init(16,16);
-    // static char cursor[16][16] = 
-    // {
-    //     "****************",
-    //     "*#############*-",
-    //     "*############*--",
-    //     "*###########*---",
-    //     "*##########*----",
-    //     "*#########*-----",
-    //     "*########*------",
-    //     "*#######*-------",
-    //     "*######*--****--",
-    //     "*#####*--*####*-",
-    //     "*####*--*######*",
-    //     "*###*---*######*",
-    //     "*##*----*######*",
-    //     "*#*-----*######*",
-    //     "**-------*####*-",
-    //     "*---------****--",
-        
-    // };
+
     static char cursor[16][16] = 
     {
         "*---------------",
@@ -193,35 +188,16 @@ void Mouse_thread(void* arg)
     viewUpdown(background,0);
     viewSlide(background,0,0);
 
-    struct viewblock* logo = viewblock_init(31,31);
-    for(y = 0;y < 15;y++)
-    {
-        for(x = 0;x < 15;x++)
-        {
-            if(PencilLogo[y][x] == '#')
-            {
-                viewFill(logo->buf,logo->xsize,rgb(255,255,255),2 * x,2 * y,2 * (x + 1) ,2 * (y + 1));
-            }
-            else
-            {
-                viewFill(logo->buf,logo->xsize,rgb(0,0,0),2 * x,2 * y,2 * (x + 1) ,2 * (y + 1));
-
-            }
-        }
-    }
-    viewInsert(Screen_Ctl,logo);
-    viewSlide(logo,ScrnX - 40,ScrnY - 91);
     struct MouseData md;
-    viewInsert(Screen_Ctl,mouse);
-    viewUpdown(mouse,Screen_Ctl->top - 1);
+    viewInsert(&Screen_Ctl,mouse);
+    viewUpdown(mouse,Screen_Ctl.top - 1);
     int mx = ScrnX / 2;
     int my = ScrnY / 2;
     viewSlide(mouse,mx,my);
 
     while(1)
     {
-        viewUpdown(mouse,Screen_Ctl->top - 2);
-        viewUpdown(logo,Screen_Ctl->top - 1);
+        viewUpdown(mouse,Screen_Ctl.top - 1);
         md = get_mouse();
         if(md.phase != 0)
         {
@@ -235,13 +211,13 @@ void Mouse_thread(void* arg)
             {
                 my = 0;
             }
-            if(mx > Screen_Ctl->xsize - 3)
+            if(mx > Screen_Ctl.xsize - 3)
             {
-                mx = Screen_Ctl->xsize - 3;
+                mx = Screen_Ctl.xsize - 3;
             }
-            if(my > Screen_Ctl->ysize - 3)
+            if(my > Screen_Ctl.ysize - 3)
             {
-                my = Screen_Ctl->ysize - 3;
+                my = Screen_Ctl.ysize - 3;
             }
             viewSlide(mouse,mx,my);
         }

@@ -163,6 +163,7 @@ void thread_block(enum task_status status)
     enum intr_status old_status = intr_disable();
     struct task_struct* cur_thread = running_thread();
     cur_thread->status = status;
+    ASSERT(cur_thread->general_tag.data == cur_thread);
     schedule();
     intr_set_status(old_status);
     return;
@@ -185,7 +186,7 @@ void thread_unblock(struct task_struct* pthread)
     return;
 }
 
-/* void _switch_to(struct thread_struct* current,struct thread_struct* next) */
+/* void switch_to(struct thread_struct* current,struct thread_struct* next) */
 __asm__
 (
     "switch_to:"

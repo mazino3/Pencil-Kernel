@@ -1,6 +1,9 @@
 # Pencil-Kernel Makefile
 # 反汇编内核: objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 
+# Release
+# CDEF := -D NDEBUG
+
 # tools
 TOOL_DIR := ../../../tools/
 AS := $(TOOL_DIR)as
@@ -108,7 +111,7 @@ MAKE_DIR := md
 
 %.co: %.c Makefile
 	@$(ECHO) compile $<
-	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 -m32 -Os -quiet -Wall  -o $*.s $*.c
+	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -Os -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
 $(v_disk): vhd.asm

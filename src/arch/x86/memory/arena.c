@@ -124,6 +124,7 @@ void* sys_malloc(int size)
         a->desc = NULL;
         a->cnt = pg_cnt;
         a->large = true;
+        ASSERT(a->desc == NULL && a->cnt == pg_cnt && a->large == true);
         lock_release(&(mem_pool->lock));
         return ((void*)(a + 1));
     }

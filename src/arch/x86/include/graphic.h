@@ -23,6 +23,7 @@ struct viewblock
 
 struct viewctl
 {
+    struct lock lock;         /* 锁 */
     struct viewblock** view0; /* 存放排序好的view的指针 */
     int views;                /* view个数 */
     int top;                  /* 最上面的图层编号 + 1 */
@@ -30,15 +31,14 @@ struct viewctl
     int xsize;                /* x轴像素数 */
     int ysize;                /* y轴像素数 */
     ptr_t* map;               /* 刷新图层用的map */
-    // struct lock lock;         /* 锁 */
 };
 
-extern struct viewctl* Screen_Ctl;
+extern struct viewctl Screen_Ctl;
 extern struct viewblock* background;
 
 void init_screen();
 /* 创建一个viewctl */
-struct viewctl* viewctl_init(pixel_t* vram,int xsize,int ysize,int views);
+void viewctl_init(struct viewctl* ctl,pixel_t* vram,int xsize,int ysize,int views);
 /* 创建一个view */
 struct viewblock* viewblock_init(int xsize,int ysize);
 /* 释放view */

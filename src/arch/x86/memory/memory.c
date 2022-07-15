@@ -304,7 +304,7 @@ int pgman_free(struct MEMMAN* memman,void* pg_addr,int pg_cnt)
     if((memman->frees) < MEMMAN_MAX)
     {
         /* free[i]往后移动,腾出空间 */
-        for(k = (memman->frees);k > i;k++)
+        for(k = (memman->frees);k > i;k--) /* 这里之前写成了K++,MD找了好久才发现,内存管理模块至此完工 */
         {
             memman->free[k] = memman->free[k - 1];
         }
@@ -337,7 +337,7 @@ void page_table_remove(void* vaddr)
 void paddr_free(void* paddr)
 {
     struct MEMMAN* pool;
-    if((uint32_t)paddr >= user_pool_start)
+    if((ptr_t)paddr >= user_pool_start)
     {
         pool = &user_pool;
     }
@@ -363,13 +363,14 @@ void vaddr_free(enum pool_flage pf,void* vaddr,uint32_t free_pg_cnt)
     return;
 }
 
-void page_free(enum pool_flage pf,void* vaddr,int free_pg_cnt)
+void page_free(enum pool_flage pf,void* pvaddr,int free_pg_cnt)
 {
     void* pg_paddr;
     uint32_t pg_cnt;
-    ASSERT(free_pg_cnt >= 1 && (uint32_t)vaddr % PG_SIZE == 0);
-    pg_paddr = addr_v2p(vaddr);
+    ASSERT(free_pg_cnt >= 1 && (uint32_t)pvaddr % PG_SIZE == 0);
+    pg_paddr = addr_v2p(pvaddr);
     ASSERT(((ptr_t)pg_paddr % PG_SIZE) == 0 && ((ptr_t)pg_paddr) >= KERNEL_PAGE_DIR_TABLE_POS + 0x200000);
+    uint8_t* vaddr = pvaddr;
     /* 用户释放内存 */
     if((ptr_t)pg_paddr >= user_pool_start)
     {
@@ -380,8 +381,9 @@ void page_free(enum pool_flage pf,void* vaddr,int free_pg_cnt)
             paddr_free(pg_paddr);
             page_table_remove(vaddr);
             pg_cnt++;
+            vaddr += PG_SIZE;
         }
-        vaddr_free(pf,vaddr,free_pg_cnt);
+        vaddr_free(pf,pvaddr,free_pg_cnt);
     }
     else
     {
@@ -392,8 +394,9 @@ void page_free(enum pool_flage pf,void* vaddr,int free_pg_cnt)
             paddr_free(pg_paddr);
             page_table_remove(vaddr);
             pg_cnt++;
+            vaddr += PG_SIZE;
         }
-        vaddr_free(pf,vaddr,free_pg_cnt);
+        vaddr_free(pf,pvaddr,free_pg_cnt);
     }
     return;
 }

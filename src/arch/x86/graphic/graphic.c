@@ -7,37 +7,21 @@
 #include "sync.h"
 
 extern unsigned char PKnFont[256][16];
-// extern unsigned char* PKnFont;
-PUBLIC struct viewctl* Screen_Ctl;
+
+PUBLIC struct viewctl Screen_Ctl;
 PUBLIC struct viewblock* background;
 
-struct viewctl* viewctl_init(pixel_t* vram,int xsize,int ysize,int views)
+void viewctl_init(struct viewctl* ctl,pixel_t* vram,int xsize,int ysize,int views)
 {
-    struct viewctl* ctl;
-    ctl = (struct viewctl*)sys_malloc(sizeof(struct viewctl));
-    if(ctl == NULL)
-    {
-        return ctl;
-    }
     ctl->view0 = (struct viewblock**)sys_malloc(sizeof(struct viewblock*) * views);
-    if(ctl->view0 == NULL)
-    {
-        sys_free(ctl);
-        return NULL;
-    }
     ctl->views = views;
     ctl->top = 0;
     ctl->vram = vram;
     ctl->xsize = xsize;
     ctl->ysize = ysize;
     ctl->map = (ptr_t*)sys_malloc((sizeof(pixel_t) * xsize * ysize));
-    // lock_init(&(ctl->lock));
-    if((ctl->map) == NULL)
-    {
-        sys_free(ctl);
-        ctl = NULL;
-    }
-    return ctl;
+    lock_init(&(ctl->lock));
+    return;
 }
 
 struct viewblock* viewblock_init(int xsize,int ysize)
@@ -76,7 +60,7 @@ void view_free(struct viewblock* view)
 
 void viewInsert(struct viewctl* ctl,struct viewblock* view)
 {
-    // lock_acquire(&(ctl->lock));
+    lock_acquire(&(ctl->lock));
     if(ctl->top <= ctl->views - 1)
     {
         view->ctl = ctl;
@@ -84,14 +68,14 @@ void viewInsert(struct viewctl* ctl,struct viewblock* view)
         view->height = ctl->top;
         ctl->top++;
     }
-    // lock_release(&(ctl->lock));
+    lock_release(&(ctl->lock));
     return;
 }
 
 void viewRemove(struct viewblock* view)
 {
     int i;
-    // lock_acquire(&(view->ctl->lock));
+    lock_acquire(&(view->ctl->lock));
     for(i = view->height;i < (view->ctl->top - 1);i++)
     {
         view->ctl->view0[i] = view->ctl->view0[i - 1];
@@ -100,7 +84,7 @@ void viewRemove(struct viewblock* view)
     view->ctl->top--;
     view_reflushmap(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0);
     view_reflushsub(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0,view->height);
-    // lock_release(&(view->ctl->lock));
+    lock_release(&(view->ctl->lock));
     view->height = 0;
     view->ctl = NULL;
     return;
@@ -112,7 +96,7 @@ void viewUpdown(struct viewblock* view,int height)
     int i;
     int old_height = view->height;
     /* 修正高度 */
-    // lock_acquire(&(ctl->lock));
+    lock_acquire(&(ctl->lock));
     if(height > (ctl->top - 1))
     {
         height = ctl->top - 1;
@@ -150,7 +134,7 @@ void viewUpdown(struct viewblock* view,int height)
         view_reflushmap(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height);
         view_reflushsub(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height,view->height);
     }
-    // lock_release(&(ctl->lock));
+    lock_release(&(ctl->lock));
     return;
 }
 
@@ -185,7 +169,7 @@ void view_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0,int 
     int y;
     int h;
     struct viewblock* view;
-    // lock_acquire(&(ctl->lock));
+    lock_acquire(&(ctl->lock));
     if(x0 < 0){ x0 = 0; }
     if(y0 < 0){ y0 = 0; }
     if(x1 > (ctl->xsize)){ x1 = ctl->xsize; }
@@ -215,7 +199,7 @@ void view_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0,int 
             }
         }
     }
-    // lock_release(&(ctl->lock));
+    lock_release(&(ctl->lock));
     return;
 }
 
@@ -231,7 +215,7 @@ void view_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0)
     int y;
     int h;
     struct viewblock* view;
-    // lock_acquire(&(ctl->lock));
+    lock_acquire(&(ctl->lock));
     if(x0 < 0){ x0 = 0; }
     if(y0 < 0){ y0 = 0; }
     if(x1 > (ctl->xsize)){ x1 = ctl->xsize; }
@@ -260,7 +244,7 @@ void view_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0)
             }
         }
     }
-    // lock_release(&(ctl->lock));
+    lock_release(&(ctl->lock));
     return;
 }
 
@@ -336,11 +320,12 @@ void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str)
 
 void init_screen()
 {
-    Screen_Ctl = viewctl_init((void*)0xe0000000,ScrnX,ScrnY,512);
+    viewctl_init(&Screen_Ctl,(void*)0xe0000000,ScrnX,ScrnY,512);
     /* 创建背景 */
     background = viewblock_init(ScrnX,ScrnY);
-    viewInsert(Screen_Ctl,background);
+    viewInsert(&Screen_Ctl,background);
 
+    /* 显示logo */
     int x;
     int y;
     x = ScrnX / 2 - 7 * 20 - 10;

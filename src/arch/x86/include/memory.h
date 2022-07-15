@@ -93,7 +93,7 @@ int pgman_free(struct MEMMAN* memman,void* pg_addr,int free_pg_cnt);
 void page_table_remove(void* vaddr);
 void paddr_free(void* paddr);
 void vaddr_free(enum pool_flage pf,void* vaddr,uint32_t free_pg_cnt);
-void page_free(enum pool_flage pf,void* vaddr,int free_pg_cnt);
+void page_free(enum pool_flage pf,void* pvaddr,int free_pg_cnt);
 
 /* arena.c */
 void* sys_malloc(int size);

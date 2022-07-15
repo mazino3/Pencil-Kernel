@@ -21,7 +21,7 @@ void panic_spin(const char* file,int line,const char* func,const char* condition
             }
 #ifdef NDEBUG
     #undef ASSERT
-    #define ASSERT(CONDITION) ((void)0)
+    #define ASSERT(CONDITION) ((void)0);
 #endif /* NDEBUG */
 
 void log(char* info);

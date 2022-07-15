@@ -38,7 +38,8 @@ void sema_down(struct semaphore* psema)
         {
             PANIC("sema down:thread blocked has been in waiters list!\n");
         }
-        list_append(&(psema->waiters),&running_thread()->general_tag);
+        ASSERT(running_thread()->general_tag.data == running_thread());
+        list_append(&(psema->waiters),&(running_thread()->general_tag));
         thread_block(TASK_BLOCKED);
     }
     psema->value--;
