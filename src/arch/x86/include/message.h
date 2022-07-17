@@ -31,17 +31,17 @@ struct msg3
     void* m3p2;
 };
 
-typedef struct
+struct MESSAGE
 {
-    uint32_t source;
-    uint32_t type;
+    pid_t source;   /* 发出这个消息的进程pid */
+    uint32_t type;  /* 消息类型 */
     union
     {
         struct msg1 msg1;
         struct msg2 msg2;
         struct msg3 msg3;
     };
-}MESSAGE;
+};
 
 
 
