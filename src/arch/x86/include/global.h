@@ -118,6 +118,8 @@ enum Display
     #define NULL ((void*)0)
 #endif
 
+typedef uint32_t pid_t;
+
 /* 其余的宏定义 */
 /* __asm__ 和 __volatile__ 一般gcc会定义 */
 #ifndef __asm__

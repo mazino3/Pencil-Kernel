@@ -7,7 +7,6 @@
 #include "message.h"
 #include "stdint.h"
 
-typedef uint32_t pid_t;
 typedef void thread_function(void*);
 
 /* 线程状态 */
@@ -82,14 +81,21 @@ struct task_struct
     uint8_t ticks;                    /* 在CPU上运行的时间 */
     uint32_t elapsed_ticks;           /* 总共运行的时间 */
 
-    struct list_elem all_tag;      /* 用于加入全部线程队列 */
-    struct list_elem general_tag;  /* 用于加入就绪线程队列 */
+    struct list_elem all_tag;         /* 用于加入全部线程队列 */
+    struct list_elem general_tag;     /* 用于加入就绪线程队列 */
 
-    uint32_t* page_dir;       /* 线程的页表 */
-    struct MEMMAN prog_vaddr; /* 进程的虚拟地址 */
+    uint32_t* page_dir;               /* 线程的页表 */
+    struct MEMMAN prog_vaddr;         /* 进程的虚拟地址 */
     struct mem_desc u_desc[MEM_DESCS];
 
-    uint32_t stack_magic;     /* 用于检测是否栈溢出 */
+    struct MESSAGE msg;               /* 进程消息体 */
+    pid_t send_to;                    /* 记录进程想要向谁发送消息 */
+    pid_t recv_from;                  /* 记录进程想要从谁获取消息 */
+    int int_msg;                      /* 如果进程在等待中断发生,用于记录中断号 */
+    struct list sender_list;          /* 如果有进程A向这个进程发送消息,但本进程没有要接收消息,进程A将自己的send_tag加入这个队列 */
+    struct list_elem send_tag;
+
+    uint32_t stack_magic;             /* 用于检测是否栈溢出 */
 };
 
 extern struct list ready_list;
@@ -102,9 +108,12 @@ void kernel_thread(thread_function* func,void* arg);
 void thread_create(struct task_struct* thread,thread_function func,void* arg);
 struct task_struct* thread_start(char* name,uint8_t priority,thread_function func,void* arg);
 void schedule();
-extern void switch_to(uint32_t** cur_kstack,uint32_t** next_kstack);
 
 void thread_block(enum task_status status);
 void thread_unblock(struct task_struct* thread);
 
+bool pid_check(struct list_elem* pelem,pid_t pid);
+struct task_struct* pid2thread(pid_t pid);
+
+extern void switch_to(uint32_t** cur_kstack,uint32_t** next_kstack);
 #endif /* __THREAD_H__ */

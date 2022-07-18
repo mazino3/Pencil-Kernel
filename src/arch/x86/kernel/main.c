@@ -38,13 +38,13 @@ void kernel_main(void)
     }
     set_cursor(0);
     init_all();
-
     intr_enable(); /* 开中断 */
     console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
     console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
     console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
     console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
-
+    
+    // viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
     vput_str(background->buf,ScrnX,20,20,rgb(255,255,255),PKn_Version);
     sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d", VideoMode, ScrnX, ScrnY);
     vput_str(background->buf,ScrnX,20,36,rgb(255,255,255),"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
@@ -54,8 +54,9 @@ void kernel_main(void)
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("shell",31,shell,NULL);
     thread_start("View",31,View_thread,NULL);
-    process_execute(u_prog_a,"user_prog");
-    process_execute(u_prog_b,"user_prog");
+    thread_start("user_progA",31,u_prog_a,NULL);
+    // process_execute(u_prog_a,"user_progA");
+    process_execute(u_prog_b,"user_progB");
     // thread_start("k_c",31,k_thread_c,"arg_C ");
 
     while(1); /* 这个死循环不能少 */
@@ -184,7 +185,6 @@ void View_thread(void* arg)
         }
     }
 
-    viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
     viewUpdown(background,0);
     viewSlide(background,0,0);
 
@@ -194,6 +194,9 @@ void View_thread(void* arg)
     int mx = ScrnX / 2;
     int my = ScrnY / 2;
     viewSlide(mouse,mx,my);
+
+    // struct task_struct* t = pid2thread(5);
+    // vput_str(background->buf,ScrnX,20,68,rgb(255,255,255),t->name);
 
     while(1)
     {
@@ -227,9 +230,14 @@ void View_thread(void* arg)
 void u_prog_a(void)
 {
     int res;
-    MESSAGE msg;
-    __asm__ __volatile__("int $0x4d":"=a"(res):"a"(SYS_GETPID),"b"(5),"c"(&msg));
-            ta = res;
+    struct MESSAGE msg;
+    // running_thread()->msg.type = 77;
+    // char* str = "hello world!";
+    // void* pmsg = &msg;
+    // char s[10];
+    // sprintf(s,"%p %d",&msg,msg.type);
+    // vput_str((void*)0xe0000000,ScrnX,20,68,rgb(255,255,255),s);
+    __asm__ __volatile__("int $0x4d"::"a"(SYS_SEND),"b"(4),"c"(&msg));
     while(1)
     {
 
@@ -240,7 +248,7 @@ void u_prog_b(void)
 {
     int res;
     char* str = "hello world!";
-    __asm__ __volatile__("int $0x4d":"=a"(res):"a"(SYS_PRINT),"b"(str),"c"(0));
+    // __asm__ __volatile__("int $0x4d":"=a"(res):"a"(SYS_PRINT),"b"(str),"c"(0));
     tb = res;
     while(1);
 }

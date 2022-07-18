@@ -30,7 +30,7 @@ LIBC_DIR := libc/
 MEMORY_DIR := memory/
 SYSCALL_DIR := syscall/
 THREAD_DIR := thread/
-USERPROG_DIR := userprog/
+PROG_DIR := prog/
 
 #exec
 MBR := $(BOOT_DIR)mbr.bin
@@ -48,8 +48,8 @@ $(MEMORY_DIR)memory.co       \
 \
 $(THREAD_DIR)sync.co         \
 $(THREAD_DIR)thread.co       \
-$(USERPROG_DIR)tss.co        \
-$(USERPROG_DIR)process.co    \
+$(PROG_DIR)tss.co        \
+$(PROG_DIR)process.co    \
 \
 $(DEVICE_DIR)console.co      \
 $(DEVICE_DIR)cpu.co          \
@@ -154,8 +154,8 @@ clean:
 	@$(CD) $(MEMORY_DIR) && $(DELET) *.co
 	@$(CD) $(MEMORY_DIR) && $(DELET) *.s
 
-	@$(CD) $(USERPROG_DIR) && $(DELET) *.co
-	@$(CD) $(USERPROG_DIR) && $(DELET) *.s
+	@$(CD) $(PROG_DIR) && $(DELET) *.co
+	@$(CD) $(PROG_DIR) && $(DELET) *.s
 
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.co
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.s

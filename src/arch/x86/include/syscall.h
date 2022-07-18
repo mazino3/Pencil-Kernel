@@ -12,9 +12,6 @@ enum SYSCALL_NR
     SYS_SEND,
     SYS_RECEIVE,
     SYS_BOTH,
-    SYS_GETPID = 8,
-    SYS_PRINT,
-    SYS_LAST,
 };
 
 extern void syscall_entry(void);

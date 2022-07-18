@@ -25,7 +25,7 @@ void init_all()
     init_mouse();
     init_thread();
     init_console();
-    init_syscall();
+    // init_syscall(); //syscall在init_idt()中一起初始化
     log("init done");
     return;
 }

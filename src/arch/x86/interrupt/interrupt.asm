@@ -91,7 +91,7 @@ VECTOR 0x2f,push 0    ;保留
 ; syscall
 
 [bits 32]
-extern syscall_table
+extern sys_sendrec
 section .text
 global syscall_entry
 syscall_entry:
@@ -107,11 +107,10 @@ syscall_entry:
     push 0x4d
 
     ;系统调用参数
-    push edx
     push ecx
     push ebx
-
-    call [syscall_table + eax * 4]
+    push eax
+    call sys_sendrec
     add esp,4 * 3
     mov [esp + (8 * 4)],eax
     jmp intr_exit

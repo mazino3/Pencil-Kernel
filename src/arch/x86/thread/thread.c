@@ -55,7 +55,12 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
     thread->priority = priority;
     thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
     thread->page_dir = NULL;
-    // list_init(&(thread->wait));
+    
+    thread->send_to = 0;
+    thread->recv_from = 0;
+    thread->int_msg = 0;
+    list_init(&(thread->sender_list));
+    thread->send_tag.data = thread;
     thread->stack_magic = 0x12345678;
     return;
 }
@@ -184,6 +189,22 @@ void thread_unblock(struct task_struct* pthread)
     };
     intr_set_status(old_status);
     return;
+}
+
+/* list_traversal的回调函数pid_check */
+bool pid_check(struct list_elem* pelem,pid_t pid)
+{
+    return (((struct task_struct*)(pelem->data))->pid == pid);
+}
+
+struct task_struct* pid2thread(pid_t pid)
+{
+    struct list_elem* pelem = list_traversal(&all_list,pid_check,pid);
+    if(pelem == NULL)
+    {
+        return NULL;
+    }
+    return ((struct task_struct*)(pelem->data));
 }
 
 /* void switch_to(struct thread_struct* current,struct thread_struct* next) */

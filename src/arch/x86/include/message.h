@@ -3,6 +3,9 @@
 
 #include "stdint.h"
 
+#define ANY     -1
+#define NO_TASK -2
+
 struct msg1
 {
     uint32_t m1i1;
@@ -33,13 +36,13 @@ struct msg3
 
 struct MESSAGE
 {
-    pid_t source;   /* 发出这个消息的进程pid */
-    uint32_t type;  /* 消息类型 */
+    volatile pid_t source;   /* 发出这个消息的进程pid */
+    volatile uint32_t type;  /* 消息类型 */
     union
     {
-        struct msg1 msg1;
-        struct msg2 msg2;
-        struct msg3 msg3;
+        volatile struct msg1 msg1;
+        volatile struct msg2 msg2;
+        volatile struct msg3 msg3;
     };
 };
 
