@@ -29,7 +29,7 @@ struct list
     struct list_elem tail; /* 链表尾 */
 };
 
-typedef bool (func) (struct list_elem* ,int arg);
+typedef bool (func) (struct list_elem* ,uint32_t arg);
 
 void list_init(struct list* plist);
 void list_in(struct list_elem* elem,struct list_elem* in_before);

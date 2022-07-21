@@ -1,6 +1,7 @@
 #ifndef __MESSAGE_H__
 #define __MESSAGE_H__
 
+#include "global.h"
 #include "stdint.h"
 
 #define ANY     -1
@@ -46,6 +47,6 @@ struct MESSAGE
     };
 };
 
-
+void resetmsg(struct MESSAGE* msg);
 
 #endif /* __MESSAGE_H__ */

@@ -35,10 +35,10 @@ void init_memory()
         uint64_t total_size = 0;
         for(i = 0;i < ARDS_NR;i++)
         {
-            if(ards->Type == 1)
+            if(ards->Type == 1 && ards->BaseAddrLow == 0x100000)
             {
                 total_size = ((((uint64_t)0 + ards->BaseAddrHigh) << 32) + ards->BaseAddrLow) + ((((uint64_t)0 +ards->LengthHigh) << 32) + ards->LengthLow);
-                // break;
+                break;
             }
             ards++;
         }
@@ -54,7 +54,8 @@ void init_memory()
     }
     uint32_t k_Total;
     uint32_t u_Total;
-    ptr_t freeMem = TotalMem_l - (KERNEL_PAGE_DIR_TABLE_POS + 0x200000);
+    uint32_t page_table_size = PG_SIZE * 256;
+    ptr_t freeMem = TotalMem_l - (KERNEL_PAGE_DIR_TABLE_POS + page_table_size);
     k_Total = freeMem / 2;
     u_Total = freeMem - k_Total;
 
@@ -62,13 +63,13 @@ void init_memory()
     init_memman(&kernel_vaddr,0xffffffff / PG_SIZE,kvinfo);
     init_memman(&user_pool,u_Total / PG_SIZE,upinfo);
 
-    pgman_free(&kernel_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS + 0x200000),k_Total / PG_SIZE);
-    pgman_free(&user_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS + 0x200000 + k_Total),u_Total / PG_SIZE);
-    user_pool_start = (KERNEL_PAGE_DIR_TABLE_POS + 0x200000 + k_Total);
+    pgman_free(&kernel_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS +page_table_size),k_Total / PG_SIZE);
+    pgman_free(&user_pool,(void*)(KERNEL_PAGE_DIR_TABLE_POS + page_table_size + k_Total),u_Total / PG_SIZE);
+    user_pool_start = (KERNEL_PAGE_DIR_TABLE_POS + page_table_size + k_Total);
     /*
     * 0x00000000 ~ 0x003fffff --> 0xc0000000 ~ 0xc03fffff
     * 为了使虚拟地址连续,从0xc0400000开始
-     */
+    */
     pgman_free(&kernel_vaddr,(void*)0xc0400000,(0xe0000000 - 0xc0400000) / PG_SIZE);
     init_block(k_desc);
     return;
@@ -159,8 +160,14 @@ void page_table_add(void* vaddr,void* phyaddr)
 
     if(*pde & 0x00000001)
     {
+        ASSERT(!(*pte & 0x00000001));
         if(!(*pte & 0x00000001))
         {
+            *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
+        }
+        else
+        {
+            PANIC("pte repeat");
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }
     }
@@ -169,6 +176,7 @@ void page_table_add(void* vaddr,void* phyaddr)
         void* pde_paddr = (void*)pgman_alloc(&kernel_pool,1);
         *pde = ((uint32_t)pde_paddr | PG_US_U | PG_RW_W | PG_P);
         memset((void*)((int)pte & 0xfffff000),0,PG_SIZE);
+        ASSERT(!(*pte & 0x00000001));
         *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
     }
     return;
@@ -181,7 +189,7 @@ void* page_alloc(enum pool_flage pf,int page_count)
     void* paddr;
     uint32_t count = page_count;
     struct MEMMAN* memory_pool = (pf == PF_KERNEL ? &kernel_pool : &user_pool);
-    struct MEMMAN* vaddr_pool = (pf == PF_KERNEL ? &kernel_vaddr : &kernel_vaddr);
+    struct MEMMAN* vaddr_pool = (pf == PF_KERNEL ? &kernel_vaddr : &(running_thread()->prog_vaddr));
     vaddr_start = (void*)pgman_alloc(vaddr_pool,page_count);
     if(vaddr_start == NULL)
     {
@@ -209,8 +217,6 @@ void* get_kernel_page(int page_count)
     {
         memset(vaddr,0,page_count * PG_SIZE);
     }
-    // put_str(0x07," Memalloc: ");
-    // put_uint(0x07,(uint32_t)vaddr,16);
     return vaddr;
 }
 
@@ -230,11 +236,11 @@ void* get_a_page(enum pool_flage pf,void* vaddr)
     struct task_struct* cur = running_thread();
     if(cur->page_dir != NULL && pf == PF_USER)
     {
-        pgman_alloc(&cur->prog_vaddr,1);
+        //pgman_alloc(&cur->prog_vaddr,1);
     }
     else if(cur->page_dir == NULL && pf == PF_KERNEL)
     {
-        pgman_alloc(&kernel_vaddr,1);
+        //pgman_alloc(&kernel_vaddr,1);
     }
     else
     {

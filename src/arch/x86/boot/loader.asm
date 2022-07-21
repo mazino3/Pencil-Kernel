@@ -511,7 +511,7 @@ SetupPage:
         ;为显示缓存区映射
         mov eax,PAGE_DIR_TABLE_POS + 0x1000 ;第一个页表地址
         add eax,0xe00 * 0x1000 ;0xe0000000以后16MB为显存
-        or eax,PG_US_S | PG_RW_W | PG_P
+        or eax,PG_US_U | PG_RW_W | PG_P
         mov ebx,PAGE_DIR_TABLE_POS
         mov esi,896
         mov ecx,4 ;显存占用4个页目录
@@ -525,7 +525,7 @@ SetupPage:
         mov ecx,4096
         mov esi,0
         mov eax,[Vram_l]
-        or eax,PG_US_S | PG_RW_W | PG_P
+        or eax,PG_US_U | PG_RW_W | PG_P
         .create_vram_pte:
             mov [ebx + esi * 4],eax
             add eax,0x1000 ;指向下一个物理页地址

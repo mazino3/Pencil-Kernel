@@ -1,4 +1,5 @@
 #include "thread.h"
+#include "bitmap.h"
 #include "debug.h"
 #include "fifo.h"
 #include "global.h"
@@ -15,28 +16,37 @@ struct task_struct* main_thread;
 PUBLIC struct list ready_list;
 PUBLIC struct list all_list;
 
-PRIVATE struct lock pid_lock;
-
 PRIVATE struct list_elem* this_thread_tag;
 
 PRIVATE void make_main_thread();
+
+// PRIVATE uint8_t pid_bits[128] = { 0 };
+PRIVATE struct pid_pool pid_pool;
 
 void init_thread()
 {
     list_init(&ready_list);
     list_init(&all_list);
-    NEXT_PID = 0;
-    lock_init(&pid_lock);
+    // pid_pool.start_pid = 1;
+    // pid_pool.bitmap.map = pid_bits;
+    // pid_pool.bitmap.btmp_bytes_len = 128;
+    // bitmap_init(&(pid_pool.bitmap));
+    pid_pool.pid = 10;
+    lock_init(&(pid_pool.lock));
     make_main_thread();
     return;
 }
 
 PRIVATE pid_t alloc_pid()
 {
-    lock_acquire(&pid_lock);
-    NEXT_PID++;
-    lock_release(&pid_lock);
-    return NEXT_PID;
+    pid_t pid;
+    lock_acquire(&(pid_pool.lock));
+    pid = pid_pool.pid;
+    pid_pool.pid++;
+    // int idx = bitmap_scan_test(&(pid_pool.bitmap),1);
+    // bitmap_set(&(pid_pool.bitmap),idx,1);
+    lock_release(&(pid_pool.lock));
+    return pid;
 }
 
 void thread_init(struct task_struct* thread,char* name,uint8_t priority)
@@ -192,7 +202,7 @@ void thread_unblock(struct task_struct* pthread)
 }
 
 /* list_traversal的回调函数pid_check */
-bool pid_check(struct list_elem* pelem,pid_t pid)
+PRIVATE bool pid_check(struct list_elem* pelem,pid_t pid)
 {
     return (((struct task_struct*)(pelem->data))->pid == pid);
 }

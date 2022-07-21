@@ -5,7 +5,7 @@
 #include "stdint.h"
 #include "sync.h"
 
-#define MEMMAN_MAX 4000
+#define MEMMAN_MAX 1000
 
 #define PDE_IDX(vaddr) ((vaddr & 0xffc00000) >> 22)
 #define PTE_IDX(vaddr) ((vaddr & 0x003ff000) >> 12)

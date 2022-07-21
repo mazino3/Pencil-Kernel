@@ -6,31 +6,32 @@
 
 # tools
 TOOL_DIR := ../../../tools/
-AS := $(TOOL_DIR)as
-BOCHS := $(TOOL_DIR)Bochs-2.7\bochsdbg
-CC1 := $(TOOL_DIR)cc1
-DD := $(TOOL_DIR)dd
-GCC := $(TOOL_DIR)gcc
-LD := $(TOOL_DIR)ld
-MAKE := $(TOOL_DIR)make
-NASM := $(TOOL_DIR)nasm
-OBJCOPY :=$(TOOL_DIR)objcopy
-OBJDUMP :=$(TOOL_DIR)objdump
-IMGCOPY := $(TOOL_DIR)imgcopy/imgcopy
+AS       := $(TOOL_DIR)as
+BOCHS    := $(TOOL_DIR)Bochs-2.7\bochsdbg
+CC1      := $(TOOL_DIR)cc1
+DD       := $(TOOL_DIR)dd
+GCC      := $(TOOL_DIR)gcc
+LD       := $(TOOL_DIR)ld
+MAKE     := $(TOOL_DIR)make
+NASM     := $(TOOL_DIR)nasm
+OBJCOPY  :=$(TOOL_DIR)objcopy
+OBJDUMP  :=$(TOOL_DIR)objdump
+IMGCOPY  := $(TOOL_DIR)imgcopy/imgcopy
 
 #src path
-BOOT_DIR := boot/
-DEVICE_DIR := device/
-GRAPHIC_DIR := graphic/
-INCLUDE_DIR := include/
+BOOT_DIR      := boot/
+DEVICE_DIR    := device/
+GRAPHIC_DIR   := graphic/
+INCLUDE_DIR   := include/
 INTERRUPT_DIR := interrupt/
-KERNEL_DIR := kernel/
-LIB_DIR := lib/
-LIBC_DIR := libc/
-MEMORY_DIR := memory/
-SYSCALL_DIR := syscall/
-THREAD_DIR := thread/
-PROG_DIR := prog/
+KERNEL_DIR    := kernel/
+LIB_DIR       := lib/
+LIBC_DIR      := libc/
+MEMORY_DIR    := memory/
+SYSCALL_DIR   := syscall/
+TASK_DIR      := task/
+THREAD_DIR    := thread/
+PROG_DIR      := prog/
 
 #exec
 MBR := $(BOOT_DIR)mbr.bin
@@ -58,7 +59,10 @@ $(DEVICE_DIR)mouse.co        \
 $(DEVICE_DIR)time.co         \
 $(DEVICE_DIR)timer.co        \
 \
+$(SYSCALL_DIR)api.co         \
 $(SYSCALL_DIR)syscall.co     \
+\
+$(TASK_DIR)mm.co             \
 \
 $(LIB_DIR)bitmap.co          \
 $(DEVICE_DIR)fifo.co         \
@@ -102,7 +106,7 @@ MAKE_DIR := md
 # -fno-builtin: 不识别内建函数
 # -fno-strict-aliasing: 禁用严格别名规则
 # -m32: 编译32位代码
-# -Os: 启用优化,优化等级介于-O2和-O3之间
+# -O0: 优化等级:0
 # -quiet: 不显示多余的信息
 # -Wall: 发出警告
 
@@ -111,7 +115,7 @@ MAKE_DIR := md
 
 %.co: %.c Makefile
 	@$(ECHO) compile $<
-	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -Os -quiet -Wall  -o $*.s $*.c
+	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
 $(v_disk): vhd.asm
@@ -159,6 +163,9 @@ clean:
 
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.co
 	@$(CD) $(SYSCALL_DIR) && $(DELET) *.s
+
+	@$(CD) $(TASK_DIR) && $(DELET) *.co
+	@$(CD) $(TASK_DIR) && $(DELET) *.s
 
 	@$(CD) $(THREAD_DIR) && $(DELET) *.co
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s

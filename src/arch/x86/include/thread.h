@@ -1,6 +1,7 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
+#include "bitmap.h"
 #include "global.h"
 #include "list.h"
 #include "memory.h"
@@ -98,6 +99,14 @@ struct task_struct
     uint32_t stack_magic;             /* 用于检测是否栈溢出 */
 };
 
+struct pid_pool
+{
+    // struct bitmap bitmap;
+    // pid_t start_pid;
+    pid_t pid;
+    struct lock lock;
+};
+
 extern struct list ready_list;
 extern struct list all_list;
 
@@ -112,7 +121,6 @@ void schedule();
 void thread_block(enum task_status status);
 void thread_unblock(struct task_struct* thread);
 
-bool pid_check(struct list_elem* pelem,pid_t pid);
 struct task_struct* pid2thread(pid_t pid);
 
 extern void switch_to(uint32_t** cur_kstack,uint32_t** next_kstack);

@@ -3,9 +3,8 @@
 
 #include "global.h"
 
-/* io端口操作函数 内联汇编版(还是用了内联汇编...)
+/* io端口操作函数
 * 由于函数都是static和inline,所以直接写在了头文件里
-* 注:io.asm已经不用了,可以删了
 */
 #include "stdint.h"
 

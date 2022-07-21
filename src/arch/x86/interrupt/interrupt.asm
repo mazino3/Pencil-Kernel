@@ -95,7 +95,6 @@ extern sys_sendrec
 section .text
 global syscall_entry
 syscall_entry:
-    sti
     push 0
 
     push ds

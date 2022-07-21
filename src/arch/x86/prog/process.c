@@ -31,11 +31,39 @@ void start_process(void* process_name)
     proc_stack->ds = SelectorData32_U;
     proc_stack->eip = func;
     proc_stack->cs = SelectorCode32_U;
-    proc_stack->eflags = (EFLAGS_IOPL_0 | EFLAGS_MBS | EFLAGS_IF_1);
+    proc_stack->eflags = (EFLAGS_IOPL_1 | EFLAGS_MBS | EFLAGS_IF_1);
     proc_stack->esp = (void*)(((uint32_t)get_a_page(PF_USER,(void*)USER_STACK3_VADDR)) + PCB_SIZE); //用户栈顶
     proc_stack->ss = SelectorData32_U;
     __asm__ __volatile__ ("movl %0, %%esp; jmp intr_exit" : : "g" (proc_stack) : "memory");
 }
+
+void start_task(void* task_name)
+{
+    void* func = task_name;
+    struct task_struct* cur = running_thread();
+    cur->self_kstack += sizeof(struct thread_stack);
+    struct intr_stack* proc_stack = (struct intr_stack*)cur->self_kstack;
+    /* 寄存器初始值,置为0 */
+    proc_stack->edi = 0;
+    proc_stack->esi = 0;
+    proc_stack->ebp = 0;
+    proc_stack->_esp = 0;
+    proc_stack->ebx = 0;
+    proc_stack->edx = 0;
+    proc_stack->ecx = 0;
+    proc_stack->eax = 0;
+    proc_stack->gs = 0;
+    proc_stack->fs = SelectorData32_T;
+    proc_stack->es = SelectorData32_T;
+    proc_stack->ds = SelectorData32_T;
+    proc_stack->eip = func;
+    proc_stack->cs = SelectorCode32_T;
+    proc_stack->eflags = (EFLAGS_IOPL_1 | EFLAGS_MBS | EFLAGS_IF_1);
+    proc_stack->esp = (void*)(((uint32_t)get_a_page(PF_USER,(void*)USER_STACK3_VADDR)) + PCB_SIZE); //用户栈顶
+    proc_stack->ss = SelectorData32_T;
+    __asm__ __volatile__ ("movl %0, %%esp; jmp intr_exit" : : "g" (proc_stack) : "memory");
+}
+
 
 /* page_dir_activate
 * 激活页表
@@ -95,7 +123,7 @@ uint32_t* create_page_dir(void)
 void create_user_vaddr_memman(struct task_struct* user_prog)
 {
     init_memman(&(user_prog->prog_vaddr),0xffffffff / PG_SIZE,get_kernel_page(DIV_ROUND_UP(MEMMAN_MAX * sizeof(struct MEMINFO),PG_SIZE)));
-    pgman_free(&(user_prog->prog_vaddr),(void*)USER_VADDR_START,(0xc0000000 - USER_VADDR_START) / PG_SIZE);
+    pgman_free(&(user_prog->prog_vaddr),(void*)USER_VADDR_START,(USER_STACK3_VADDR - USER_VADDR_START) / PG_SIZE);
     return;
 }
 
@@ -105,6 +133,30 @@ void process_execute(void* process_name,char* name)
     thread_init(pthread,name,31);
     create_user_vaddr_memman(pthread);
     thread_create(pthread,start_process,process_name);
+    pthread->page_dir = create_page_dir();
+    init_block(pthread->u_desc);
+
+    /* 加入队列,等待调度 */
+    pthread->general_tag.data = pthread;
+    pthread->all_tag.data = pthread;
+
+    enum intr_status status = intr_disable();
+    ASSERT(!(list_find(&all_list,&(pthread->all_tag))));
+    list_append(&all_list,&(pthread->all_tag));
+
+    ASSERT(!(list_find(&ready_list,&(pthread->general_tag))));
+    list_append(&ready_list,&(pthread->general_tag));
+
+    intr_set_status(status);
+    return;
+}
+
+void task_execute(void* task_name,char* name)
+{
+    struct task_struct* pthread = get_kernel_page(PCB_SIZE / PG_SIZE);
+    thread_init(pthread,name,31);
+    create_user_vaddr_memman(pthread);
+    thread_create(pthread,start_task,task_name);
     pthread->page_dir = create_page_dir();
     init_block(pthread->u_desc);
 

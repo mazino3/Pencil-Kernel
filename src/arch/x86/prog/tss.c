@@ -27,10 +27,12 @@ void init_tss()
     tss.iomap = tss_size;
     
     *(GDT_PTR + 3) = make_segmdesc((uint32_t)&tss,tss_size - 1,AR_TSS32);
-    *(GDT_PTR + 4) = make_segmdesc(0,0xfffff,AR_CODE32_DPL3);
-    *(GDT_PTR + 5) = make_segmdesc(0,0xfffff,AR_DATA32_DPL3);
+    *(GDT_PTR + 4) = make_segmdesc(0,0xfffff,AR_CODE32_DPL1);
+    *(GDT_PTR + 5) = make_segmdesc(0,0xfffff,AR_DATA32_DPL1);
+    *(GDT_PTR + 6) = make_segmdesc(0,0xfffff,AR_CODE32_DPL3);
+    *(GDT_PTR + 7) = make_segmdesc(0,0xfffff,AR_DATA32_DPL3);
 
-    uint64_t gdt_opt = (((uint64_t)0 + (uint32_t)GDT_PTR) << 16) + (8 * 6 - 1);
+    uint64_t gdt_opt = (((uint64_t)0 + (uint32_t)GDT_PTR) << 16) + (8 * 8 - 1);
     __asm__ __volatile__("lgdt %0"::"m"(gdt_opt):);
     __asm__ __volatile__("ltr %w0"::"r"(SelectorTSS32):);
     return;
@@ -38,6 +40,6 @@ void init_tss()
 
 void update_tss_esp0(struct task_struct* pthread)
 {
-    tss.esp0 = ((uint32_t*)((uint32_t)pthread + PG_SIZE));
+    tss.esp0 = ((uint32_t*)((uint32_t)pthread + PCB_SIZE));
     return;
 }

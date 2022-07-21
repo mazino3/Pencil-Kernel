@@ -1,3 +1,4 @@
+#include "api.h"
 #include "console.h"
 #include "cpu.h"
 #include "debug.h"
@@ -17,21 +18,16 @@
 #include "stdio.h"
 #include "string.h"
 #include "syscall.h"
+#include "task.h"
 #include "thread.h"
 #include "time.h"
 #include "tss.h"
-
-void k_thread_a(void* arg);
-void shell(void* arg);
-void View_thread(void* arg);
-void k_thread_c(void* arg);
-void u_prog_a(void);
-void u_prog_b(void);
 
 void kernel_main(void)
 {
     int i;
     char str[64];
+    set_cursor(0);
     for(i = 0;i < 35;i++)
     {
         put_char(0x07,'\n');
@@ -39,26 +35,23 @@ void kernel_main(void)
     set_cursor(0);
     init_all();
     intr_enable(); /* 开中断 */
-    console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
-    console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
-    console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
-    console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
-    
-    // viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
+    // console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
+    // console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
+    // console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
+    // console_str(0x07,"Disk   :");console_int(0x07,DiskCnt,10);console_char(0x07,'\n');
+
     vput_str(background->buf,ScrnX,20,20,rgb(255,255,255),PKn_Version);
-    sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d", VideoMode, ScrnX, ScrnY);
+    sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d\nMemory: %dMB", VideoMode, ScrnX, ScrnY,TotalMem_l / 1024 /1024);
     vput_str(background->buf,ScrnX,20,36,rgb(255,255,255),"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
     vput_str(background->buf,ScrnX,20,52,rgb(255,255,255),str);
     view_reflush(background,20,20,background->xsize,68);
 
+    thread_start("MM",31,MM_task,NULL);
     thread_start("k_a",31,k_thread_a,"arg_A ");
     thread_start("shell",31,shell,NULL);
     thread_start("View",31,View_thread,NULL);
-    thread_start("user_progA",31,u_prog_a,NULL);
-    // process_execute(u_prog_a,"user_progA");
-    process_execute(u_prog_b,"user_progB");
-    // thread_start("k_c",31,k_thread_c,"arg_C ");
-
+    process_execute(u_prog_a,"user_progA");
+    task_execute(task_a,"Task_A");
     while(1); /* 这个死循环不能少 */
 
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
@@ -114,8 +107,6 @@ void k_thread_a(void* arg)
         get_time(&time);
     }
 }
-volatile int ta = 0;
-volatile int tb = 0;
 
 void shell(void* arg)
 {
@@ -144,7 +135,6 @@ void shell(void* arg)
 void View_thread(void* arg)
 {
     struct viewblock* mouse = viewblock_init(16,16);
-
     static char cursor[16][16] = 
     {
         "*---------------",
@@ -184,7 +174,6 @@ void View_thread(void* arg)
             }
         }
     }
-
     viewUpdown(background,0);
     viewSlide(background,0,0);
 
@@ -195,60 +184,78 @@ void View_thread(void* arg)
     int my = ScrnY / 2;
     viewSlide(mouse,mx,my);
 
-    // struct task_struct* t = pid2thread(5);
-    // vput_str(background->buf,ScrnX,20,68,rgb(255,255,255),t->name);
+    struct MESSAGE msg;
+    resetmsg(&msg);
+    msg.type = MM_MALLOC;
+    msg.msg1.m1i1 = 31;
+    send_recv(BOTH,MM,&msg);
+    char str[30];
+    sprintf(str,"mm malloc: %p",msg.msg2.m2p1);
+    vput_str((void*)0xe0000000,ScrnX,50,80,rgb(255,255,255),str);
+    // msg.type = MM_FREE;
+    // vput_str((void*)0xe0000000,ScrnX,50,80,rgb(255,255,255),str);
 
     while(1)
     {
+        resetmsg(&msg);
+        send_recv(RECEIVE,ANY,&msg);
+        if(msg.type == 1)
+        {
+            viewFill(background->buf,background->xsize,msg.msg3.m3l1,msg.msg3.m3i1,msg.msg3.m3i2,msg.msg3.m3i3,msg.msg3.m3i4);
+            view_reflush(background,msg.msg3.m3i1,msg.msg3.m3i2,msg.msg3.m3i3,msg.msg3.m3i4);
+        }
         viewUpdown(mouse,Screen_Ctl.top - 1);
         md = get_mouse();
         if(md.phase != 0)
         {
             mx += md.x;
             my += md.y;
-            if(mx < 0)
-            {
-                mx = 0;
-            }
-            if(my < 0)
-            {
-                my = 0;
-            }
-            if(mx > Screen_Ctl.xsize - 3)
-            {
-                mx = Screen_Ctl.xsize - 3;
-            }
-            if(my > Screen_Ctl.ysize - 3)
-            {
-                my = Screen_Ctl.ysize - 3;
-            }
+            if(mx < 0){ mx = 0; }
+            if(my < 0){ my = 0; }
+            if(mx > Screen_Ctl.xsize - 3){ mx = Screen_Ctl.xsize - 3; }
+            if(my > Screen_Ctl.ysize - 3){ my = Screen_Ctl.ysize - 3; }
             viewSlide(mouse,mx,my);
         }
     }
 }
 
-void u_prog_a(void)
-{
-    int res;
-    struct MESSAGE msg;
-    // running_thread()->msg.type = 77;
-    // char* str = "hello world!";
-    // void* pmsg = &msg;
-    // char s[10];
-    // sprintf(s,"%p %d",&msg,msg.type);
-    // vput_str((void*)0xe0000000,ScrnX,20,68,rgb(255,255,255),s);
-    __asm__ __volatile__("int $0x4d"::"a"(SYS_SEND),"b"(4),"c"(&msg));
-    while(1)
-    {
 
-    }
+void f()
+{
+    return;
 }
 
-void u_prog_b(void)
+
+void u_prog_a(void)
 {
-    int res;
-    char* str = "hello world!";
-    // __asm__ __volatile__("int $0x4d":"=a"(res):"a"(SYS_PRINT),"b"(str),"c"(0));
-    tb = res;
+    f();
+    struct MESSAGE msg;
+    msg.type = 1;
+    msg.msg3.m3i1 = 20;
+    msg.msg3.m3i2 = 20;
+    msg.msg3.m3i3 = 120;
+    msg.msg3.m3i4 = 120;
+    msg.msg3.m3l1 = rgb(255,0,0);
+    send_recv(SEND,VIEW,&msg);
+    msg.msg3.m3i1 = 30;
+    msg.msg3.m3i2 = 30;
+    msg.msg3.m3i3 = 130;
+    msg.msg3.m3i4 = 130;
+    msg.msg3.m3l1 = rgb(0,255,0);
+    send_recv(SEND,VIEW,&msg);
+    msg.msg3.m3i1 = 40;
+    msg.msg3.m3i2 = 40;
+    msg.msg3.m3i3 = 140;
+    msg.msg3.m3i4 = 140;
+    msg.msg3.m3l1 = rgb(0,0,255);
+    send_recv(SEND,VIEW,&msg);
+    while(1);
+}
+
+void task_a(void)
+{
+    f();
+    static struct MESSAGE msg;
+    (void)msg;
     while(1);
 }
