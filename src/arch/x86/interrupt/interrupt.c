@@ -107,7 +107,7 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
     char str[255];
     intr_disable();
     set_cursor(0);
-    viewFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
+    vramFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
     vput_str((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer.\n"

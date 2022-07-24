@@ -1,12 +1,20 @@
-#define MAIN 10
-#define MM   11
-#define TTY  12
-#define VIEW 14
+#include "global.h"
+#define RESERVED_PID 31 /* pid 0 - 31,32pid reserved */
+
+enum TASK_PID
+{
+    MAIN = 0,
+    IDLE,
+    MM,
+    TASKMGR,
+    VIEW,
+};
+
+extern pid_t task_table[RESERVED_PID + 1];
 
 void MM_task ();
-void k_thread_a(void* arg);
-void shell(void* arg);
-void View_thread(void* arg);
-void k_thread_c(void* arg);
+void taskmgr_thread();
+void view_task(void* arg);
+// void View_thread(void* arg);
 void u_prog_a(void);
 void task_a(void);

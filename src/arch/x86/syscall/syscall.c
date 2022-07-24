@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
+#include "task.h"
 #include "thread.h"
 
 /* 重置msg */
@@ -97,32 +98,17 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
         resetmsg(&(sender->msg));
         return 0;
     }
-    // /* 消息复制到当前进程pcb */
-    // memcpy(&(sender->msg),msg,sizeof(struct MESSAGE));
-    // sender->send_to = dst;
-    // /* 加入队列 */
-    // ASSERT(sender->send_tag.data == sender);
-    // list_append(&(pdest->sender_list),&(sender->send_tag));
-    // if(pdest->status == TASK_RECEIVING && (pdest->recv_from == ANY || pdest->recv_from == sender->pid))
-    // {
-    //     /* 唤醒对方 */
-    //     thread_unblock(pdest);
-    // }
-    // thread_block(TASK_SENDING);
-    // ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
-    // sender->send_to = NO_TASK;
-    // resetmsg(&(sender->msg));
     return 1;
 }
 
-static int y = 100;
+// static int y = 100;
 /* list_traversal的回调函数pid_check */
 PRIVATE bool pid_check(struct list_elem* pelem,uint32_t pid)
 {
-    char str[30];
-    sprintf(str,"pid: %d name: %s",((struct task_struct*)(pelem->data))->pid,((struct task_struct*)(pelem->data))->name);
-    vput_str((void*)0xe0000000,ScrnX,50,y,rgb(255,255,255),str);
-    y += 16;
+    // char str[30];
+    // sprintf(str,"cur: %s pid: %d name: %s %d",running_thread()->name,((struct task_struct*)(pelem->data))->pid,((struct task_struct*)(pelem->data))->name,(((struct task_struct*)(pelem->data))->pid == pid));
+    // vput_str((void*)0xe0000000,ScrnX,50,y,rgb(125,125,0),str);
+    // y += 16;
     return (((struct task_struct*)(pelem->data))->pid == pid);
 }
 
@@ -147,25 +133,30 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
         {
             thread_block(TASK_RECEIVING);
         }
+        ASSERT(!list_empty(&(receiver->sender_list)));
         psrc = list_pop(&(receiver->sender_list))->data;
     }
     /* 从特定进程接收 */
     else
     {
-        if(list_empty(&(receiver->sender_list)))
-        {
-            thread_block(TASK_RECEIVING);
-        }
+        // if(list_empty(&(receiver->sender_list)))
+        // {
+        //     thread_block(TASK_RECEIVING);
+        // }
+        // ASSERT(!list_empty(&(receiver->sender_list)));
         struct list_elem* src_elem;
-        ASSERT(!list_empty(&(receiver->sender_list)));
         do
         {
-            thread_block(TASK_RECEIVING);
             src_elem = list_traversal(&(receiver->sender_list),pid_check,src);
+            if(src_elem == NULL)
+            {
+                thread_block(TASK_RECEIVING);
+            }
         }while(src_elem == NULL);
         psrc = ((struct task_struct*)(src_elem->data));
         list_remove(src_elem);
     }
+    ASSERT(psrc != NULL);
     memcpy(msg,&(psrc->msg),sizeof(struct MESSAGE));
     psrc->send_to = NO_TASK;
     if(psrc->status == TASK_SENDING)
@@ -179,6 +170,10 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
 uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
 {
     uint32_t res = 1;
+    if(src_dst >= 0 && src_dst <= RESERVED_PID)
+    {
+        src_dst = task_table[src_dst];
+    }
     switch(function)
     {
         case SEND:
@@ -201,6 +196,6 @@ uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
         default:
             ASSERT((function == SEND) || (function == RECEIVE) || (function == BOTH));
             break;
-    } 
+    }
     return res;
 }

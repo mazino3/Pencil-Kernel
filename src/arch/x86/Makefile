@@ -54,6 +54,7 @@ $(PROG_DIR)process.co    \
 \
 $(DEVICE_DIR)console.co      \
 $(DEVICE_DIR)cpu.co          \
+$(DEVICE_DIR)fifo.co         \
 $(DEVICE_DIR)keyboard.co     \
 $(DEVICE_DIR)mouse.co        \
 $(DEVICE_DIR)time.co         \
@@ -63,9 +64,12 @@ $(SYSCALL_DIR)api.co         \
 $(SYSCALL_DIR)syscall.co     \
 \
 $(TASK_DIR)mm.co             \
+$(TASK_DIR)taskinit.co       \
+$(TASK_DIR)taskmgr.co        \
+$(TASK_DIR)view.co           \
 \
+$(LIB_DIR)apilib.co          \
 $(LIB_DIR)bitmap.co          \
-$(DEVICE_DIR)fifo.co         \
 $(LIB_DIR)font.co            \
 $(LIB_DIR)list.co            \
 $(LIB_DIR)print.co           \
