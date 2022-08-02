@@ -259,9 +259,11 @@ Start:
             cmp ax,0x004f ;如果有VBE,ax会变成0x004f
             jne .without_vbe ;没有vbe(jne: jump if not equals,不等于时跳转)
             ;检查VBE版本号
+            mov eax,0
             mov ax,[es:di + 4] ;这里是VBE版本号
             cmp ax,0x0200
             jb .vbe_version_too_old ;如果ax小于0x0200,跳转到.vbe_version_too_old
+            mov dword [VbeVersion],eax
             ;设置VBE模式
             mov esi,VideoModeList
             mov ecx,0
@@ -347,6 +349,11 @@ Checking_VBE_Mode:
     jz .fail
     cmp byte [es:di + 0x1b],0x06 ;Direct Color模式
     jne .fail
+    mov eax,0
+    mov ax,es
+    mov dword [ModeInfoBase16],eax
+    mov ax,di
+    mov dword [ModeInfoOff16],eax
     ret
     .fail:
         mov cx,0

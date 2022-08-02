@@ -54,12 +54,11 @@ current support:`x86` <br />
 > make run
 ```
 
-### 目标
+### 目标 Goal
 进行中:<br />
 - [x] 实现锁
 - [x] 实现用户进程
-- [x] 系统调用
-- [ ] IPC
+- [ ] 系统调用
 ***
 - [ ] 在文件系统中加载loader和内核
 - [x] 在虚拟机中通过硬盘启动
@@ -75,6 +74,12 @@ current support:`x86` <br />
 - [ ] ~~打倒Linux~~
 ### 实机启动
 使用rufus等软件将a.img写入u盘,然后从U盘启动即可.
-### 更多
+### 更多 More
 [[运行截图 Run screenshot]](doc/image/Readme.md)<br />
 ***
+### 联系方式 Contact details
+网站: ~~https://pencil.cnurl.tk~~ (暂时关闭中)<br/>
+E-mail: zpojia@hotmail.com<br />
+bilibili: @Linevtnpu
+***
+&copy; 2021-2022 Pencil-Kernel developers,All rights reserved.

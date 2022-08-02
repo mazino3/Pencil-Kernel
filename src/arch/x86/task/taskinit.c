@@ -1,4 +1,5 @@
 #include "global.h"
 #include "task.h"
+#include "thread.h"
 
-PUBLIC pid_t task_table[RESERVED_PID + 1] = { 0 };
+PUBLIC pid_t pid_table[TASKPID_END];

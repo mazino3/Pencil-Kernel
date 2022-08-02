@@ -160,14 +160,14 @@ void page_table_add(void* vaddr,void* phyaddr)
 
     if(*pde & 0x00000001)
     {
-        ASSERT(!(*pte & 0x00000001));
+        // ASSERT(!(*pte & 0x00000001));
         if(!(*pte & 0x00000001))
         {
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }
         else
         {
-            PANIC("pte repeat");
+            // PANIC("pte repeat");
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }
     }

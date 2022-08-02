@@ -13,7 +13,6 @@
 #include "task.h"
 
 struct task_struct* main_thread;
-struct task_struct* idle_thread;
 
 PUBLIC struct list ready_list;
 PUBLIC struct list all_list;
@@ -25,21 +24,17 @@ PRIVATE void make_main_thread();
 // PRIVATE uint8_t pid_bits[128] = { 0 };
 PRIVATE struct pid_pool pid_pool;
 
-PRIVATE void idle(void* arg __attribute__((unused)));
-
 void init_thread()
 {
     list_init(&ready_list);
     list_init(&all_list);
-    // memset(pid_bits,0,128);
-    // pid_pool.start_pid = 10;
+    // pid_pool.start_pid = 1;
     // pid_pool.bitmap.map = pid_bits;
     // pid_pool.bitmap.btmp_bytes_len = 128;
     // bitmap_init(&(pid_pool.bitmap));
-    pid_pool.pid = RESERVED_PID + 1;
+    pid_pool.pid = TASKPID_END;
     lock_init(&(pid_pool.lock));
     make_main_thread();
-    idle_thread = thread_start("idle",15,idle,NULL);
     return;
 }
 
@@ -51,8 +46,7 @@ PRIVATE pid_t alloc_pid()
     pid_pool.pid++;
     // int idx = bitmap_scan_test(&(pid_pool.bitmap),1);
     // bitmap_set(&(pid_pool.bitmap),idx,1);
-    // lock_release(&(pid_pool.lock));
-    // pid = idx + pid_pool.start_pid;
+    lock_release(&(pid_pool.lock));
     return pid;
 }
 
@@ -138,7 +132,7 @@ struct task_struct* thread_start(char* name,uint8_t priority,thread_function fun
     return thread;
 }
 
-PRIVATE void make_main_thread(void)
+static void make_main_thread(void)
 {
     main_thread = running_thread();
     thread_init(main_thread,"Main thread",31);
@@ -146,15 +140,6 @@ PRIVATE void make_main_thread(void)
     main_thread->general_tag.data = main_thread;
     list_append(&all_list,&main_thread->all_tag);
     return;
-}
-
-PRIVATE void idle(void* arg __attribute__((unused)))
-{
-    while(1)
-    {
-        thread_block(TASK_BLOCKED);
-        __asm__ __volatile__("sti;hlt":::"memory");
-    }
 }
 
 void schedule()
@@ -175,10 +160,8 @@ void schedule()
     struct task_struct* next = NULL;
     this_thread_tag = NULL;
 
-    if(list_empty(&ready_list))
-    {
-        thread_unblock(idle_thread);
-    }
+    /* 就绪队列不能为空 */
+    ASSERT(!(list_empty(&ready_list)));
     ASSERT(ready_list.tail.prev != &ready_list.head);
     this_thread_tag = list_pop(&ready_list);
     next = this_thread_tag->data;

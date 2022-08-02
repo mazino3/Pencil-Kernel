@@ -35,9 +35,8 @@ PRIVATE struct arena* block2arena(struct mem_block* b)
     return ((struct arena*)((uint32_t)b & 0xfffff000));
 }
 
-void* sys_malloc(int size)
+void* kmalloc(int size)
 {
-    log("Memory Alloc ");
     enum pool_flage PF;
     struct MEMMAN* mem_pool;
     int pool_size;
@@ -67,7 +66,6 @@ void* sys_malloc(int size)
     lock_acquire(&(mem_pool->lock));
     if(size < MALLOC_MAX_SIZE)
     {
-        log("alloc general memory");
         int idx;
         for(idx = 0;idx < MEM_DESCS;idx++)
         {
@@ -81,11 +79,10 @@ void* sys_malloc(int size)
             a = page_alloc(PF,1);
             if(a == NULL) /* 无法分配 */
             {
-                log("arena is NULL");
                 lock_release(&(mem_pool->lock));
                 return NULL;
             }
-           //  memset(a,0,PG_SIZE);
+            memset(a,0,PG_SIZE);
             /* 初始化 */
             a->desc = &desc[idx];
             a->large = false;
@@ -103,7 +100,7 @@ void* sys_malloc(int size)
         }
         /* 获取一个内存块 */
         b = list_pop(&(desc[idx].free_list))->data;
-        // memset(b,0,desc[idx].block_size);
+        memset(b,0,desc[idx].block_size);
         a = block2arena(b);
         a->cnt--;
         lock_release(&(mem_pool->lock));
@@ -111,7 +108,6 @@ void* sys_malloc(int size)
     }
     else /* 要分配地内存大小超过最大值 */
     {
-        log("alloc large memory");
         int pg_cnt;
         pg_cnt = DIV_ROUND_UP(size + sizeof(struct arena),PG_SIZE);
         a = page_alloc(PF,pg_cnt);
@@ -133,9 +129,8 @@ void* sys_malloc(int size)
 
 
 
-void sys_free(void* vaddr)
+void kfree(void* vaddr)
 {
-    log("Memory Free");
     if(vaddr == NULL)
     {
         return;

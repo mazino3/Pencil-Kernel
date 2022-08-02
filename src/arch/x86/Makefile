@@ -65,7 +65,6 @@ $(SYSCALL_DIR)syscall.co     \
 \
 $(TASK_DIR)mm.co             \
 $(TASK_DIR)taskinit.co       \
-$(TASK_DIR)taskmgr.co        \
 $(TASK_DIR)view.co           \
 \
 $(LIB_DIR)apilib.co          \
@@ -150,6 +149,7 @@ clean:
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.bin
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.co
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.map
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.o
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.s
 
@@ -191,5 +191,5 @@ run: img
 	@$(TOOL_DIR)qemu\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
-	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds
+	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds -Map $(KERNEL_DIR)kernel.map
 	@$(OBJCOPY) -I $(OBJ_FORMAT) -S -R ".eh_frame" -R ".comment" -O binary $(KERNEL_OBJ_FILE) $(KERNEL)

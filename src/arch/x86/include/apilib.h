@@ -8,10 +8,15 @@
 
 int32_t send_recv(int function,pid_t src_dst,struct MESSAGE* msg);
 
-void* malloc(int size);
-void free(void* addr);
+void* api_malloc(int size);
+void api_free(void* addr);
+void api_mmcopy(void* dst,void* src,pid_t src_pid,int size);
 
-void* api_viewCreat(int xsize,int ysize);
-void api_viewFill(void* view,pixel_t color,int x0,int y0,int x1,int y1);
+void* api_viewinit(int xsize,int ysize,pixel_t* buf);
+void api_viewflush(void* view,int x0,int y0,int x1,int y1);
+void api_viewslide(void* view,int x,int y);
+void api_viewupdown(void* view,int height);
+
+void api_makeWindow(struct viewblock* view);
 
 #endif /* __APILIB_H__ */

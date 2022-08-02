@@ -4,9 +4,6 @@
 #include "global.h"
 #include "stdint.h"
 
-#define ANY     -1
-#define NO_TASK -2
-
 struct msg1
 {
     uint32_t m1i1;

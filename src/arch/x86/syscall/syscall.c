@@ -8,8 +8,8 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
-#include "task.h"
 #include "thread.h"
+#include "task.h"
 
 /* 重置msg */
 void resetmsg(struct MESSAGE* msg)
@@ -22,6 +22,8 @@ void resetmsg(struct MESSAGE* msg)
 * 判断从src发送到dst是否会死锁
 * 
 */
+
+
 PRIVATE bool deadlock(pid_t src,pid_t dst)
 {
     struct task_struct* pthread = pid2thread(dst);
@@ -32,6 +34,11 @@ PRIVATE bool deadlock(pid_t src,pid_t dst)
             if(pthread->send_to == src)
             {
                 /* 死锁 */
+                char str[30];
+                sprintf(str,"src:%s -> dst:%s dead lock",pid2thread(src)->name,pid2thread(dst)->name);
+                vput_str((void*)0xe0000000,ScrnX,0,0,0x00ff0000,str);
+                // PANIC("dead lock!");
+                // while(1);
                 return true;
             }
             pthread = pid2thread(pthread->send_to);
@@ -64,9 +71,6 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
     /* 判断是否死锁 */
     if(deadlock(sender->pid,dst))
     {
-        char str[65];
-        sprintf(str,"msg_send: %s -> %s deadlock!",sender->name,pdest->name);
-        PANIC(str);
         return 1;
     }
 
@@ -92,6 +96,7 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
         /* 加入队列 */
         ASSERT(sender->send_tag.data == sender);
         list_append(&(pdest->sender_list),&(sender->send_tag));
+
         thread_block(TASK_SENDING);
         // ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
         sender->send_to = NO_TASK;
@@ -101,13 +106,12 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
     return 1;
 }
 
-// static int y = 100;
 /* list_traversal的回调函数pid_check */
 PRIVATE bool pid_check(struct list_elem* pelem,uint32_t pid)
 {
     // char str[30];
-    // sprintf(str,"cur: %s pid: %d name: %s %d",running_thread()->name,((struct task_struct*)(pelem->data))->pid,((struct task_struct*)(pelem->data))->name,(((struct task_struct*)(pelem->data))->pid == pid));
-    // vput_str((void*)0xe0000000,ScrnX,50,y,rgb(125,125,0),str);
+    // sprintf(str,"running: %s pid: %d name: %s %d",running_thread()->name,((struct task_struct*)(pelem->data))->pid,((struct task_struct*)(pelem->data))->name,(((struct task_struct*)(pelem->data))->pid == pid));
+    // vput_str((void*)0xe0000000,ScrnX,50,y,rgb(255,255,255),str);
     // y += 16;
     return (((struct task_struct*)(pelem->data))->pid == pid);
 }
@@ -126,6 +130,7 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
 
     ASSERT(psrc != receiver);
     receiver->recv_from = src;
+
     /* 从任意进程接收消息 */
     if(src == ANY)
     {
@@ -133,17 +138,11 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
         {
             thread_block(TASK_RECEIVING);
         }
-        ASSERT(!list_empty(&(receiver->sender_list)));
         psrc = list_pop(&(receiver->sender_list))->data;
     }
     /* 从特定进程接收 */
     else
     {
-        // if(list_empty(&(receiver->sender_list)))
-        // {
-        //     thread_block(TASK_RECEIVING);
-        // }
-        // ASSERT(!list_empty(&(receiver->sender_list)));
         struct list_elem* src_elem;
         do
         {
@@ -170,9 +169,9 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
 uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
 {
     uint32_t res = 1;
-    if(src_dst >= 0 && src_dst <= RESERVED_PID)
+    if(src_dst < TASKPID_END && src_dst > NO_TASK)
     {
-        src_dst = task_table[src_dst];
+        src_dst = pid_table[src_dst];
     }
     switch(function)
     {
@@ -188,14 +187,15 @@ uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
             {
                 res = msg_recv(src_dst,msg);
             }
-            else
-            {
-                PANIC("sendrecv::BOTH: send error");
-            }
+            // else
+            // {
+            //     return res;
+            //     // PANIC("sendrecv::BOTH: send error");
+            // }
             break;
         default:
             ASSERT((function == SEND) || (function == RECEIVE) || (function == BOTH));
             break;
-    }
+    } 
     return res;
 }

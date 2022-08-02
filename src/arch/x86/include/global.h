@@ -33,10 +33,8 @@ struct SEGMDESC
 #define AR_TYPE_TSS 0x0009
 
 #define AR_CODE32      (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_0 | AR_S_CODE | AR_TYPE_CODE)
-#define AR_CODE32_DPL1 (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_1 | AR_S_CODE | AR_TYPE_CODE)
 #define AR_CODE32_DPL3 (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_3 | AR_S_CODE | AR_TYPE_CODE)
 #define AR_DATA32      (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_0 | AR_S_DATA | AR_TYPE_DATA)
-#define AR_DATA32_DPL1 (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_1 | AR_S_DATA | AR_TYPE_DATA)
 #define AR_DATA32_DPL3 (AR_G_4K | AR_D_32 | AR_L | AR_AVL | AR_P | AR_DPL_3 | AR_S_DATA | AR_TYPE_DATA)
 #define RPL0 0x0
 #define RPL1 0x1
@@ -47,13 +45,11 @@ struct SEGMDESC
 
 #define SelectorCode32_K     ((1 << 3) | TI_GDT | RPL0) /* 代码段 */
 #define SelectorData32_K     ((2 << 3) | TI_GDT | RPL0) /* 数据段 */
+
 #define SelectorTSS32        ((3 << 3) | TI_GDT | RPL0) /* TSS段 */
 
-#define SelectorCode32_T     ((4 << 3) | TI_GDT | RPL1) /* ring1代码段 */
-#define SelectorData32_T     ((5 << 3) | TI_GDT | RPL1) /* ring1数据段 */
-
-#define SelectorCode32_U     ((6 << 3) | TI_GDT | RPL3) /* 用户代码段 */
-#define SelectorData32_U     ((7 << 3) | TI_GDT | RPL3) /* 用户数据段 */
+#define SelectorCode32_U     ((4 << 3) | TI_GDT | RPL3) /* 用户代码段 */
+#define SelectorData32_U     ((5 << 3) | TI_GDT | RPL3) /* 用户数据段 */
 
 #define AR_DESC_32 0xe
 #define AR_DESC_16 0x6
@@ -80,7 +76,6 @@ struct SEGMDESC
 #define EFLAGS_IF_1 (1 << 9)
 #define EFLAGS_IF_0 (0 << 9)
 #define EFLAGS_IOPL_0 (0 << 12)
-#define EFLAGS_IOPL_1 (1 << 12)
 
 #define LoaderBaseAddress 0x1000  /* loader加载到0x1000地址处 */
 #define LoaderOffsetAddress 0x500 /* loader前0x4ff字节是数据,代码正式开始是0x500字节 */
@@ -103,6 +98,10 @@ struct SEGMDESC
 #define Vram_h      (*((uint32_t*)(0xc0007c00 + 0x020)))
 #define ScrnX       (*((uint32_t*)(0xc0007c00 + 0x024)))
 #define ScrnY       (*((uint32_t*)(0xc0007c00 + 0x028)))
+
+#define VbeVersion         (*((uint32_t*)(0xc0007c00 + 0x02c)))
+#define ModeInfoBase16     (*((uint32_t*)(0xc0007c00 + 0x030)))
+#define ModeInfoOff16      (*((uint32_t*)(0xc0007c00 + 0x034)))
 
 /* 参数的取值 */
 enum Display

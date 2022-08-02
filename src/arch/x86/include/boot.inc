@@ -84,6 +84,10 @@ Vram_h      equ 0x7c20 ; + 20 显存地址高32位(对于32位系统,这个值�
 ScrnX       equ 0x7c24 ; + 24 对于文本模式,这是指列数;对于图形模式,这是指x轴方向上的像素数
 ScrnY       equ 0x7c28 ; + 28 对于文本模式,这是指行数;对于图形模式,这是指y轴方向上的像素数
 
+VbeVersion     equ 0x7c2c
+ModeInfoBase16 equ 0x7c30
+ModeInfoOff16  equ 0x7c34
+
 KernelStartSec equ 0x48   
 
 KernelBlockSize equ 64

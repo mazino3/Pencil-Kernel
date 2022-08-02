@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "message.h"
 #include "process.h"
+#include "stdio.h"
 #include "string.h"
 #include "syscall.h"
 #include "thread.h"
@@ -18,22 +19,18 @@ PRIVATE void mm_free(void* vaddr,struct task_struct* cur_thread);
 PRIVATE void* mm_page_alloc(enum pool_flage pf,int page_count,struct task_struct* cur_thread);
 PRIVATE void mm_page_table_add(void* vaddr,void* phyaddr,struct task_struct* cur_thread);
 
-
-
-#include "graphic.h"
-
-
-
 void MM_task()
 {
-    task_table[MM] = running_thread()->pid;
+    pid_table[MM] = running_thread()->pid;
     struct MESSAGE msg;
     struct msg1 msg1;
-    // struct msg2 msg2;
-    // struct msg3 msg3;
+    struct msg2 msg2;
+    struct msg3 msg3;
     pid_t source;
     void* ret_addr;
     struct task_struct* mm = running_thread();
+    void* pgdir = NULL;
+    uint8_t* buf;
     while(1)
     {
         resetmsg(&msg);
@@ -45,18 +42,46 @@ void MM_task()
         {
             case MM_MALLOC:
                 msg1 = msg.msg1;
-                process_activate(pid2thread(source)); /* 临时切换页表 */
+                pgdir = mm->page_dir;
+                mm->page_dir = pid2thread(source)->page_dir;
+                page_dir_activate(mm);
                 ret_addr = mm_malloc(msg1.m1i1,pid2thread(source));
-                process_activate(mm);
+                mm->page_dir = pgdir;
+                page_dir_activate(mm);
                 msg.msg2.m2p1 = ret_addr;
                 send_recv(SEND,source,&msg);
                 break;
+
             case MM_FREE:
-                process_activate(pid2thread(source)); /* 临时切换页表 */
-                mm_free(msg.msg2.m2p1,pid2thread(msg.source));
-                process_activate(mm);
+                msg2 = msg.msg2;
+                pgdir = mm->page_dir;
+                mm->page_dir = pid2thread(source)->page_dir;
+                page_dir_activate(mm);
+                mm_free(msg2.m2p1,pid2thread(msg.source));
+                mm->page_dir = pgdir;
+                page_dir_activate(mm);
+                send_recv(SEND,source,&msg);
                 break;
-            case MM_MEMCPY:
+
+            case MM_COPY:
+                msg3 = msg.msg3;
+                buf = kmalloc(msg3.m3i1);
+                /* 切换到src的页表 */
+                pgdir = mm->page_dir;
+                mm->page_dir = pid2thread(msg3.m3i2)->page_dir;
+                page_dir_activate(mm);
+                /* 复制到内核缓存区 */
+                memcpy(buf,msg3.m3p2,msg3.m3i1);
+                /* 切换为dst页表 */
+                mm->page_dir = pid2thread(source)->page_dir;
+                page_dir_activate(mm);
+                /* 复制给dst */
+                memcpy(msg3.m3p1,buf,msg3.m3i1);
+                /* 恢复MM的页表 */
+                mm->page_dir = pgdir;
+                page_dir_activate(mm);
+                kfree(buf);
+                send_recv(SEND,source,&msg);
                 break;
         }
     }
@@ -72,10 +97,6 @@ PRIVATE struct arena* block2arena(struct mem_block* b)
     return ((struct arena*)((uint32_t)b & 0xfffff000));
 }
 
-/* mm是代替进程申请内存,而不是自己申请
-* 所以要切换到对方的页表
-* 申请的内存才能让对方访问到
-*/
 PRIVATE void* mm_malloc(int size,struct task_struct* cur_thread)
 {
     enum pool_flage PF;
@@ -249,14 +270,16 @@ PRIVATE void mm_page_table_add(void* vaddr,void* phyaddr,struct task_struct* cur
 
     if(*pde & 0x00000001)
     {
-        ASSERT(!(*pte & 0x00000001));
+        // ASSERT(!(*pte & 0x00000001));
         if(!(*pte & 0x00000001))
         {
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }
         else
         {
-            PANIC("pte repeat");
+            char s[31];
+            sprintf(s,"pte repeat!(vaddr: %p, paddr: %p)",vaddr,paddr);
+            // PANIC(s);
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }
     }

@@ -20,7 +20,6 @@ void init_all()
     init_tss();
     init_pit();
     init_memory();
-    init_screen();
     init_keyboard();
     init_mouse();
     init_thread();

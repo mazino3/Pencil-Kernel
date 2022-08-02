@@ -9,6 +9,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "syscall.h"
+#include "thread.h"
 #include "timer.h"
 
 struct gate_desc idt[IDT_DESC_CNT];
@@ -107,14 +108,14 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
     char str[255];
     intr_disable();
     set_cursor(0);
-    vramFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
+    viewFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
     vput_str((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
     "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
     "If this is the first time you've seen this stop error sereen, restart your computer.\n"
     "If this screen appers again,follow these steps:\n"
     " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
     );
-    sprintf(str," %s\n intr: 0x%02x\n CS:EIP  0x%x:%08p\n ",PKn_Version,vector_nr,cs,eip);
+    sprintf(str," %s\n intr: 0x%02x\n CS:EIP  0x%02x:%08p Running: %s",PKn_Version,vector_nr,cs,eip,running_thread()->name);
     put_str(0x17,str);
     vput_str((void*)0xe0000000,ScrnX,10,90,rgb(255,255,255),str);
     if(vector_nr >= 0 && vector_nr < 20)

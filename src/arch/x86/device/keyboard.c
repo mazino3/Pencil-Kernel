@@ -212,7 +212,7 @@ void intr0x21_handler(void)
                 break;
             default:
                 /* 未知按键 */
-                put_str(0x04,"unknow key");
+                break;
         }
     }
     return;

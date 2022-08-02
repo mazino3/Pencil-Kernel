@@ -15,6 +15,5 @@ void process_activate(struct task_struct* pthread);
 uint32_t* create_page_dir(void);
 void create_user_vaddr_memman(struct task_struct* user_prog);
 void process_execute(void* process_name,char* name);
-void task_execute(void* task_name,char* name);
 
 #endif /* __PROCESS_H__ */

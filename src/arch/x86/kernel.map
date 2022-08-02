@@ -1,0 +1,577 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+background          0x4               graphic/graphic.co
+ready_list          0x18              thread/thread.co
+pid_table           0x14              task/taskinit.co
+all_list            0x18              thread/thread.co
+kvinfo              0x1f40            memory/memory.co
+k_desc              0xc0              memory/memory.co
+user_pool           0x3c              memory/memory.co
+Screen_Ctl          0x40              graphic/graphic.co
+keybuf              0x44              device/keyboard.co
+intr_name           0x138             interrupt/interrupt.co
+idt                 0x270             interrupt/interrupt.co
+main_thread         0x4               thread/thread.co
+kernel_vaddr        0x3c              memory/memory.co
+upinfo              0x1f40            memory/memory.co
+kpinfo              0x1f40            memory/memory.co
+idt_table           0x138             interrupt/interrupt.co
+kernel_pool         0x3c              memory/memory.co
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+TARGET(elf32-i386)
+LOAD kernel/start.ao
+LOAD kernel/main.co
+LOAD kernel/debug.co
+LOAD kernel/init.co
+LOAD interrupt/interrupt.ao
+LOAD interrupt/interrupt.co
+LOAD memory/arena.co
+LOAD memory/memory.co
+LOAD thread/sync.co
+LOAD thread/thread.co
+LOAD prog/tss.co
+LOAD prog/process.co
+LOAD device/console.co
+LOAD device/cpu.co
+LOAD device/fifo.co
+LOAD device/keyboard.co
+LOAD device/mouse.co
+LOAD device/time.co
+LOAD device/timer.co
+LOAD syscall/api.co
+LOAD syscall/syscall.co
+LOAD task/mm.co
+LOAD task/taskinit.co
+LOAD task/view.co
+LOAD lib/apilib.co
+LOAD lib/bitmap.co
+LOAD lib/font.co
+LOAD lib/list.co
+LOAD lib/print.co
+LOAD libc/string.co
+LOAD libc/stdio.co
+LOAD graphic/graphic.co
+                0xc0100000                . = 0xc0100000
+                0xc0100000                _kernel_start = .
+
+.text           0xc0100000     0x7f4c
+                0xc0100000                _text = .
+ *(.text)
+ .text          0xc0100000       0x1d kernel/start.ao
+                0xc0100000                _start
+ *fill*         0xc010001d        0x3 00
+ .text          0xc0100020      0x95d kernel/main.co
+                0xc0100020                kernel_main
+                0xc010013b                k_thread_a
+                0xc01006ab                shell
+                0xc0100795                View_thread
+                0xc0100978                u_prog_a
+ *fill*         0xc010097d        0x3 00
+ .text          0xc0100980      0x10b kernel/debug.co
+                0xc0100980                panic_spin
+                0xc0100a48                log
+ *fill*         0xc0100a8b        0x1 00
+ .text          0xc0100a8c       0x48 kernel/init.co
+                0xc0100a8c                init_all
+ *fill*         0xc0100ad4        0xc 00
+ .text          0xc0100ae0      0x6a0 interrupt/interrupt.ao
+                0xc0100ae0                intr_exit
+                0xc0100af4                asm_intr0x00_handler
+                0xc0100b17                asm_intr0x01_handler
+                0xc0100b3a                asm_intr0x02_handler
+                0xc0100b5d                asm_intr0x03_handler
+                0xc0100b80                asm_intr0x04_handler
+                0xc0100ba3                asm_intr0x05_handler
+                0xc0100bc6                asm_intr0x06_handler
+                0xc0100be9                asm_intr0x07_handler
+                0xc0100c0c                asm_intr0x08_handler
+                0xc0100c2b                asm_intr0x09_handler
+                0xc0100c4e                asm_intr0x0a_handler
+                0xc0100c6d                asm_intr0x0b_handler
+                0xc0100c8c                asm_intr0x0c_handler
+                0xc0100caf                asm_intr0x0d_handler
+                0xc0100cce                asm_intr0x0e_handler
+                0xc0100ced                asm_intr0x0f_handler
+                0xc0100d10                asm_intr0x10_handler
+                0xc0100d33                asm_intr0x11_handler
+                0xc0100d52                asm_intr0x12_handler
+                0xc0100d75                asm_intr0x13_handler
+                0xc0100d98                asm_intr0x14_handler
+                0xc0100dbb                asm_intr0x15_handler
+                0xc0100dde                asm_intr0x16_handler
+                0xc0100e01                asm_intr0x17_handler
+                0xc0100e24                asm_intr0x18_handler
+                0xc0100e43                asm_intr0x19_handler
+                0xc0100e66                asm_intr0x1a_handler
+                0xc0100e85                asm_intr0x1b_handler
+                0xc0100ea4                asm_intr0x1c_handler
+                0xc0100ec7                asm_intr0x1d_handler
+                0xc0100ee6                asm_intr0x1e_handler
+                0xc0100f05                asm_intr0x1f_handler
+                0xc0100f28                asm_intr0x20_handler
+                0xc0100f4b                asm_intr0x21_handler
+                0xc0100f6e                asm_intr0x22_handler
+                0xc0100f91                asm_intr0x23_handler
+                0xc0100fb4                asm_intr0x24_handler
+                0xc0100fd7                asm_intr0x25_handler
+                0xc0100ffa                asm_intr0x26_handler
+                0xc010101d                asm_intr0x27_handler
+                0xc0101040                asm_intr0x28_handler
+                0xc0101063                asm_intr0x29_handler
+                0xc0101086                asm_intr0x2a_handler
+                0xc01010a9                asm_intr0x2b_handler
+                0xc01010cc                asm_intr0x2c_handler
+                0xc01010ef                asm_intr0x2d_handler
+                0xc0101112                asm_intr0x2e_handler
+                0xc0101135                asm_intr0x2f_handler
+                0xc0101158                syscall_entry
+ .text          0xc0101180      0x684 interrupt/interrupt.co
+                0xc01011af                init_pic
+                0xc01012c3                idt_desc_init
+                0xc010137d                set_gatedesc
+                0xc01013c1                init_idt
+                0xc0101407                general_intr_handler
+                0xc01016ac                exception_init
+                0xc0101779                intr_enable
+                0xc01017a6                intr_disable
+                0xc01017d3                intr_set_status
+                0xc01017ed                intr_get_status
+ .text          0xc0101804      0x548 memory/arena.co
+                0xc0101804                init_block
+                0xc0101898                kmalloc
+                0xc0101bd4                kfree
+ .text          0xc0101d4c      0xd0b memory/memory.co
+                0xc0101d4c                init_memory
+                0xc0101f9c                init_memman
+                0xc010204d                TotalFreeSize
+                0xc010208d                pde_ptr
+                0xc01020a0                pte_ptr
+                0xc01020c7                addr_v2p
+                0xc01020f4                pgman_alloc
+                0xc0102234                page_table_add
+                0xc0102323                page_alloc
+                0xc01023d1                get_kernel_page
+                0xc0102415                get_user_page
+                0xc0102459                get_a_page
+                0xc0102527                pgman_free
+                0xc0102846                page_table_remove
+                0xc010286f                paddr_free
+                0xc01028ad                vaddr_free
+                0xc01028fb                page_free
+ *fill*         0xc0102a57        0x1 00
+ .text          0xc0102a58      0x3fe thread/sync.co
+                0xc0102a58                sema_init
+                0xc0102ab6                lock_init
+                0xc0102ae7                sema_down
+                0xc0102c52                sema_up
+                0xc0102d16                lock_acquire
+                0xc0102d9a                lock_release
+ *fill*         0xc0102e56        0x2 00
+ .text          0xc0102e58      0x6d0 thread/thread.co
+                0xc0102e58                init_thread
+                0xc0102ecb                thread_init
+                0xc0102fa7                running_thread
+                0xc0102fc1                kernel_thread
+                0xc0102fd9                thread_create
+                0xc0103049                thread_start
+                0xc01031c9                schedule
+                0xc010334d                thread_block
+                0xc01033ed                thread_unblock
+                0xc01034da                pid2thread
+ .text          0xc0103528      0x17a prog/tss.co
+                0xc0103591                init_tss
+                0xc0103690                update_tss_esp0
+ *fill*         0xc01036a2        0x2 00
+ .text          0xc01036a4      0x3c3 prog/process.co
+                0xc01036a4                start_process
+                0xc010379a                page_dir_activate
+                0xc01037fc                process_activate
+                0xc0103856                create_page_dir
+                0xc01038cf                create_user_vaddr_memman
+                0xc010391b                process_execute
+ *fill*         0xc0103a67        0x1 00
+ .text          0xc0103a68      0x110 device/console.co
+                0xc0103a68                init_console
+                0xc0103a7c                console_char
+                0xc0103abf                console_str
+                0xc0103af8                console_int
+                0xc0103b38                console_uint
+ .text          0xc0103b78      0x1f7 device/cpu.co
+                0xc0103bc1                init_cpu
+                0xc0103c98                cpu_info
+ *fill*         0xc0103d6f        0x1 00
+ .text          0xc0103d70      0x3f5 device/fifo.co
+                0xc0103d70                init_fifo
+                0xc0103e11                fifo_put
+                0xc0103fa1                fifo_get
+                0xc0104139                fifo_empty
+                0xc0104152                fifo_fill
+ *fill*         0xc0104165        0x3 00
+ .text          0xc0104168      0x2f1 device/keyboard.co
+                0xc0104193                wait_keyboard_ready
+                0xc01041b2                init_keyboard
+                0xc0104210                intr0x21_handler
+ *fill*         0xc0104459        0x3 00
+ .text          0xc010445c      0x242 device/mouse.co
+                0xc0104487                init_mouse
+                0xc01044cb                intr0x2c_handler
+                0xc0104625                get_mouse
+ *fill*         0xc010469e        0x2 00
+ .text          0xc01046a0      0x197 device/time.co
+                0xc01046cb                get_time
+ *fill*         0xc0104837        0x1 00
+ .text          0xc0104838       0xb2 device/timer.co
+                0xc0104844                init_pit
+                0xc0104888                intr0x20_handler
+ *fill*         0xc01048ea        0x2 00
+ .text          0xc01048ec       0x2c syscall/api.co
+                0xc01048ec                send_recv
+ .text          0xc0104918      0x654 syscall/syscall.co
+                0xc0104918                resetmsg
+                0xc0104ce7                msg_recv
+                0xc0104e58                sys_sendrec
+ .text          0xc0104f6c      0x8f9 task/mm.co
+                0xc0104f6c                MM_task
+ *fill*         0xc0105865        0x3 00
+ .text          0xc0105868        0x0 task/taskinit.co
+ .text          0xc0105868      0xe45 task/view.co
+                0xc0105868                VIEW_task
+ *fill*         0xc01066ad        0x3 00
+ .text          0xc01066b0      0x4ab lib/apilib.co
+                0xc01066b0                api_malloc
+                0xc01066e3                api_free
+                0xc0106713                api_mmcopy
+                0xc0106755                api_viewinit
+                0xc0106794                api_viewflush
+                0xc01067dc                api_viewslide
+                0xc0106818                api_makeWindow
+ *fill*         0xc0106b5b        0x1 00
+ .text          0xc0106b5c      0x27e lib/bitmap.co
+                0xc0106b5c                bitmap_init
+                0xc0106b83                bitmap_scan_test
+                0xc0106bc5                bitmap_alloc
+                0xc0106d0f                bitmap_set
+ *fill*         0xc0106dda        0x2 00
+ .text          0xc0106ddc        0x0 lib/font.co
+ .text          0xc0106ddc      0x1cd lib/list.co
+                0xc0106ddc                list_init
+                0xc0106e09                list_in
+                0xc0106e4a                list_push
+                0xc0106e67                list_append
+                0xc0106e84                list_remove
+                0xc0106eba                list_pop
+                0xc0106ed9                list_find
+                0xc0106f14                list_traversal
+                0xc0106f5b                list_len
+                0xc0106f90                list_empty
+ *fill*         0xc0106fa9        0x3 00
+ .text          0xc0106fac      0x538 lib/print.co
+                0xc0106fd7                put_char
+                0xc01070ff                put_str
+                0xc0107136                put_int
+                0xc01071be                put_uint
+                0xc0107246                itoa
+                0xc0107305                utoa
+                0xc01073af                roll_screen
+                0xc010741a                get_cursor
+                0xc0107481                set_cursor
+ .text          0xc01074e4      0x1da libc/string.co
+                0xc01074e4                memset
+                0xc010754c                memcpy
+                0xc01075c0                memcmp
+                0xc010765f                strcpy
+                0xc0107693                strlen
+ *fill*         0xc01076be        0x2 00
+ .text          0xc01076c0      0x303 libc/stdio.co
+                0xc01076c0                sprintf
+                0xc01076ef                vsprintf
+ *fill*         0xc01079c3        0x1 00
+ .text          0xc01079c4      0x588 graphic/graphic.co
+                0xc01079c4                rgb
+                0xc0107b8c                viewFill
+                0xc0107bf6                vput_char
+                0xc0107d11                vput_str
+                0xc0107d8d                init_screen
+                0xc0107f4c                _etext = .
+
+.iplt           0xc0107f50        0x0
+ .iplt          0x00000000        0x0 kernel/start.ao
+                0xc0107f50                . = ALIGN (0x8)
+
+.data           0xc0107f60     0x14a1
+                0xc0107f60                _data = .
+ *(.data)
+ .data          0xc0107f60      0x200 kernel/main.co
+                0xc0107f60                PencilLogo
+ .data          0xc0108160        0x0 kernel/debug.co
+ .data          0xc0108160        0x0 kernel/init.co
+ .data          0xc0108160       0xc0 interrupt/interrupt.ao
+                0xc0108160                intr_entry_table
+ .data          0xc0108220        0x0 interrupt/interrupt.co
+ .data          0xc0108220        0x0 memory/arena.co
+ .data          0xc0108220        0x0 memory/memory.co
+ .data          0xc0108220        0x0 thread/sync.co
+ .data          0xc0108220        0x0 thread/thread.co
+ .data          0xc0108220        0x0 prog/tss.co
+ .data          0xc0108220        0x0 prog/process.co
+ .data          0xc0108220        0x0 device/console.co
+ .data          0xc0108220        0x0 device/cpu.co
+ .data          0xc0108220        0x0 device/fifo.co
+ .data          0xc0108220       0x76 device/keyboard.co
+ *fill*         0xc0108296        0x2 00
+ .data          0xc0108298        0x0 device/mouse.co
+ .data          0xc0108298        0x0 device/time.co
+ .data          0xc0108298        0x0 device/timer.co
+ .data          0xc0108298        0x0 syscall/api.co
+ .data          0xc0108298        0x0 syscall/syscall.co
+ .data          0xc0108298        0x0 task/mm.co
+ .data          0xc0108298        0x0 task/taskinit.co
+ .data          0xc0108298        0x0 task/view.co
+ .data          0xc0108298        0x0 lib/apilib.co
+ .data          0xc0108298        0x0 lib/bitmap.co
+ *fill*         0xc0108298        0x8 00
+ .data          0xc01082a0     0x1000 lib/font.co
+                0xc01082a0                PKnFont
+ .data          0xc01092a0        0x0 lib/list.co
+ .data          0xc01092a0       0x65 lib/print.co
+ *fill*         0xc0109305        0x3 00
+ .data          0xc0109308        0x0 libc/string.co
+ .data          0xc0109308        0x0 libc/stdio.co
+ *fill*         0xc0109308       0x18 00
+ .data          0xc0109320       0xe1 graphic/graphic.co
+                0xc0109401                _edata = .
+
+.igot.plt       0xc0109404        0x0
+ .igot.plt      0x00000000        0x0 kernel/start.ao
+
+.eh_frame       0xc0109404     0x162c
+ .eh_frame      0xc0109404       0x9c kernel/main.co
+ .eh_frame      0xc01094a0       0x38 kernel/debug.co
+                                 0x4c (size before relaxing)
+ .eh_frame      0xc01094d8       0x20 kernel/init.co
+                                 0x34 (size before relaxing)
+ .eh_frame      0xc01094f8      0x1ec interrupt/interrupt.co
+                                0x200 (size before relaxing)
+ .eh_frame      0xc01096e4       0xa4 memory/arena.co
+                                 0xb8 (size before relaxing)
+ .eh_frame      0xc0109788      0x234 memory/memory.co
+                                0x248 (size before relaxing)
+ .eh_frame      0xc01099bc       0xcc thread/sync.co
+                                 0xe0 (size before relaxing)
+ .eh_frame      0xc0109a88      0x1a4 thread/thread.co
+                                0x1b8 (size before relaxing)
+ .eh_frame      0xc0109c2c       0x64 prog/tss.co
+                                 0x78 (size before relaxing)
+ .eh_frame      0xc0109c90       0xc0 prog/process.co
+                                 0xd4 (size before relaxing)
+ .eh_frame      0xc0109d50       0xa0 device/console.co
+                                 0xb4 (size before relaxing)
+ .eh_frame      0xc0109df0       0x68 device/cpu.co
+                                 0x7c (size before relaxing)
+ .eh_frame      0xc0109e58       0xa0 device/fifo.co
+                                 0xb4 (size before relaxing)
+ .eh_frame      0xc0109ef8       0xa4 device/keyboard.co
+                                 0xb8 (size before relaxing)
+ .eh_frame      0xc0109f9c       0xa4 device/mouse.co
+                                 0xb8 (size before relaxing)
+ .eh_frame      0xc010a040       0x68 device/time.co
+                                 0x7c (size before relaxing)
+ .eh_frame      0xc010a0a8       0x60 device/timer.co
+                                 0x74 (size before relaxing)
+ .eh_frame      0xc010a108       0x24 syscall/api.co
+                                 0x38 (size before relaxing)
+ .eh_frame      0xc010a12c       0xc0 syscall/syscall.co
+                                 0xd4 (size before relaxing)
+ .eh_frame      0xc010a1ec       0xd8 task/mm.co
+                                 0xec (size before relaxing)
+ .eh_frame      0xc010a2c4      0x194 task/view.co
+                                0x1a8 (size before relaxing)
+ .eh_frame      0xc010a458       0xec lib/apilib.co
+                                0x100 (size before relaxing)
+ .eh_frame      0xc010a544       0x98 lib/bitmap.co
+                                 0xac (size before relaxing)
+ .eh_frame      0xc010a5dc      0x140 lib/list.co
+                                0x154 (size before relaxing)
+ .eh_frame      0xc010a71c      0x17c lib/print.co
+                                0x190 (size before relaxing)
+ .eh_frame      0xc010a898       0xa0 libc/string.co
+                                 0xb4 (size before relaxing)
+ .eh_frame      0xc010a938       0x44 libc/stdio.co
+                                 0x58 (size before relaxing)
+ .eh_frame      0xc010a97c       0xb4 graphic/graphic.co
+                                 0xc8 (size before relaxing)
+
+.rodata         0xc010aa30     0x12d7
+                0xc010aa30                _rodata = .
+ *(.rodata)
+ .rodata        0xc010aa30       0x68 kernel/main.co
+                0xc010aa30                PKn_Version
+ .rodata        0xc010aa98       0x96 kernel/debug.co
+ *fill*         0xc010ab2e        0x2 00
+ .rodata        0xc010ab30       0x32 kernel/init.co
+ *fill*         0xc010ab62        0x2 00
+ .rodata        0xc010ab64      0x39a interrupt/interrupt.co
+ *fill*         0xc010aefe        0x2 00
+ .rodata        0xc010af00       0xd2 memory/arena.co
+ *fill*         0xc010afd2        0x2 00
+ .rodata        0xc010afd4      0x1c9 memory/memory.co
+ *fill*         0xc010b19d        0x3 00
+ .rodata        0xc010b1a0      0x1a9 thread/sync.co
+ *fill*         0xc010b349        0x3 00
+ .rodata        0xc010b34c      0x227 thread/thread.co
+ *fill*         0xc010b573        0x1 00
+ .rodata        0xc010b574       0x1f prog/tss.co
+ *fill*         0xc010b593        0x1 00
+ .rodata        0xc010b594      0x119 prog/process.co
+ *fill*         0xc010b6ad        0x3 00
+ .rodata        0xc010b6b0       0x1f device/console.co
+ *fill*         0xc010b6cf        0x1 00
+ .rodata        0xc010b6d0       0x1f device/cpu.co
+ *fill*         0xc010b6ef        0x1 00
+ .rodata        0xc010b6f0       0x8c device/fifo.co
+ .rodata        0xc010b77c       0x1f device/keyboard.co
+ *fill*         0xc010b79b        0x1 00
+ .rodata        0xc010b79c       0x1f device/mouse.co
+ *fill*         0xc010b7bb        0x1 00
+ .rodata        0xc010b7bc       0x1f device/time.co
+ *fill*         0xc010b7db        0x1 00
+ .rodata        0xc010b7dc       0x1f device/timer.co
+ *fill*         0xc010b7fb        0x1 00
+ .rodata        0xc010b7fc       0x1f syscall/api.co
+ *fill*         0xc010b81b        0x1 00
+ .rodata        0xc010b81c      0x15d syscall/syscall.co
+ *fill*         0xc010b979        0x3 00
+ .rodata        0xc010b97c      0x11b task/mm.co
+ *fill*         0xc010ba97        0x1 00
+ .rodata        0xc010ba98       0x1f task/taskinit.co
+ *fill*         0xc010bab7        0x1 00
+ .rodata        0xc010bab8       0x1f task/view.co
+ *fill*         0xc010bad7        0x1 00
+ .rodata        0xc010bad8       0x1f lib/apilib.co
+ *fill*         0xc010baf7        0x1 00
+ .rodata        0xc010baf8       0x82 lib/bitmap.co
+ *fill*         0xc010bb7a        0x2 00
+ .rodata        0xc010bb7c       0x1f lib/list.co
+ *fill*         0xc010bb9b        0x1 00
+ .rodata        0xc010bb9c       0x58 lib/print.co
+ .rodata        0xc010bbf4       0x8d libc/string.co
+ *fill*         0xc010bc81        0x3 00
+ .rodata        0xc010bc84       0x64 libc/stdio.co
+ .rodata        0xc010bce8       0x1f graphic/graphic.co
+                0xc010bd07                _erodata = .
+
+.rel.dyn        0xc010bd08        0x0
+ .rel.iplt      0x00000000        0x0 kernel/start.ao
+ .rel.text      0x00000000        0x0 kernel/start.ao
+
+.bss            0xc010bd20     0x6700
+                0xc010bd20                _bss = .
+ *(.bss)
+ .bss           0xc010bd20        0x0 kernel/main.co
+ .bss           0xc010bd20        0x0 kernel/debug.co
+ .bss           0xc010bd20        0x0 kernel/init.co
+ .bss           0xc010bd20        0x0 interrupt/interrupt.co
+ .bss           0xc010bd20        0x0 memory/arena.co
+ .bss           0xc010bd20        0x4 memory/memory.co
+ .bss           0xc010bd24        0x0 thread/sync.co
+ *fill*         0xc010bd24       0x1c 00
+ .bss           0xc010bd40       0x48 thread/thread.co
+ *fill*         0xc010bd88       0x18 00
+ .bss           0xc010bda0       0x6c prog/tss.co
+ .bss           0xc010be0c        0x0 prog/process.co
+ *fill*         0xc010be0c       0x14 00
+ .bss           0xc010be20       0x24 device/console.co
+ .bss           0xc010be44        0x0 device/cpu.co
+ .bss           0xc010be44        0x0 device/fifo.co
+ *fill*         0xc010be44       0x1c 00
+ .bss           0xc010be60       0x54 device/keyboard.co
+ .bss           0xc010beb4       0x18 device/mouse.co
+                0xc010beb4                i
+ .bss           0xc010becc        0x0 device/time.co
+ .bss           0xc010becc        0x8 device/timer.co
+                0xc010becc                ticks
+ .bss           0xc010bed4        0x0 syscall/api.co
+ .bss           0xc010bed4        0x0 syscall/syscall.co
+ .bss           0xc010bed4        0x0 task/mm.co
+ .bss           0xc010bed4        0x0 task/taskinit.co
+ .bss           0xc010bed4        0x0 task/view.co
+ .bss           0xc010bed4        0x0 lib/apilib.co
+ .bss           0xc010bed4        0x0 lib/bitmap.co
+ .bss           0xc010bed4        0x0 lib/font.co
+ .bss           0xc010bed4        0x0 lib/list.co
+ .bss           0xc010bed4        0x0 lib/print.co
+ .bss           0xc010bed4        0x0 libc/string.co
+ .bss           0xc010bed4        0x0 libc/stdio.co
+ .bss           0xc010bed4        0x0 graphic/graphic.co
+                0xc010bed4                _ebss = .
+ *fill*         0xc010bed4        0xc 00
+ COMMON         0xc010bee0      0x4f8 interrupt/interrupt.co
+                0xc010bee0                intr_name
+                0xc010c020                idt
+                0xc010c2a0                idt_table
+ *fill*         0xc010c3d8        0x8 00
+ COMMON         0xc010c3e0     0x5f3c memory/memory.co
+                0xc010c3e0                kvinfo
+                0xc010e320                k_desc
+                0xc010e3e0                user_pool
+                0xc010e420                kernel_vaddr
+                0xc010e460                upinfo
+                0xc01103a0                kpinfo
+                0xc01122e0                kernel_pool
+ COMMON         0xc011231c       0x34 thread/thread.co
+                0xc011231c                ready_list
+                0xc0112334                all_list
+                0xc011234c                main_thread
+ *fill*         0xc0112350       0x10 00
+ COMMON         0xc0112360       0x44 device/keyboard.co
+                0xc0112360                keybuf
+ COMMON         0xc01123a4       0x14 task/taskinit.co
+                0xc01123a4                pid_table
+ *fill*         0xc01123b8        0x8 00
+ COMMON         0xc01123c0       0x60 graphic/graphic.co
+                0xc01123c0                background
+                0xc01123e0                Screen_Ctl
+                0xc0112420                _kernel_end = .
+OUTPUT(kernel/kernel.o elf32-i386)
+
+.comment        0x00000000       0x11
+ .comment       0x00000000       0x11 kernel/main.co
+                                 0x12 (size before relaxing)
+ .comment       0x00000000       0x12 kernel/debug.co
+ .comment       0x00000000       0x12 kernel/init.co
+ .comment       0x00000000       0x12 interrupt/interrupt.co
+ .comment       0x00000000       0x12 memory/arena.co
+ .comment       0x00000000       0x12 memory/memory.co
+ .comment       0x00000000       0x12 thread/sync.co
+ .comment       0x00000000       0x12 thread/thread.co
+ .comment       0x00000000       0x12 prog/tss.co
+ .comment       0x00000000       0x12 prog/process.co
+ .comment       0x00000000       0x12 device/console.co
+ .comment       0x00000000       0x12 device/cpu.co
+ .comment       0x00000000       0x12 device/fifo.co
+ .comment       0x00000000       0x12 device/keyboard.co
+ .comment       0x00000000       0x12 device/mouse.co
+ .comment       0x00000000       0x12 device/time.co
+ .comment       0x00000000       0x12 device/timer.co
+ .comment       0x00000000       0x12 syscall/api.co
+ .comment       0x00000000       0x12 syscall/syscall.co
+ .comment       0x00000000       0x12 task/mm.co
+ .comment       0x00000000       0x12 task/taskinit.co
+ .comment       0x00000000       0x12 task/view.co
+ .comment       0x00000000       0x12 lib/apilib.co
+ .comment       0x00000000       0x12 lib/bitmap.co
+ .comment       0x00000000       0x12 lib/font.co
+ .comment       0x00000000       0x12 lib/list.co
+ .comment       0x00000000       0x12 lib/print.co
+ .comment       0x00000000       0x12 libc/string.co
+ .comment       0x00000000       0x12 libc/stdio.co
+ .comment       0x00000000       0x12 graphic/graphic.co

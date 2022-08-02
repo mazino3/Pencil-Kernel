@@ -1,20 +1,22 @@
 #include "global.h"
-#define RESERVED_PID 31 /* pid 0 - 31,32pid reserved */
 
-enum TASK_PID
+enum TASKPID
 {
-    MAIN = 0,
-    IDLE,
+    ANY = 0,
+    NO_TASK = 1,
+    MAIN,
     MM,
-    TASKMGR,
     VIEW,
+    TASKPID_END,
 };
 
-extern pid_t task_table[RESERVED_PID + 1];
+extern pid_t pid_table[TASKPID_END];
 
 void MM_task ();
-void taskmgr_thread();
-void view_task(void* arg);
-// void View_thread(void* arg);
+void VIEW_task(void* arg);
+void k_thread_a(void* arg);
+void shell(void* arg);
+void View_thread(void* arg);
+void k_thread_c(void* arg);
 void u_prog_a(void);
 void task_a(void);

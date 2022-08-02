@@ -96,7 +96,7 @@ void vaddr_free(enum pool_flage pf,void* vaddr,uint32_t free_pg_cnt);
 void page_free(enum pool_flage pf,void* pvaddr,int free_pg_cnt);
 
 /* arena.c */
-void* sys_malloc(int size);
-void sys_free(void* vaddr);
+void* kmalloc(int size);
+void kfree(void* vaddr);
 
 #endif /* __MEMORY_H__ */
