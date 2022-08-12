@@ -8,6 +8,8 @@
 
 #define rgba(R,G,B,A) ((uint32_t)(0x00000000 |( A << 24 | R << 16 | G << 8 | B << 0 )))
 
+#define Max_VIEWS 1024
+
 typedef uint32_t pixel_t;
 
 struct viewblock
@@ -16,6 +18,7 @@ struct viewblock
     pid_t holder;                 /* 图层所有者 */
     pixel_t* buf;                 /* 图层内容 */
     int height;                   /* 图层高度 */
+    int flage;
     int x;                        /* 图层x坐标 */
     int y;                        /* 图层y坐标 */
     uint32_t xsize;               /* 图层x轴长度 */
@@ -24,8 +27,9 @@ struct viewblock
 
 struct viewctl
 {
-    struct viewblock** view0; /* 存放排序好的view的指针 */
-    int views;                /* view个数 */
+    struct viewblock* views[Max_VIEWS]; /* 存放排序好的view的指针 */
+    struct viewblock view0[Max_VIEWS];  /* 存放view */
+    // int views;                /* view个数 */
     int top;                  /* 最上面的图层编号 + 1 */
     pixel_t* vram;            /* 显存 */
     int xsize;                /* x轴像素数 */

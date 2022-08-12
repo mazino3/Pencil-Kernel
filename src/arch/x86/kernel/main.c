@@ -171,14 +171,7 @@ void View_thread(void* arg)
             if(my < 0){ my = 0; }
             if(mx > ScrnX - 3){ mx = ScrnX - 3; }
             if(my > ScrnY - 3){ my = ScrnY - 3; }
-            if(md.btn & 0x01 != 0)
-            {
-                // intr_disable();
-                // struct viewblock* win = api_getxyview(mx,my);
-                // api_viewslide(win,mx,my);
-                // intr_enable();
-            }
-            api_viewupdown(view,1024);
+            api_viewupdown(view,4);
             api_viewslide(view,mx,my);
         }
     }
