@@ -357,6 +357,9 @@ void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str)
     {
         switch(*str)
         {
+            case '\t':
+                pos_x = (pos_x + (4 * 8)) & ~(4 * 8 - 1);
+                break;
             case '\r':
             case '\n':
                 pos_y += 16;
@@ -364,7 +367,7 @@ void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str)
                 break;
             default:
                 vput_char(vram,xsize,pos_x,pos_y,color,*str);
-                pos_x+= 8;
+                pos_x += 8;
                 break;
         }
         str++;

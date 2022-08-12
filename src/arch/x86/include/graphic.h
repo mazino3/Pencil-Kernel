@@ -24,7 +24,6 @@ struct viewblock
 
 struct viewctl
 {
-    struct lock lock;         /* 锁 */
     struct viewblock** view0; /* 存放排序好的view的指针 */
     int views;                /* view个数 */
     int top;                  /* 最上面的图层编号 + 1 */
@@ -34,8 +33,8 @@ struct viewctl
     ptr_t* map;               /* 刷新图层用的map */
 };
 
-extern struct viewctl Screen_Ctl;
-extern struct viewblock* background;
+// extern struct viewctl Screen_Ctl;
+// extern struct viewblock* background;
 
 void init_screen();
 pixel_t rgb(int r,int g,int b);

@@ -65,6 +65,7 @@ $(SYSCALL_DIR)syscall.co     \
 \
 $(TASK_DIR)mm.co             \
 $(TASK_DIR)taskinit.co       \
+$(TASK_DIR)tty.co            \
 $(TASK_DIR)view.co           \
 \
 $(LIB_DIR)apilib.co          \
@@ -95,7 +96,8 @@ ECHO := echo
 MAKE_DIR := md
 
 #.asm to .bin
-%.bin: %.asm $(INCLUDE_DIR)boot.inc
+%.bin: %.asm Makefile $(INCLUDE_DIR)boot.inc
+	@$(ECHO) compile $<
 	@$(NASM) -f bin -I $(INCLUDE_DIR) -o $*.bin $*.asm
 
 #.asm to .ao (elf)
@@ -121,8 +123,8 @@ MAKE_DIR := md
 	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
-$(v_disk): vhd.asm
-	$(NASM) -o $(v_disk) vhd.asm
+$(v_disk): img.asm
+	$(NASM) -o $(v_disk) img.asm
 
 #command:
 #clean: delet all obj file
@@ -175,20 +177,26 @@ clean:
 	@$(CD) $(THREAD_DIR) && $(DELET) *.s
 
 debug: img
+	@$(MAKE) -r dump
 	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
 	@$(BOCHS) -q -f bochsrc.bxrc
 
 dump:
-	..\..\..\tools\objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
+#	$(OBJDUMP) -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
+	@..\..\..\tools\objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 # 将文件写入
 img: $(v_disk) $(BOOT) $(LOADER) system
+	-$(DELET) $(v_disk)
+	@$(MAKE) -r $(v_disk)
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
 	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=1000 seek=72 conv=notrunc
 
 run: img
 #	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
-	@$(TOOL_DIR)qemu\qemu-system-i386 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
+	-$(DELET) kernel.asm
+	$(MAKE) -r dump
+	@$(TOOL_DIR)qemu\qemu-system-x86_64 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
 	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds -Map $(KERNEL_DIR)kernel.map

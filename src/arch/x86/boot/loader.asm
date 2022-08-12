@@ -489,10 +489,10 @@ SetupPage:
         mov [PAGE_DIR_TABLE_POS + 0x000],eax ;写入第一个页目录项
         mov [PAGE_DIR_TABLE_POS + 0xc00],eax ;写入最后一个页目录项
         sub eax,0x1000
-        mov [PAGE_DIR_TABLE_POS + 4092],eax ;最后一个页目录指向页表本身
+        mov [PAGE_DIR_TABLE_POS + 1023 * 4],eax ;最后一个页目录指向页表本身
     ;3. 创建页表项
     ;将低端4MB做固定映射
-    mov ecx,0x100 * 4 ;低端4MB内存里有256 * 0x4页
+    mov ecx,256 * 4 ;低端4MB内存里有256 * 0x4页
     mov esi,0
     mov edx,PG_US_U | PG_RW_W | PG_P
     .create_pte:
@@ -514,7 +514,7 @@ SetupPage:
         add eax,0x1000
         loop .create_kernel_pde
 
-    %ifdef __UI_GRAPHIC__
+    ;%ifdef __UI_GRAPHIC__
         ;为显示缓存区映射
         mov eax,PAGE_DIR_TABLE_POS + 0x1000 ;第一个页表地址
         add eax,0xe00 * 0x1000 ;0xe0000000以后16MB为显存
@@ -538,5 +538,5 @@ SetupPage:
             add eax,0x1000 ;指向下一个物理页地址
             inc esi
             loop .create_vram_pte
-    %endif
+    ;%endif
     ret

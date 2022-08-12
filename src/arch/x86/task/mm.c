@@ -21,7 +21,6 @@ PRIVATE void mm_page_table_add(void* vaddr,void* phyaddr,struct task_struct* cur
 
 void MM_task()
 {
-    pid_table[MM] = running_thread()->pid;
     struct MESSAGE msg;
     struct msg1 msg1;
     struct msg2 msg2;

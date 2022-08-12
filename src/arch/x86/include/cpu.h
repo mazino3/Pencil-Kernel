@@ -16,7 +16,5 @@ static inline void get_cpuid(uint32_t Mop,uint32_t Sop,uint32_t* a,uint32_t* b,u
     return;
 }
 
-void init_cpu();
-void cpu_info();
-
+void cpu_info(void* vFactoryName);
 #endif /* __CPU_H__ */

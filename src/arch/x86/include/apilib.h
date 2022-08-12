@@ -16,7 +16,8 @@ void* api_viewinit(int xsize,int ysize,pixel_t* buf);
 void api_viewflush(void* view,int x0,int y0,int x1,int y1);
 void api_viewslide(void* view,int x,int y);
 void api_viewupdown(void* view,int height);
+void* api_getxyview(int x,int y);
 
-void api_makeWindow(struct viewblock* view);
+void api_makeWindow(void* buf,int xsize,int ysize,char* title);
 
 #endif /* __APILIB_H__ */

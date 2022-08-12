@@ -88,7 +88,16 @@ uint32_t strlen(const char* str)
     return len;
 }
 
-int32_t strcmp(const char* str_a__,const char* str_b__);
+int32_t strcmp(const char* str1__,const char* str2__)
+{
+    ASSERT(str1__ != NULL && str2__ != NULL);
+    while(*str1__ != 0 && *str1__ == *str2__)
+    {
+        str1__++;
+        str2__++;
+    }
+    return (*str1__ < *str2__ ? -1 : *str1__ > *str2__);
+}
 char* strchr(const char* str,const uint8_t ch);
 char* strrchr(const char* str,const uint8_t ch);
 char* strcat(char* dst__,const char* src__);

@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "print.h"
 #include "syscall.h"
+#include "task.h"
 #include "thread.h"
 #include "timer.h"
 #include "tss.h"
@@ -23,6 +24,7 @@ void init_all()
     init_keyboard();
     init_mouse();
     init_thread();
+    init_task();
     init_console();
     // init_syscall(); //syscall在init_idt()中一起初始化
     log("init done");

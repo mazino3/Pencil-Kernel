@@ -83,13 +83,15 @@ int vsprintf(char* buf,const char* fmt,va_list ap)
             str++;
             break;
         case 'd': /* %d */
-            itoa(va_arg(ap,int),digits,10);
-
+            s = digits;
+            itoa(va_arg(ap,int),s,10);
             break;
         case 'o': /* %o */
-            itoa(va_arg(ap,int),digits,8);
+            s = digits;
+            itoa(va_arg(ap,int),s,8);
             break;
         case 'p':
+            s = digits;
             digits[0] = '0';
             digits[1] = 'x';
             utoa((ptr_t)va_arg(ap,void*),digits+2,16);
@@ -97,21 +99,21 @@ int vsprintf(char* buf,const char* fmt,va_list ap)
         case 's': /* %s */
             s = va_arg(ap,char*);
             strcpy(str,s);
-            str += strlen(s);
             break;
         case 'x': /* %x */
-            itoa(va_arg(ap,int),digits,16);
+            s = digits;
+            itoa(va_arg(ap,int),s,16);
             break;
         }
-        width -= strlen(digits);
+        width -= strlen(s);
         while(width > 0 && align == FORMAT_RIGHT)
         {
             *str = (flage & FORMAT_ZERO ? '0' : ' ');
             str++;
             width--;
         }
-        strcpy(str,digits);
-        str += strlen(digits);
+        strcpy(str,s);
+        str += strlen(s);
         /* 左对齐的情况 */
         while(width > 0 && align == FORMAT_LEFT)
         {
@@ -119,7 +121,6 @@ int vsprintf(char* buf,const char* fmt,va_list ap)
             str++;
             width--;
         }
-        
     }
     *str = '\0';
     return strlen(buf);

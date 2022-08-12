@@ -26,12 +26,13 @@
 void kernel_main(void)
 {
     int i;
-    char str[64];
+    //char str[64];
     set_cursor(0);
     for(i = 0;i < 35;i++)
     {
         put_char(0x07,'\n');
     }
+    init_screen();
     set_cursor(0);
     init_all();
     intr_enable(); /* 开中断 */
@@ -48,15 +49,12 @@ void kernel_main(void)
     // vput_str(background->buf,ScrnX,20,36,rgb(255,255,255),"Copyright (c) 2021-2022 Pencil-Kernel developers, All rights reserved.");
     // vput_str(background->buf,ScrnX,20,52,rgb(255,255,255),str);
     // view_reflush(background,20,20,background->xsize,68);
-    
-    pid_table[MM] = thread_start("MM",31,MM_task,NULL)->pid;
-    pid_table[VIEW] = thread_start("VIEW",31,VIEW_task,NULL)->pid;
+
     thread_start("k_a",31,k_thread_a,"arg_A ");
-    thread_start("shell",31,shell,NULL);
     thread_start("Mouse",31,View_thread,NULL);
     process_execute(u_prog_a,"user_progA");
+
     // thread_start("user_progA",31,u_prog_a,NULL);
-    init_screen();
     while(1); /* 这个死循环不能少 */
 
     return; /* 这句return应该永远不会执行,放在这里只是摆设用的 */
@@ -96,7 +94,6 @@ void k_thread_a(void* arg)
     viewFill(buf,ScrnX,rgb(255,255,255),      ScrnX - 153,      50 - 41,      ScrnX - 11,      50 - 11);
 
     // api_viewinsert(task_bar);
-    api_viewslide(task_bar,0,ScrnY - 50);
 
     struct TIME time;  /* 十进制表示的现实时间 */
     get_time(&time);
@@ -108,34 +105,11 @@ void k_thread_a(void* arg)
         viewFill(buf,ScrnX,rgb(255,255,255),ScrnX - 145,50 - 33,ScrnX - 17,50 - 18);
         vput_str(buf,ScrnX,ScrnX - 145,50 - 33,rgb(132,132,132),str);
         // api_viewslide(task_bar,0,ScrnY - 50);
-        api_viewflush(task_bar,ScrnX - 145,50 - 33,ScrnX - 17,50 - 18);
+        // api_viewflush(task_bar,ScrnX - 145,50 - 33,ScrnX - 17,50 - 18);
+        api_viewslide(task_bar,0,ScrnY - 50);
         while(ticks <= old_tickes + 100){ ; } /* 时间发生变化时再刷新 */
         old_tickes = ticks;
         get_time(&time);
-    }
-}
-
-void shell(void* arg)
-{
-    char data;
-    console_str(0x07,"\n[User]:");
-    int pos_x = 20;
-    int pos_y = 100;
-    while(1)
-    {
-        if(!fifo_empty(&keybuf))
-        {
-            fifo_get(&keybuf,&data);
-            console_char(0x07,data);
-            vput_char((void*)0xe0000000,ScrnX,pos_x,pos_y,rgb(255,255,255),data);
-            pos_x += 8;
-            if (data == enter)
-            {
-                pos_x = 20;
-                pos_y += 16;
-                console_str(0x07,"[User]:");
-            }
-        }
     }
 }
 
@@ -186,11 +160,8 @@ void View_thread(void* arg)
     int mx = ScrnX / 2;
     int my = ScrnY / 2;
     api_viewslide(view,mx,my);
-    // api_viewflush(view,0,0,15,15);
-
     while(1)
     {
-        //viewUpdown(mouse,Screen_Ctl.top - 1);
         md = get_mouse();
         if(md.phase != 0)
         {
@@ -200,9 +171,15 @@ void View_thread(void* arg)
             if(my < 0){ my = 0; }
             if(mx > ScrnX - 3){ mx = ScrnX - 3; }
             if(my > ScrnY - 3){ my = ScrnY - 3; }
-           // viewSlide(mouse,mx,my);
-           api_viewupdown(view,1024);
-           api_viewslide(view,mx,my);
+            if(md.btn & 0x01 != 0)
+            {
+                // intr_disable();
+                // struct viewblock* win = api_getxyview(mx,my);
+                // api_viewslide(win,mx,my);
+                // intr_enable();
+            }
+            api_viewupdown(view,1024);
+            api_viewslide(view,mx,my);
         }
     }
 }
@@ -210,8 +187,9 @@ void View_thread(void* arg)
 void u_prog_a(void)
 {
     pixel_t* buf = api_malloc(sizeof(pixel_t) * 100 * 100);
+    ASSERT(buf != NULL);
     void* view = api_viewinit(100,100,buf);
-    api_makeWindow(view);
+    api_makeWindow(buf,100,100,"userprog");
     api_viewslide(view,100,100);
     while(1);
 }

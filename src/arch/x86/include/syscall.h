@@ -19,11 +19,12 @@ enum MM_MSGTYPE
 
 enum VIEW_MSGTYPE
 {
-    VIEW_VIEWINIT = 1, /* m3i1: xsize,m3i2: ysize,m3p1: buf, return: m2p1: view */
-    VIEW_FREE,         /* m2p1: view */
-    VIEW_FLUSH,        /* m3p1: view, m3i1: x0,m3i2: y0,m3i3: x1, m3i4: y1 */
-    VIEW_SLIDE,        /* m3p1: view, m3i1: x,m3i2: y */
-    VIEW_UPDOWN,       /* m3p1: view, m3i1: height */
+    VIEW_VIEWINIT = 1, /* 初始化view          m3i1: xsize,m3i2: ysize,m3p1: buf, return: m2p1: view */
+    VIEW_FREE,         /* 释放view            m2p1: view */
+    VIEW_FLUSH,        /* 刷新                m3p1: view, m3i1: x0,m3i2: y0,m3i3: x1, m3i4: y1 */
+    VIEW_SLIDE,        /* 移动                m3p1: view, m3i1: x,m3i2: y */
+    VIEW_UPDOWN,       /* 设置高度             m3p1: view, m3i1: height */
+    VIEW_GETXYVIEW,    /* 获得再(x,y)显示的图层 m1i1: x, m1i2: y, return: m2p1: view */
 };
 
 extern void syscall_entry(void);

@@ -9,7 +9,7 @@ int32_t memcmp(const void* p1__,void* p2__,uint32_t size);
 
 char* strcpy(char* dst__,const char* src__);
 uint32_t strlen(const char* str);
-int32_t strcmp(const char* str_a__,const char* str_b__);
+int32_t strcmp(const char* str1__,const char* str2__);
 char* strchr(const char* str,const uint8_t ch);
 char* strrchr(const char* str,const uint8_t ch);
 char* strcat(char* dst__,const char* src__);

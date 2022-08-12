@@ -63,6 +63,7 @@ void api_viewflush(void* view,int x0,int y0,int x1,int y1)
 void api_viewslide(void* view,int x,int y)
 {
     struct MESSAGE msg;
+    resetmsg(&msg);
     msg.type = VIEW_SLIDE;
     msg.msg3.m3i1 = x;
     msg.msg3.m3i2 = y;
@@ -81,17 +82,28 @@ void api_viewupdown(void* view,int height)
     return;
 }
 
-void api_makeWindow(struct viewblock* view)
+void* api_getxyview(int x,int y)
 {
-    viewFill(view->buf,view->xsize,rgb(198,198,198),0,0,view->xsize - 1,0);
-    viewFill(view->buf,view->xsize,rgb(198,198,198),view->xsize - 1,0,view->xsize - 1,view->ysize - 1);
-    viewFill(view->buf,view->xsize,rgb(198,198,198),0,view->ysize - 1,view->xsize - 1,view->ysize - 1);
-    viewFill(view->buf,view->xsize,rgb(198,198,198),0,0,0,view->ysize - 1);
+    struct MESSAGE msg;
+    msg.type = VIEW_GETXYVIEW;
+    msg.msg1.m1i1 = x;
+    msg.msg1.m1i2 = y;
+    while(send_recv(BOTH,VIEW,&msg) == 1);
+    return msg.msg2.m2p1;
+}
 
-    viewFill(view->buf,view->xsize,rgb(0,0,255),1,1,view->xsize - 23,20 + 1);
+void api_makeWindow(void* buf,int xsize,int ysize,char* title)
+{
+    viewFill(buf,xsize,rgb(198,198,198),0,0,xsize - 1,0);
+    viewFill(buf,xsize,rgb(198,198,198),xsize - 1,0,xsize - 1,ysize - 1);
+    viewFill(buf,xsize,rgb(198,198,198),0,ysize - 1,xsize - 1,ysize - 1);
+    viewFill(buf,xsize,rgb(198,198,198),0,0,0,ysize - 1);
 
-    viewFill(view->buf,view->xsize,rgb(198,198,198),view->xsize - 22,1,view->xsize - 22,20 + 1);
-    viewFill(view->buf,view->xsize,rgb(198,198,198),1,20 + 2,view->xsize - 2,20 + 2);
+    viewFill(buf,xsize,rgb(0,0,255),1,1,xsize - 23,20 + 1);
+
+    viewFill(buf,xsize,rgb(198,198,198),xsize - 22,1,xsize - 22,20 + 1);
+    viewFill(buf,xsize,rgb(198,198,198),1,20 + 2,xsize - 2,20 + 2);
     
-    viewFill(view->buf,view->xsize,rgb(255,0,0),view->xsize - 21,1,view->xsize - 2,20 + 1);
+    viewFill(buf,xsize,rgb(255,0,0),xsize - 21,1,xsize - 2,20 + 1);
+    vput_str(buf,xsize,2,2,rgb(255,255,255),title);
 }
