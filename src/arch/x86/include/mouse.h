@@ -10,13 +10,15 @@ struct MouseData
 {
     uint8_t buf[3];
     int phase;
-    int x;
-    int y;
+    signed int x;
+    signed int y;
     int btn;
 };
 
+extern struct FIFO mouse_fifo;
+
 void init_mouse();
 void intr0x2c_handler();
-struct MouseData get_mouse();
+int mouse_decode(struct MouseData* MouseData,uint8_t data);
 
 #endif /* __MOUSE_H__ */

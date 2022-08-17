@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "global.h"
 #include "graphic.h"
+#include "interrupt.h"
 #include "list.h"
 #include "message.h"
 #include "stdint.h"
@@ -85,6 +86,7 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
         list_append(&(pdest->sender_list),&(sender->send_tag));
         /* 唤醒对方 */
         thread_unblock(pdest);
+        thread_block(TASK_SENDING); /* 统一阻塞自己 */
         return 0;
     }
     /* 对方还没准备接收 */
@@ -98,7 +100,7 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
         list_append(&(pdest->sender_list),&(sender->send_tag));
 
         thread_block(TASK_SENDING);
-        // ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
+        ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
         sender->send_to = NO_TASK;
         resetmsg(&(sender->msg));
         return 0;
@@ -109,10 +111,6 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
 /* list_traversal的回调函数pid_check */
 PRIVATE bool pid_check(struct list_elem* pelem,uint32_t pid)
 {
-    // char str[30];
-    // sprintf(str,"running: %s pid: %d name: %s %d",running_thread()->name,((struct task_struct*)(pelem->data))->pid,((struct task_struct*)(pelem->data))->name,(((struct task_struct*)(pelem->data))->pid == pid));
-    // vput_str((void*)0xe0000000,ScrnX,50,y,rgb(255,255,255),str);
-    // y += 16;
     return (((struct task_struct*)(pelem->data))->pid == pid);
 }
 
@@ -168,6 +166,7 @@ int msg_recv(pid_t src,struct MESSAGE* msg)
 
 uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
 {
+    enum intr_status old_status = intr_disable();
     uint32_t res = 1;
     if(src_dst < TASKPID_END && src_dst > NO_TASK)
     {
@@ -187,15 +186,11 @@ uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
             {
                 res = msg_recv(src_dst,msg);
             }
-            // else
-            // {
-            //     return res;
-            //     // PANIC("sendrecv::BOTH: send error");
-            // }
             break;
         default:
             ASSERT((function == SEND) || (function == RECEIVE) || (function == BOTH));
             break;
-    } 
+    }
+    intr_set_status(old_status);
     return res;
 }

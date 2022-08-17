@@ -101,9 +101,9 @@ struct task_struct
 
 struct pid_pool
 {
-    // struct bitmap bitmap;
-    // pid_t start_pid;
-    pid_t pid;
+    struct bitmap bitmap;
+    pid_t start_pid;
+    // pid_t pid;
     struct lock lock;
 };
 

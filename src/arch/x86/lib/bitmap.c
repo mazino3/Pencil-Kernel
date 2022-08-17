@@ -109,6 +109,9 @@ void bitmap_set(struct bitmap* btmp,uint32_t bit_index,uint8_t value)
         case 1:
             btmp->map[byte_index] |= (BITMAP_MASK << bit_odd);
             break;
+        default:
+            ASSERT(value == 1 || value == 0);
+            break;
     }
     return;
 }

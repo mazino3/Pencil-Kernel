@@ -13,11 +13,14 @@ void api_free(void* addr);
 void api_mmcopy(void* dst,void* src,pid_t src_pid,int size);
 
 void* api_viewinit(int xsize,int ysize,pixel_t* buf);
+void api_viewremove(void* view);
 void api_viewflush(void* view,int x0,int y0,int x1,int y1);
 void api_viewslide(void* view,int x,int y);
 void api_viewupdown(void* view,int height);
-void* api_getxyview(int x,int y);
+int api_gettop(void);
+void* api_getviewbypos(int x,int y);
+int api_getviewflage(void* view);
 
-void api_makeWindow(void* buf,int xsize,int ysize,char* title);
+void api_makeWindow(void* view,void* buf,int xsize,int ysize,char* title);
 
 #endif /* __APILIB_H__ */

@@ -17,8 +17,6 @@
 PRIVATE void VIEWctl_init(struct viewctl* ctl,pixel_t* vram,int xsize,int ysize,int views);
 PRIVATE struct viewblock* VIEWblock_alloc(struct viewctl* ctl);
 PRIVATE void VIEWblock_init(struct viewblock* view,int xsize,int ysize,pixel_t* buf,pid_t holder);
-PRIVATE void VIEW_free(struct viewblock* view);
-PRIVATE void VIEWInsert(struct viewctl* ctl,struct viewblock* view);
 PRIVATE void VIEWRemove(struct viewblock* view);
 PRIVATE void VIEWUpdown(struct viewblock* view,int height);
 PRIVATE void VIEWSlide(struct viewblock* view,int x,int y);
@@ -30,35 +28,28 @@ struct viewctl ctl;
 
 void VIEW_task(void* arg)
 {
-    intr_disable();
+    // intr_disable();
     struct MESSAGE msg;
     struct msg1 msg1;
     struct msg2 msg2;
     struct msg3 msg3;
     pid_t source;
-    struct viewblock* background;
-    char str[65];
+    // struct viewblock* background;
+    // char str[65];
     VIEWctl_init(&ctl,(pixel_t*)0xe0000000,ScrnX,ScrnY,1024);
-    void* back = kmalloc(sizeof(pixel_t) * ScrnX * ScrnY);
-    background = VIEWblock_alloc(&ctl);
-    ASSERT(background != NULL);
-    VIEWblock_init(background,ScrnX,ScrnY,back,running_thread()->pid);
-    viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
-    vput_str(background->buf,ScrnX,20,10,rgb(255,255,255),PKn_Version);
-    sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d Memory: %dMB", VideoMode, ScrnX, ScrnY,TotalMem_l / 1024 /1024);
-    vput_str(background->buf,ScrnX,20,26,rgb(255,255,255),str);
+    // void* back = kmalloc(sizeof(pixel_t) * ScrnX * ScrnY);
+    // background = VIEWblock_alloc(&ctl);
+    // ASSERT(background != NULL);
+    // VIEWblock_init(background,ScrnX,ScrnY,back,running_thread()->pid);
+    // viewFill(background->buf,background->xsize,rgb(0,132,132),0,0,background->xsize - 1,background->ysize - 1);
+    // vput_str(background->buf,ScrnX,20,10,rgb(255,255,255),PKn_Version);
+    // sprintf(str,"Video Mode: 0x%x Scrnx = %d Scrny = %d Memory: %dMB", VideoMode, ScrnX, ScrnY,TotalMem_l / 1024 /1024);
+    // vput_str(background->buf,ScrnX,20,26,rgb(255,255,255),str);
 
-    cpu_info(str);
-    vput_str(background->buf,ScrnX,20,42,rgb(255,255,255),str);
-    VIEWUpdown(background,0);
-    VIEWSlide(background,0,0);
-    //            pixel_t col = 0;
-    // while(1)
-    // {
-    //     // viewFill(0xe0000000,ScrnX,col,0,0,ScrnX - 1,ScrnY - 1);
-    //     col++;
-    // }
-    // VIEWInsert(&ctl,background);
+    // cpu_info(str);
+    // vput_str(background->buf,ScrnX,20,42,rgb(255,255,255),str);
+    // VIEWSlide(background,0,0);
+    // VIEWUpdown(background,0);
 
     struct viewblock* view;
     while(1)
@@ -67,19 +58,13 @@ void VIEW_task(void* arg)
         source = NO_TASK;
         send_recv(RECEIVE,ANY,&msg);
         source = msg.source;
-        if(background->x != 0 || background->y != 0)
-        {
-            VIEWSlide(background,0,0);
-        }
         switch(msg.type)
         {
             case VIEW_VIEWINIT:
                 msg3 = msg.msg3;
                 view = VIEWblock_alloc(&ctl);
                 VIEWblock_init(view,msg3.m3i1,msg3.m3i2,msg3.m3p1,source);
-                VIEWUpdown(view,Max_VIEWS);
                 view->holder = source;
-                VIEWInsert(&ctl,view);
                 msg.msg2.m2p1 = view;
                 view = NULL;
                 send_recv(SEND,source,&msg);
@@ -87,7 +72,9 @@ void VIEW_task(void* arg)
 
             case VIEW_FREE:
                 msg2 = msg.msg2;
-                VIEW_free(msg2.m2p1);
+                VIEWRemove(msg2.m2p1);
+                break;
+
             case VIEW_FLUSH:
                 msg3 = msg.msg3;
                 VIEW_reflush(msg3.m3p1,msg3.m3i1,msg3.m3i2,msg3.m3i3,msg3.m3i4);
@@ -103,14 +90,30 @@ void VIEW_task(void* arg)
             case VIEW_UPDOWN:
                 msg3 = msg.msg3;
                 VIEWUpdown(msg3.m3p1,msg3.m3i1);
+                break;
+
+            case VIEW_MAKEWINDOW:
+                msg2 = msg.msg2;
+                ((struct viewblock*)msg2.m2p1)->flage = 2;
+                break;
+
+            case VIEW_GETTOP:
+                msg.msg1.m1i1 = ctl.top;
                 send_recv(SEND,source,&msg);
                 break;
 
-            case VIEW_GETXYVIEW:
+            case VIEW_GETVIEWBYPOS:
                 msg1 = msg.msg1;
-                msg.msg2.m2p1 = ctl.map[msg1.m1i2 * (ctl.xsize) + msg1.m1i1];
+                msg.msg2.m2p1 = ctl.map[(msg1.m1i2) * ctl.xsize + (msg1.m1i1)];
                 send_recv(SEND,source,&msg);
                 break;
+
+            case VIEW_GETVIEWFLAGE:
+                msg2 = msg.msg2;
+                msg.msg1.m1i1 = ((struct viewblock*)msg2.m2p1)->flage;
+                send_recv(SEND,source,&msg);
+                break;
+
             default:
                     break;
         }
@@ -164,42 +167,15 @@ PRIVATE void VIEWblock_init(struct viewblock* view,int xsize,int ysize,pixel_t* 
     view->holder = holder;
 }
 
-PRIVATE void VIEW_free(struct viewblock* view)
+PRIVATE void VIEWRemove(struct viewblock* view)
 {
-    // if(view->ctl != NULL)
-    // {
-    //     VIEWRemove(view);
-    // }
-    // kfree(view);
+    if(view->height != -1)
+    {
+        VIEWUpdown(view,-1);
+    }
+    view->flage = 0;
     return;
 }
-
-PRIVATE void VIEWInsert(struct viewctl* ctl,struct viewblock* view)
-{
-    // ASSERT(ctl->top >= -1)
-    // ASSERT(ctl->top <= Max_VIEWS - 1);
-    // view->ctl = ctl;
-    // ctl->top++;
-    // ctl->views[ctl->top] = view;
-    // view->height = ctl->top;
-    return;
-}
-
-// PRIVATE void VIEWRemove(struct viewblock* view)
-// {
-//     int i;
-//     for(i = view->height;i < (view->ctl->top - 1);i++)
-//     {
-//         view->ctl->view0[i] = view->ctl->view0[i - 1];
-//         view->ctl->view0[i].height = i;
-//     }
-//     view->ctl->top--;
-//     VIEW_reflushmap(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0);
-//     VIEW_reflushsub(view->ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,0,view->height);
-//     view->height = 0;
-//     view->ctl = NULL;
-//     return;
-// }
 
 PRIVATE void VIEWUpdown(struct viewblock* view,int height)
 {
@@ -217,6 +193,8 @@ PRIVATE void VIEWUpdown(struct viewblock* view,int height)
         height = -1;
     }
     view->height = height;
+    ASSERT(height >= -1);
+    ASSERT(height <= ctl->top + 1);
     /* 开始排序 */
     /* 图层下降 */
     if(old_height > height)
@@ -271,8 +249,8 @@ PRIVATE void VIEWUpdown(struct viewblock* view,int height)
             ctl->top++;
         }
         /* 刷新 */
-        VIEW_reflushmap(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height);
-        VIEW_reflushsub(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,view->height,view->height); ////////////////
+        VIEW_reflushmap(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,height);
+        VIEW_reflushsub(ctl,view->x,view->y,view->x + view->xsize,view->y + view->ysize,height,height);
     }
     return;
 }
@@ -297,7 +275,10 @@ PRIVATE void VIEWSlide(struct viewblock* view,int x,int y)
 PRIVATE void VIEW_reflush(struct viewblock* view,int x0,int y0,int x1,int y1)
 {
     ASSERT(view->ctl != NULL);
-    VIEW_reflushsub(view->ctl,view->x + x0,view->y + y0,view->x + x1,view->y + y1,view->height,view->height);
+    if(view->height >= 0)
+    {
+        VIEW_reflushsub(view->ctl,view->x + x0,view->y + y0,view->x + x1,view->y + y1,view->height,view->height);
+    }
     return;
 }
 
@@ -330,6 +311,7 @@ PRIVATE void VIEW_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int
         if(by0 < 0){ by0 = 0; }
         if(bx1 > (view->xsize)){ bx1 = view->xsize; }
         if(by1 > (view->ysize)){ by1 = view->ysize; }
+        enum intr_status old_status = intr_disable();
         page_dir_activate(pid2thread(view->holder));
         for(by = by0;by < by1;by++)
         {
@@ -345,6 +327,7 @@ PRIVATE void VIEW_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int
             }
         }
         page_dir_activate(running_thread());
+        intr_set_status(old_status);
     }
     return;
 }
@@ -377,6 +360,7 @@ PRIVATE void VIEW_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int
         if(by0 < 0){ by0 = 0; }
         if(bx1 > (view->xsize)){ bx1 = view->xsize; }
         if(by1 > (view->ysize)){ by1 = view->ysize; }
+        enum intr_status old_status = intr_disable();
         page_dir_activate(pid2thread(view->holder));
         for(by = by0;by < by1;by++)
         {
@@ -391,6 +375,7 @@ PRIVATE void VIEW_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int
             }
         }
         page_dir_activate(running_thread());
+        intr_set_status(old_status);
     }
     return;
 }

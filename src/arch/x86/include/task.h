@@ -16,7 +16,8 @@ void init_task();
 
 void MM_task ();
 void VIEW_task(void* arg);
-void Type_task(void* arg);
+void Mouse_task(void* arg);
+void shell_task(void* arg);
 
 void k_thread_a(void* arg);
 void View_thread(void* arg);

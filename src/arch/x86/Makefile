@@ -49,8 +49,8 @@ $(MEMORY_DIR)memory.co       \
 \
 $(THREAD_DIR)sync.co         \
 $(THREAD_DIR)thread.co       \
-$(PROG_DIR)tss.co        \
-$(PROG_DIR)process.co    \
+$(PROG_DIR)tss.co            \
+$(PROG_DIR)process.co        \
 \
 $(DEVICE_DIR)console.co      \
 $(DEVICE_DIR)cpu.co          \
@@ -64,8 +64,9 @@ $(SYSCALL_DIR)api.co         \
 $(SYSCALL_DIR)syscall.co     \
 \
 $(TASK_DIR)mm.co             \
+$(TASK_DIR)mouse.co          \
 $(TASK_DIR)taskinit.co       \
-$(TASK_DIR)tty.co            \
+$(TASK_DIR)shell.co          \
 $(TASK_DIR)view.co           \
 \
 $(LIB_DIR)apilib.co          \
@@ -123,8 +124,8 @@ MAKE_DIR := md
 	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -Wall  -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
-$(v_disk): img.asm
-	$(NASM) -o $(v_disk) img.asm
+$(v_disk): vhd.asm
+	$(NASM) -o $(v_disk) vhd.asm
 
 #command:
 #clean: delet all obj file

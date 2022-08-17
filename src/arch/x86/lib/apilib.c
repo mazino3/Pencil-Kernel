@@ -20,7 +20,7 @@ void api_free(void* ptr)
     struct MESSAGE msg;
     msg.type = MM_FREE;
     msg.msg2.m2p1 = ptr;
-    send_recv(BOTH,MM,&msg);
+    send_recv(SEND,MM,&msg);
     return;
 }
 
@@ -45,6 +45,15 @@ void* api_viewinit(int xsize,int ysize,pixel_t* buf)
     msg.msg3.m3p1 = buf;
     while(send_recv(BOTH,VIEW,&msg) == 1);
     return msg.msg2.m2p1;
+}
+
+void api_viewremove(void* view)
+{
+    struct MESSAGE msg;
+    msg.type = VIEW_FREE;
+    msg.msg2.m2p1 = view;
+    while(send_recv(SEND,VIEW,&msg) == 1);
+    return;
 }
 
 void api_viewflush(void* view,int x0,int y0,int x1,int y1)
@@ -78,21 +87,38 @@ void api_viewupdown(void* view,int height)
     msg.type = VIEW_UPDOWN;
     msg.msg3.m3i1 = height;
     msg.msg3.m3p1 = view;
-    while(send_recv(BOTH,VIEW,&msg) == 1);
+    while(send_recv(SEND,VIEW,&msg) == 1);
     return;
 }
 
-void* api_getxyview(int x,int y)
+int api_gettop(void)
 {
     struct MESSAGE msg;
-    msg.type = VIEW_GETXYVIEW;
+    msg.type = VIEW_GETTOP;
+    while(send_recv(BOTH,VIEW,&msg) == 1);
+    return msg.msg1.m1i1;
+}
+
+void* api_getviewbypos(int x,int y)
+{
+    struct MESSAGE msg;
+    msg.type = VIEW_GETVIEWBYPOS;
     msg.msg1.m1i1 = x;
     msg.msg1.m1i2 = y;
     while(send_recv(BOTH,VIEW,&msg) == 1);
     return msg.msg2.m2p1;
 }
 
-void api_makeWindow(void* buf,int xsize,int ysize,char* title)
+int api_getviewflage(void* view)
+{
+    struct MESSAGE msg;
+    msg.type = VIEW_GETVIEWFLAGE;
+    msg.msg2.m2p1 = view;
+    while(send_recv(BOTH,VIEW,&msg) == 1);
+    return msg.msg1.m1i1;
+}
+
+void api_makeWindow(void* view,void* buf,int xsize,int ysize,char* title)
 {
     viewFill(buf,xsize,rgb(198,198,198),0,0,xsize - 1,0);
     viewFill(buf,xsize,rgb(198,198,198),xsize - 1,0,xsize - 1,ysize - 1);
@@ -106,4 +132,10 @@ void api_makeWindow(void* buf,int xsize,int ysize,char* title)
     
     viewFill(buf,xsize,rgb(255,0,0),xsize - 21,1,xsize - 2,20 + 1);
     vput_str(buf,xsize,2,2,rgb(255,255,255),title);
+
+    struct MESSAGE msg;
+    msg.type = VIEW_MAKEWINDOW;
+    msg.msg2.m2p1 = view;
+    while(send_recv(SEND,VIEW,&msg) == 1);
+    return;
 }

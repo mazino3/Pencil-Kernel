@@ -21,8 +21,8 @@ struct viewblock
     int flage;
     int x;                        /* 图层x坐标 */
     int y;                        /* 图层y坐标 */
-    uint32_t xsize;               /* 图层x轴长度 */
-    uint32_t ysize;               /* 图层y轴长度 */
+    int xsize;               /* 图层x轴长度 */
+    int ysize;               /* 图层y轴长度 */
 };
 
 struct viewctl

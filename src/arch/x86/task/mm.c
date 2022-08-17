@@ -59,7 +59,6 @@ void MM_task()
                 mm_free(msg2.m2p1,pid2thread(msg.source));
                 mm->page_dir = pgdir;
                 page_dir_activate(mm);
-                send_recv(SEND,source,&msg);
                 break;
 
             case MM_COPY:
@@ -276,8 +275,8 @@ PRIVATE void mm_page_table_add(void* vaddr,void* phyaddr,struct task_struct* cur
         }
         else
         {
-            char s[31];
-            sprintf(s,"pte repeat!(vaddr: %p, paddr: %p)",vaddr,paddr);
+            // char s[31];
+            // sprintf(s,"pte repeat!(vaddr: %p, paddr: %p)",vaddr,paddr);
             // PANIC(s);
             *pte = (paddr | PG_US_U | PG_RW_W | PG_P);
         }

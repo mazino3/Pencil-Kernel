@@ -4,6 +4,7 @@
 #include "fifo.h"
 #include "global.h"
 #include "interrupt.h"
+#include "io.h"
 #include "list.h"
 #include "memory.h"
 #include "print.h"
@@ -13,28 +14,31 @@
 #include "task.h"
 
 struct task_struct* main_thread;
-
+PRIVATE struct task_struct* idle_thread;
 PUBLIC struct list ready_list;
 PUBLIC struct list all_list;
 
 PRIVATE struct list_elem* this_thread_tag;
 
 PRIVATE void make_main_thread();
+PRIVATE void idle(void* arg);
 
-// PRIVATE uint8_t pid_bits[128] = { 0 };
+PRIVATE uint8_t pid_bits[128] = { 0 };
 PRIVATE struct pid_pool pid_pool;
 
 void init_thread()
 {
     list_init(&ready_list);
     list_init(&all_list);
-    // pid_pool.start_pid = 1;
-    // pid_pool.bitmap.map = pid_bits;
-    // pid_pool.bitmap.btmp_bytes_len = 128;
-    // bitmap_init(&(pid_pool.bitmap));
-    pid_pool.pid = TASKPID_END;
+    pid_pool.start_pid = TASKPID_END;
+    pid_pool.bitmap.map = pid_bits;
+    pid_pool.bitmap.btmp_bytes_len = 128;
+    memset(pid_bits,0,128);
+    bitmap_init(&(pid_pool.bitmap));
+    // pid_pool.pid = TASKPID_END;
     lock_init(&(pid_pool.lock));
     make_main_thread();
+    idle_thread = thread_start("idle",31,idle,NULL);
     return;
 }
 
@@ -42,11 +46,12 @@ PRIVATE pid_t alloc_pid()
 {
     pid_t pid;
     lock_acquire(&(pid_pool.lock));
-    pid = pid_pool.pid;
-    pid_pool.pid++;
-    // int idx = bitmap_scan_test(&(pid_pool.bitmap),1);
-    // bitmap_set(&(pid_pool.bitmap),idx,1);
+    // pid = pid_pool.pid;
+    // pid_pool.pid++;
+    int idx = bitmap_alloc(&(pid_pool.bitmap),1);
+    bitmap_set(&(pid_pool.bitmap),idx,1);
     lock_release(&(pid_pool.lock));
+    pid = idx + pid_pool.start_pid;
     return pid;
 }
 
@@ -142,6 +147,16 @@ static void make_main_thread(void)
     return;
 }
 
+PRIVATE void idle(void* arg)
+{
+    while(1)
+    {
+        thread_block(TASK_BLOCKED);
+        io_stihlt();
+    }
+    return;
+}
+
 void schedule()
 {
     struct task_struct* cur_thread = running_thread();
@@ -160,9 +175,12 @@ void schedule()
     struct task_struct* next = NULL;
     this_thread_tag = NULL;
 
+    if(list_empty(&ready_list))
+    {
+        thread_unblock(idle_thread);
+    }
     /* 就绪队列不能为空 */
-    ASSERT(!(list_empty(&ready_list)));
-    ASSERT(ready_list.tail.prev != &ready_list.head);
+    ASSERT(!list_empty(&ready_list));
     this_thread_tag = list_pop(&ready_list);
     next = this_thread_tag->data;
     next->status = TASK_RUNNING;
