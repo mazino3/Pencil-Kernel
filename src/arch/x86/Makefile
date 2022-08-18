@@ -9,6 +9,7 @@ TOOL_DIR := ../../../tools/
 AS       := $(TOOL_DIR)as
 BOCHS    := $(TOOL_DIR)Bochs-2.7\bochsdbg
 CC1      := $(TOOL_DIR)cc1
+COPY     := copy
 DD       := $(TOOL_DIR)dd
 GCC      := $(TOOL_DIR)gcc
 LD       := $(TOOL_DIR)ld
@@ -82,7 +83,9 @@ $(GRAPHIC_DIR)graphic.co     \
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
 KERNEL_OBJ_FILE := $(KERNEL_DIR)kernel.o
-KERNEL := $(KERNEL_DIR)kernel.bin
+KERNEL_BIN := $(KERNEL_DIR)kernel.bin
+KERNEL_SYS := $(KERNEL_DIR)kernel.sys
+HZK16      := $(LIB_DIR)hzk16.fnt
 #file
 v_disk := a.img
 
@@ -121,7 +124,7 @@ MAKE_DIR := md
 
 %.co: %.c Makefile
 	@$(ECHO) compile $<
-	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -Wall  -o $*.s $*.c
+	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
 
 $(v_disk): vhd.asm
@@ -150,7 +153,7 @@ clean:
 	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.s
 
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.bin
+	@$(CD) $(KERNEL_DIR) && $(DELET) *.sys
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.co
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.map
 	@$(CD) $(KERNEL_DIR) && $(DELET) *.o
@@ -191,14 +194,12 @@ img: $(v_disk) $(BOOT) $(LOADER) system
 	@$(MAKE) -r $(v_disk)
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
-	@$(DD) if=$(KERNEL) of=$(v_disk) bs=512 count=1000 seek=72 conv=notrunc
+	@$(DD) if=$(KERNEL_SYS) of=$(v_disk) bs=512 count=1000 seek=72 conv=notrunc
 
 run: img
 #	@$(ECHO) Pencil-kernel (PKn) version: $(K_VERSION)
-	-$(DELET) kernel.asm
-	$(MAKE) -r dump
 	@$(TOOL_DIR)qemu\qemu-system-x86_64 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
-	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds -Map $(KERNEL_DIR)kernel.map
-	@$(OBJCOPY) -I $(OBJ_FORMAT) -S -R ".eh_frame" -R ".comment" -O binary $(KERNEL_OBJ_FILE) $(KERNEL)
+	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) $(HZK16) -T kernel.lds -Map $(KERNEL_DIR)kernel.map
+	@$(OBJCOPY) -I $(OBJ_FORMAT) -S -R ".eh_frame" -R ".comment" -O binary $(KERNEL_OBJ_FILE) $(KERNEL_SYS)

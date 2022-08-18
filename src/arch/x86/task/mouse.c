@@ -195,16 +195,16 @@ void Mouse_task(void* arg)
             {
                 mx += md.x;
                 my += md.y;
-                if(mx < 0){ mx = 0; }
+                if(mx < 1){ mx = 1; }
                 if(my < 0){ my = 0; }
-                if(mx > ScrnX - 3){ mx = ScrnX - 3; }
-                if(my > ScrnY - 3){ my = ScrnY - 3; }
+                if(mx > ScrnX - 1){ mx = ScrnX - 2; }
+                if(my > ScrnY - 2){ my = ScrnY - 2; }
                 new_mx = mx;
                 new_my = my;
                 api_viewupdown(view,api_gettop());
                 if((md.btn & 0x01) != 0) /* 左键 */
                 {
-                    if(mmx < 0 && mx > 1)
+                    if(mmx < 0)
                     {
                         win = api_getviewbypos(mx - 1,my); /* 查找窗口 */
                         if(win->flage == 2)
@@ -243,6 +243,10 @@ void Mouse_task(void* arg)
                     mmx = -1;
                     if(new_wx != 0x7fffffff) /* 有窗口在移动 */
                     {
+                        if(new_wy < 0)
+                        {
+                            new_wy = 0;
+                        }
                         api_viewslide(win,new_wx,new_wy); /* 移动到新位置 */
                         new_wx = 0x7fffffff;
                     }
@@ -258,6 +262,10 @@ void Mouse_task(void* arg)
             }
             if(new_wx != 0x7fffffff)
             {
+                if(new_wy < 0)
+                {
+                    new_wy = 0;
+                }
                 api_viewslide(win,new_wx,new_wy);
                 new_wx = 0x7fffffff;
             }

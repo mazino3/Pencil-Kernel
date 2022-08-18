@@ -11,6 +11,7 @@
 #define Max_VIEWS 1024
 
 typedef uint32_t pixel_t;
+extern unsigned char PKnFont[256][16];
 
 struct viewblock
 {
@@ -37,35 +38,15 @@ struct viewctl
     ptr_t* map;               /* 刷新图层用的map */
 };
 
-// extern struct viewctl Screen_Ctl;
-// extern struct viewblock* background;
-
 void init_screen();
 pixel_t rgb(int r,int g,int b);
-/* 创建一个viewctl */
-void viewctl_init(struct viewctl* ctl,pixel_t* vram,int xsize,int ysize,int views);
-/* 创建一个view */
-struct viewblock* viewblock_init(int xsize,int ysize);
-/* 释放view */
-void view_free(struct viewblock* view);
-/* 将view插入ctl的图层队列中 */
-void viewInsert(struct viewctl* ctl,struct viewblock* view);
-/* 将view移出队列 */
-void viewRemove(struct viewblock* view);
-/* 调整高度 */
-void viewUpdown(struct viewblock* view,int height);
-/* 移动图层 */
-void viewSlide(struct viewblock* view,int x,int y);
-/* 图层刷新 */
-void view_reflush(struct viewblock* view,int x0,int y0,int x1,int y1);
-/* 刷新一部分 */
-void view_reflushsub(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0,int h1);
-void view_reflushmap(struct viewctl* ctl,int x0,int y0,int x1,int y1,int h0);
 /* 用color代表的颜色填充显存vram从(x0,y0)到(x1,y1)之间的区域 */
 void viewFill(pixel_t* vram,int xsize,pixel_t color,int x0,int y0,int x1,int y1);
 /* 将字符c以颜色color显示到显存的(x,y)处 */
-void vput_char(pixel_t* vram,int xsize,int x,int y,pixel_t color,char c);
+void vput_char(pixel_t* vram,int xsize,int x,int y,pixel_t color,unsigned char c);
+void vput_hzk16(pixel_t* vram,int xsize,int x,int y,pixel_t color,uint16_t ch);
 /* 将字符串str以颜色color显示到显存的(x,y)处 */
 void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str);
-
+/* 显示字符串(中文) */
+void vput_zh(pixel_t* vram,int xsize,int x,int y,pixel_t color,const unsigned char* str);
 #endif /* __GRAPHIC_H__ */

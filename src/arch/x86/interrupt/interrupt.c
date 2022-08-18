@@ -99,6 +99,14 @@ void init_idt()
     return;
 }
 
+// check to make sure any new hardware or software is properly installed.
+// if this is a new installation, ask your hardware or software manufacture .
+// if problems continue,disable or remove any newly installed hardware or software.
+// Disable BIOS memory options such as caching or shadowing.
+// if you need to use safe mode to remove or disable compoents,restart your computer ,press F8 to select Advanced startup options,
+// and then select afe mode. technical information:
+
+
 /* general_intr_handler
 * 功能:通用的中断处理函数
 * vector_nr :中断号,由interrupt.asm中的对应函数压入栈中
@@ -109,19 +117,28 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
     intr_disable();
     set_cursor(0);
     viewFill((void*)0xe0000000,ScrnX,rgb(0,0,255),0,0,ScrnX - 1,ScrnY - 1);
-    vput_str((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
-    "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
-    "If this is the first time you've seen this stop error sereen, restart your computer.\n"
-    "If this screen appers again,follow these steps:\n"
-    " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
+    // vput_str((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
+    // "Sorry, a problem been detected and PKn shut down to prevent damage to your computer.\n"
+    // "If this is the first time you've seen this stop error sereen, restart your computer.\n"
+    // "If this screen appers again,follow these steps:\n"
+    // " 1. Rebuild Pencil-Kernel. \n 2. Debug Pencil-Kernel on virtual machine.\n"
+    // );
+    vput_zh((void*)0xe0000000,ScrnX,10,10,rgb(255,255,255),
+    "出现了一个错误导致系统无法正常运行,系统已关闭以保护计算机.\n"
+    "如果这是您第一次看到此错误停止信息,请重新启动计算机\n"
+    "如果该屏幕再次弹出,请按照以下步骤操作:\n"
+    "   如果没有显示进程信息,请检查系统是否安装完整,硬件和核心数据结构是否正常初始化,\n"
+    " 以及是否存在堆栈溢出.\n"
+    "   如果出现页缺失异常(intr: 0x0e),请检查内存是否出现故障,以及程序是否越界访问.\n"
+    " 如果问题仍未恢复,请检查硬件以及软件是否存在错误."
     );
-    sprintf(str," %s\n intr: 0x%02x\n CS:EIP  0x%02x:%08p Running: %s",PKn_Version,vector_nr,cs,eip,running_thread()->name);
-    put_str(0x17,str);
-    vput_str((void*)0xe0000000,ScrnX,10,90,rgb(255,255,255),str);
+    sprintf(str," %s\n intr: 0x%02x\n 错误地址 CS:EIP  0x%02x:%08p 错误进程名: %s",PKn_Version,vector_nr,cs,eip,running_thread()->name);
+    // put_str(0x17,str);
+    vput_zh((void*)0xe0000000,ScrnX,10,128,rgb(255,255,255),str);
     if(vector_nr >= 0 && vector_nr < 20)
     {
         put_str(0x14,intr_name[vector_nr]);
-        vput_str((void*)0xe0000000,ScrnX,18,138,rgb(255,0,255),intr_name[vector_nr]);
+        vput_zh((void*)0xe0000000,ScrnX,18,176,rgb(255,0,255),intr_name[vector_nr]);
     }
     void* page_fault_vaddr = NULL;
     if(vector_nr== 14)
@@ -133,9 +150,9 @@ void general_intr_handler(uint8_t vector_nr,uint32_t edi,uint32_t esi,uint32_t e
             :
             :
         );
-        sprintf(str,"( Fault address: %p )",page_fault_vaddr);
-        put_str(0x17,str);
-        vput_str((void*)0xe0000000,ScrnX,10,154,rgb(255,255,255),str);
+        sprintf(str,"( 缺失地址: %p )",page_fault_vaddr);
+        // put_str(0x17,str);
+        vput_zh((void*)0xe0000000,ScrnX,10,192,rgb(255,255,255),str);
 
     }
     /* 图形界面的handler */

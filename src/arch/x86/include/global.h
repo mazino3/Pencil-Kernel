@@ -157,5 +157,6 @@ extern char _erodata;
 extern char _bss;
 extern char _ebss;
 extern char _kernel_end;
+extern uint16_t _HZK16;
 
 #endif /* __GLOBAL_H__ */

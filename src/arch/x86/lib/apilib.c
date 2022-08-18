@@ -131,7 +131,7 @@ void api_makeWindow(void* view,void* buf,int xsize,int ysize,char* title)
     viewFill(buf,xsize,rgb(198,198,198),1,20 + 2,xsize - 2,20 + 2);
     
     viewFill(buf,xsize,rgb(255,0,0),xsize - 21,1,xsize - 2,20 + 1);
-    vput_str(buf,xsize,2,2,rgb(255,255,255),title);
+    vput_zh(buf,xsize,2,2,rgb(255,255,255),title);
 
     struct MESSAGE msg;
     msg.type = VIEW_MAKEWINDOW;

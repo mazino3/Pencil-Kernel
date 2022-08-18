@@ -28,7 +28,6 @@ extern volatile int ticks;
 void kernel_main(void)
 {
     int i;
-    //char str[64];
     set_cursor(0);
     for(i = 0;i < 35;i++)
     {
@@ -39,8 +38,10 @@ void kernel_main(void)
     init_all();
     intr_enable(); /* 开中断 */
     int x,y;
-    x = ScrnX / 2 - 100;
+    x = ScrnX / 2;
     y = ScrnY - 50;
+    x = ScrnX / 2 - 100;
+    vput_zh((void*)0xe0000000,ScrnX,x + 12,y - 32,rgb(255,255,255),"Pencil-Kernel 正在启动");
     viewFill((void*)0xe0000000,ScrnX,rgb(255,255,255),x-1,y-1,x+201,y + 21);
     viewFill((void*)0xe0000000,ScrnX,rgb(0,0,0),x,y,x+200,y + 20);
     int cnt = 200;
@@ -51,7 +52,6 @@ void kernel_main(void)
         viewFill((void*)0xe0000000,ScrnX,rgb(255,255,255),x,y,x+1,y + 20);
         x+= 1;
     }
-
     // console_str(0x07,"\nPencil-Kernel (PKn) version 0.0.0 test\n");
     // console_str(0x07,"CPU    :");cpu_info();console_char(0x07,'\n');
     // console_str(0x07,"Memory :");console_int(0x07,TotalMem_l / 1024 / 1024,10);console_str(0x07,"MB ( ");console_int(0x07,TotalMem_l / 1024,10);put_str(0x07,"KB ) ");put_char(0x07,'\n');
@@ -134,65 +134,12 @@ void k_thread_a(void* arg)
     }
 }
 
-
-    // void* buf = kmalloc(sizeof(pixel_t) * ScrnX * 50);
-    // struct viewblock* task_bar = api_viewinit(ScrnX,50,buf);
-    // viewFill(buf,ScrnX,rgb(198,198,198),0,0,ScrnX - 1,50 - 1);
-    // int off = 3;
-
-    // viewFill(buf,ScrnX,rgb(132,132,132),10 + off,10 + off,40 + off,40 + off);
-    // viewFill(buf,ScrnX,rgb(255,255,255),      10,      10,      40,      40);
-
-    // int logo_x = 10;
-    // int logo_y = 10;
-    // int x;
-    // int y;
-    // for(y = 0;y < 15;y++)
-    // {
-    //     for(x = 0;x < 15;x++)
-    //     {
-    //         if(PencilLogo[y][x] == '#')
-    //         {
-    //             viewFill(buf,ScrnX,rgb(132,132,132),logo_x + 2 * x,logo_y + 2 * y,logo_x + 2 * (x + 1) ,logo_y + 2 * (y + 1));
-    //         }
-    //     }
-    // }
-
-    // viewFill(buf,ScrnX,rgb(132,132,132),50 + off,10 + off,60 + off,40 + off);
-    // viewFill(buf,ScrnX,rgb(255,255,255),      50,      10,      60,      40);
-
-
-    // viewFill(buf,ScrnX,rgb(132,132,132),ScrnX - 153 + off,50 - 41 + off,ScrnX - 11 + off,50 - 11 + off);
-    // viewFill(buf,ScrnX,rgb(255,255,255),      ScrnX - 153,      50 - 41,      ScrnX - 11,      50 - 11);
-
-    // // api_viewinsert(task_bar);
-
-    // struct TIME time;  /* 十进制表示的现实时间 */
-    // get_time(&time);
-    // int old_tickes = ticks;
-    // char str[32];
-    // api_viewslide(task_bar,0,ScrnY - 50);
-    // api_viewupdown(task_bar,1);
-    // api_viewflush(task_bar,0,0,ScrnX,50);
-    // while(1)
-    // {
-    //     sprintf(str,"%04x/%02x/%02x %02x:%02x",time.year,time.month,time.day,time.hour,time.minuet);
-    //     viewFill(buf,ScrnX,rgb(255,255,255),ScrnX - 145,50 - 33,ScrnX - 17,50 - 18);
-    //     vput_str(buf,ScrnX,ScrnX - 145,50 - 33,rgb(132,132,132),str);
-    //     api_viewflush(task_bar,ScrnX - 145,50 - 33,ScrnX - 17,50 - 18);
-    //     while(ticks <= old_tickes + 100){ ; } /* 时间发生变化时再刷新 */
-    //     old_tickes = ticks;
-    //     get_time(&time);
-    // }
-
 void u_prog_a(void)
 {
-    // int i = 1000000;
-    // while(i--);
     pixel_t* buf = api_malloc(sizeof(pixel_t) * 100 * 100);
     ASSERT(buf != NULL);
     void* view = api_viewinit(100,100,buf);
-    api_makeWindow(view,buf,100,100,"userprog");
+    api_makeWindow(view,buf,100,100,"测试进程");
     api_viewslide(view,100,100);
     api_viewupdown(view,api_gettop());
     api_viewflush(view,0,0,100,100);

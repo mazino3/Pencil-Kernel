@@ -12,7 +12,7 @@
 #include "string.h"
 #include "thread.h"
 
-void print_str(const char* str);
+void print_str(const unsigned char* str);
 void print_prompt();
 void readline(char* cmd_line);
 void win_roll_screen();
@@ -35,7 +35,7 @@ void shell_task(void* arg)
     buf = api_malloc(sizeof(pixel_t) * win_xsize * win_ysize);
     ASSERT(buf != NULL);
     view = api_viewinit(win_xsize,win_ysize,buf);
-    api_makeWindow(view,buf,win_xsize,win_ysize,"Terminal");
+    api_makeWindow(view,buf,win_xsize,win_ysize,"终端");
     vput_str(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),PKn_Version);
     pos_y += 16;
     api_viewslide(view,210,100);
@@ -84,36 +84,37 @@ void shell_task(void* arg)
         else
         {
             api_viewupdown(view,api_gettop() - 1);
-            print_str("unknow command:'");
+            print_str("未知命令'");
             print_str(cmd_line);
-            print_str("'\n(use 'help' for help)\n\n");
+            print_str("'\n输入'help'查看帮助\n\n");
         }
     }
 }
 
-void print_str(const char* str)
+
+
+void print_str(const unsigned char* str)
 {
+    uint16_t zh;
+    uint8_t byte0 = 0;
+    uint8_t byte1;
     while(*str)
     {
-        switch(*str)
+        if(0x81 <= *str && *str <= 0xfe)
         {
-            case '\b':
-            case '\n':
-                pos_x = 2;
-                if(pos_y > win_ysize - 32)
-                {
-                    win_roll_screen();
-                }
-                else
-                {
-                    pos_y += 16;
-                }
-                break;
-            default:
-                vput_char(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),*str);
-                pos_x += 8;
-                if(pos_x > win_xsize - 16)
-                {
+            byte0 = *str;
+            str++;
+            byte1 = *str;
+        }
+        else
+        {
+            switch(*str)
+            {
+                case '\t':
+                    pos_x = (pos_x + (4 * 8)) & ~(4 * 8 - 1);
+                    break;
+                case '\r':
+                case '\n':
                     pos_x = 2;
                     if(pos_y > win_ysize - 32)
                     {
@@ -123,8 +124,31 @@ void print_str(const char* str)
                     {
                         pos_y += 16;
                     }
+                    break;
+                default:
+                    vput_char(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),*str);
+                    pos_x += 8;
+                    break;
+            }
+        }
+        if(byte0 != 0)
+        {
+            zh = ((((uint16_t)0 + byte0) << 8) + byte1);
+            byte0 = 0;
+            vput_hzk16(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),zh);
+            pos_x += 16;
+            if(pos_x > win_xsize - 16)
+            {
+                pos_x = 2;
+                if(pos_y > win_ysize - 32)
+                {
+                    win_roll_screen();
                 }
-                break;
+                else
+                {
+                    pos_y += 16;
+                }
+            }
         }
         str++;
     }
@@ -133,8 +157,8 @@ void print_str(const char* str)
 
 void print_prompt()
 {
-    vput_str(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),"[USER @ /]");
-    pos_x += 10 * 8 + 1;
+    vput_zh(buf,win_xsize,pos_x,pos_y,rgb(255,255,255),"[管理员 @ /] ");
+    pos_x += 7 * 8 + 3 * 16 + 1;
 }
 
 void readline(char* cmd_line)
@@ -212,25 +236,25 @@ void win_roll_screen()
 
 void help()
 {
-    print_str("buildin commands:\n");
-    print_str("    cls:  clear screen\n");
-    print_str("    ps:   show process information\n");
-    print_str("    reboot: reboot\n");
+    print_str("内建命令\n");
+    print_str("    cls:  清除输出\n");
+    print_str("    ps:   显示进程信息\n");
+    print_str("    reboot: 重新启动系统\n");
 }
 
 static bool print_thread(struct list_elem* pelem,int arg __attribute__((unused)))
 {
     char str[128];
     struct task_struct* pthread = (struct task_struct*)(pelem->data);
-    sprintf(str,"%-16s %-5d %-6d\n",pthread->name,pthread->pid,pthread->elapsed_ticks);
+    sprintf(str,"%-16s %-5d   %-6d\n",pthread->name,pthread->pid,pthread->elapsed_ticks);
     print_str(str);
     return false;
 }
 
 void ps()
 {
-    print_str("Name             Pid   Ticks\n");
-    print_str("---------------- ----- -----\n");
+    print_str("名称             进程id  已运行时刻\n");
+    print_str("---------------- -----   -----\n");
     list_traversal(&all_list,print_thread,0);
 }
 
