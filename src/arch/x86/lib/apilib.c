@@ -65,7 +65,7 @@ void api_viewflush(void* view,int x0,int y0,int x1,int y1)
     msg.msg3.m3i3 = x1;
     msg.msg3.m3i4 = y1;
     msg.msg3.m3p1 = view;
-    while(send_recv(BOTH,VIEW,&msg) == 1);
+    while(send_recv(SEND,VIEW,&msg) == 1);
     return;
 }
 
@@ -77,7 +77,7 @@ void api_viewslide(void* view,int x,int y)
     msg.msg3.m3i1 = x;
     msg.msg3.m3i2 = y;
     msg.msg3.m3p1 = view;
-    while(send_recv(BOTH,VIEW,&msg) == 1);
+    while(send_recv(SEND,VIEW,&msg) == 1);
     return;
 }
 
@@ -105,6 +105,15 @@ void* api_getviewbypos(int x,int y)
     msg.type = VIEW_GETVIEWBYPOS;
     msg.msg1.m1i1 = x;
     msg.msg1.m1i2 = y;
+    while(send_recv(BOTH,VIEW,&msg) == 1);
+    return msg.msg2.m2p1;
+}
+
+void* api_height2view(int height)
+{
+    struct MESSAGE msg;
+    msg.type = VIEW_HEIGHT2VIEW;
+    msg.msg1.m1i1 = height;
     while(send_recv(BOTH,VIEW,&msg) == 1);
     return msg.msg2.m2p1;
 }

@@ -1,5 +1,4 @@
 # Pencil-Kernel Makefile
-# 反汇编内核: objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 
 # Release
 # CDEF := -D NDEBUG
@@ -14,9 +13,11 @@ DD       := $(TOOL_DIR)dd
 GCC      := $(TOOL_DIR)gcc
 LD       := $(TOOL_DIR)ld
 MAKE     := $(TOOL_DIR)make
+MAKEFONT := $(TOOL_DIR)makefont
 NASM     := $(TOOL_DIR)nasm
 OBJCOPY  :=$(TOOL_DIR)objcopy
 OBJDUMP  :=$(TOOL_DIR)objdump
+RM       :=$(TOOL_DIR)rm
 IMGCOPY  := $(TOOL_DIR)imgcopy/imgcopy
 
 #src path
@@ -72,7 +73,7 @@ $(TASK_DIR)view.co           \
 \
 $(LIB_DIR)apilib.co          \
 $(LIB_DIR)bitmap.co          \
-$(LIB_DIR)font.co            \
+$(LIB_DIR)hzk16.fnt          \
 $(LIB_DIR)list.co            \
 $(LIB_DIR)print.co           \
 $(LIBC_DIR)string.co         \
@@ -83,9 +84,7 @@ $(GRAPHIC_DIR)graphic.co     \
 
 OBJ_FILE := $(KERNEL_DIR)start.ao $(KERNEL_DIR)main.co $(OBJS)
 KERNEL_OBJ_FILE := $(KERNEL_DIR)kernel.o
-KERNEL_BIN := $(KERNEL_DIR)kernel.bin
 KERNEL_SYS := $(KERNEL_DIR)kernel.sys
-HZK16      := $(LIB_DIR)hzk16.fnt
 #file
 v_disk := a.img
 
@@ -95,18 +94,23 @@ K_VERSION := 0.0.0 test
 #command
 COPY := copy
 CD := cd
-DELET := del
 ECHO := echo
 MAKE_DIR := md
 
+%.fnt: %.mft
+	@$(ECHO) Make $@
+	@$(MAKEFONT) $*.mft $*.asm -asm font HZK16
+	@$(NASM) -f elf32 -o $*.fnt $*.asm
+	@$(RM) $*.asm
+
 #.asm to .bin
-%.bin: %.asm Makefile $(INCLUDE_DIR)boot.inc
+%.bin: %.asm $(INCLUDE_DIR)boot.inc
 	@$(ECHO) compile $<
 	@$(NASM) -f bin -I $(INCLUDE_DIR) -o $*.bin $*.asm
 
 #.asm to .ao (elf)
 # -f elf32 :使用elf文件格式
-%.ao: %.asm Makefile
+%.ao: %.asm
 	@$(ECHO) compile $<
 	@$(NASM) -f elf32 -I $(INCLUDE_DIR) -o $*.ao $*.asm
 
@@ -122,7 +126,7 @@ MAKE_DIR := md
 # as参数说明:
 # --32: 编译为32位文件
 
-%.co: %.c Makefile
+%.co: %.c
 	@$(ECHO) compile $<
 	@$(CC1) -I $(INCLUDE_DIR)  -fno-builtin -fno-strict-aliasing -finput-charset=UTF-8 -fexec-charset=GB2312 $(CDEF) -m32 -O0 -quiet -o $*.s $*.c
 	@$(AS) -I $(INCLUDE_DIR) --32 -o $*.co $*.s
@@ -140,45 +144,44 @@ $(v_disk): vhd.asm
 .PHONY: clean debug dump img run system
 
 clean:
-	@$(CD) $(BOOT_DIR) && $(DELET) *.bin
-
-	@$(CD) $(DEVICE_DIR) && $(DELET) *.s
-	@$(CD) $(DEVICE_DIR) && $(DELET) *.co
-
-	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.s
-	@$(CD) $(GRAPHIC_DIR) && $(DELET) *.co
-
-	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.ao
-	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.co
-	@$(CD) $(INTERRUPT_DIR) && $(DELET) *.s
-
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.ao
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.sys
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.co
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.map
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.o
-	@$(CD) $(KERNEL_DIR) && $(DELET) *.s
-
-	@$(CD) $(LIB_DIR) && $(DELET) *.co
-	@$(CD) $(LIB_DIR) && $(DELET) *.s
-
-	@$(CD) $(LIBC_DIR) && $(DELET) *.co
-	@$(CD) $(LIBC_DIR) && $(DELET) *.s
-
-	@$(CD) $(MEMORY_DIR) && $(DELET) *.co
-	@$(CD) $(MEMORY_DIR) && $(DELET) *.s
-
-	@$(CD) $(PROG_DIR) && $(DELET) *.co
-	@$(CD) $(PROG_DIR) && $(DELET) *.s
-
-	@$(CD) $(SYSCALL_DIR) && $(DELET) *.co
-	@$(CD) $(SYSCALL_DIR) && $(DELET) *.s
-
-	@$(CD) $(TASK_DIR) && $(DELET) *.co
-	@$(CD) $(TASK_DIR) && $(DELET) *.s
-
-	@$(CD) $(THREAD_DIR) && $(DELET) *.co
-	@$(CD) $(THREAD_DIR) && $(DELET) *.s
+	@$(RM) $(BOOT_DIR)*.bin \
+	$(DEVICE_DIR)*.s \
+	$(DEVICE_DIR)*.co \
+	\
+	$(GRAPHIC_DIR)*.s \
+	$(GRAPHIC_DIR)*.co \
+	\
+	$(INTERRUPT_DIR)*.ao \
+	$(INTERRUPT_DIR)*.co \
+	$(INTERRUPT_DIR)*.s \
+	\
+	$(KERNEL_DIR)*.ao \
+	$(KERNEL_DIR)*.sys \
+	$(KERNEL_DIR)*.co \
+	$(KERNEL_DIR)*.map \
+	$(KERNEL_DIR)*.o \
+	$(KERNEL_DIR)*.s \
+	\
+	$(LIB_DIR)*.co \
+	$(LIB_DIR)*.s \
+	\
+	$(LIBC_DIR)*.co \
+	$(LIBC_DIR)*.s \
+	\
+	$(MEMORY_DIR)*.co \
+	$(MEMORY_DIR)*.s \
+	\
+	$(PROG_DIR)*.co \
+	$(PROG_DIR)*.s \
+	\
+	$(SYSCALL_DIR)*.co \
+	$(SYSCALL_DIR)*.s \
+	\
+	$(TASK_DIR)*.co \
+	$(TASK_DIR)*.s \
+	\
+	$(THREAD_DIR)*.co \
+	$(THREAD_DIR)*.s
 
 debug: img
 	@$(MAKE) -r dump
@@ -190,7 +193,6 @@ dump:
 	@..\..\..\tools\objdump -D -M intel $(KERNEL_OBJ_FILE) > kernel.asm
 # 将文件写入
 img: $(v_disk) $(BOOT) $(LOADER) system
-	-$(DELET) $(v_disk)
 	@$(MAKE) -r $(v_disk)
 	@$(DD) if=$(BOOT) of=$(v_disk) bs=512 count=1 seek=0 conv=notrunc
 	@$(DD) if=$(LOADER) of=$(v_disk) bs=512 count=7 seek=65 conv=notrunc
@@ -201,5 +203,5 @@ run: img
 	@$(TOOL_DIR)qemu\qemu-system-x86_64 -m 512M -drive file=$(v_disk),index=0,media=disk,format=raw -boot c
 
 system: $(OBJ_FILE) kernel.lds
-	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) $(HZK16) -T kernel.lds -Map $(KERNEL_DIR)kernel.map
+	@$(LD) -b $(OBJ_FORMAT) -z muldefs -o $(KERNEL_OBJ_FILE) $(OBJ_FILE) -T kernel.lds -Map $(KERNEL_DIR)kernel.map
 	@$(OBJCOPY) -I $(OBJ_FORMAT) -S -R ".eh_frame" -R ".comment" -O binary $(KERNEL_OBJ_FILE) $(KERNEL_SYS)

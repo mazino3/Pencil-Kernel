@@ -94,7 +94,6 @@ struct task_struct
     pid_t recv_from;                  /* 记录进程想要从谁获取消息 */
     int int_msg;                      /* 如果进程在等待中断发生,用于记录中断号 */
     struct list sender_list;          /* 如果有进程A向这个进程发送消息,但本进程没有要接收消息,进程A将自己的send_tag加入这个队列 */
-    struct list_elem send_tag;
 
     uint32_t stack_magic;             /* 用于检测是否栈溢出 */
 };

@@ -78,13 +78,11 @@ void VIEW_task(void* arg)
             case VIEW_FLUSH:
                 msg3 = msg.msg3;
                 VIEW_reflush(msg3.m3p1,msg3.m3i1,msg3.m3i2,msg3.m3i3,msg3.m3i4);
-                send_recv(SEND,source,&msg);
                 break;
 
             case VIEW_SLIDE:
                 msg3 = msg.msg3;
                 VIEWSlide(msg3.m3p1,msg3.m3i1,msg3.m3i2);
-                send_recv(SEND,source,&msg);
                 break;
             
             case VIEW_UPDOWN:
@@ -105,6 +103,14 @@ void VIEW_task(void* arg)
             case VIEW_GETVIEWBYPOS:
                 msg1 = msg.msg1;
                 msg.msg2.m2p1 = ctl.map[(msg1.m1i2) * ctl.xsize + (msg1.m1i1)];
+                send_recv(SEND,source,&msg);
+                break;
+
+            case VIEW_HEIGHT2VIEW:
+                msg1 = msg.msg1;
+                if(msg1.m1i1 < 0) { msg1.m1i1 = 0; }
+                if(msg1.m1i1 > ctl.top) { msg1.m1i1 = ctl.top; }
+                msg.msg2.m2p1 = ctl.views[msg1.m1i1];
                 send_recv(SEND,source,&msg);
                 break;
 

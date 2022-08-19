@@ -6,9 +6,10 @@
 #define SYSCALL_INTR 0x4d
 typedef void* syscall;
 
-#define SEND    1
-#define RECEIVE 2
-#define BOTH    3
+#define SEND         1 /* 发送消息 */
+#define RECEIVE      2 /* 接收消息 */
+#define BOTH         3 /* 发送消息,等待对方回复 */
+#define MSG_RECEIVED 4 /* 查看是否有进程向自己发送过消息 */
 
 enum MM_MSGTYPE
 {
@@ -27,7 +28,7 @@ enum VIEW_MSGTYPE
     VIEW_MAKEWINDOW,
     VIEW_GETTOP,               /* 获得ctl->top        mi1i: top */
     VIEW_GETVIEWBYPOS,         /* 通过坐标值获取一个图层句柄     m1i1: x,m1i2:y return: m2p1: view*/
-    VIEW_GETVIEWBYHEIGHT,      /* 通过高度值获取一个图层句柄     m1i1: height return: m2p1: view*/
+    VIEW_HEIGHT2VIEW,          /* 通过高度值获取一个图层句柄     m1i1: height return: m2p1: view*/
     VIEW_GETVIEWINFO,          /* 获取view的信息               m2p1: view return: m1i1: x,m1i2: y,m1i3: xsize,m1i4: ysize*/
     VIEW_GETVIEWHEIGHT,        /* 获取view高度                 m2p1: view return: m1i1:height */
     VIEW_GETVIEWFLAGE,         /* 获取view的flage值            m2p1: view return: m1i1: flage */

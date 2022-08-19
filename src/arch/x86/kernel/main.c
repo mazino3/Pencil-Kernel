@@ -67,7 +67,6 @@ void kernel_main(void)
     // view_reflush(background,20,20,background->xsize,68);
 
     thread_start("k_a",31,k_thread_a,"arg_A ");
-    thread_start("Mouse",31,Mouse_task,NULL);
     thread_start("console",31,shell_task,NULL);
     process_execute(u_prog_a,"user_progA");
     // thread_start("user_progA",31,u_prog_a,NULL);

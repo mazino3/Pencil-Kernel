@@ -40,13 +40,10 @@ struct viewctl
 
 void init_screen();
 pixel_t rgb(int r,int g,int b);
-/* 用color代表的颜色填充显存vram从(x0,y0)到(x1,y1)之间的区域 */
 void viewFill(pixel_t* vram,int xsize,pixel_t color,int x0,int y0,int x1,int y1);
-/* 将字符c以颜色color显示到显存的(x,y)处 */
 void vput_char(pixel_t* vram,int xsize,int x,int y,pixel_t color,unsigned char c);
 void vput_hzk16(pixel_t* vram,int xsize,int x,int y,pixel_t color,uint16_t ch);
-/* 将字符串str以颜色color显示到显存的(x,y)处 */
 void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str);
-/* 显示字符串(中文) */
 void vput_zh(pixel_t* vram,int xsize,int x,int y,pixel_t color,const unsigned char* str);
+
 #endif /* __GRAPHIC_H__ */

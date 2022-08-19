@@ -123,7 +123,7 @@ int main(int argc,char* argv[])
                     c++;
                 }
             }
-            out << '\t' << "dd " << s << "b\n"; 
+            out << '\t' << "dw " << s << "b\n"; 
         }while(!in.eof());
     }
     else if(outMode == 2)

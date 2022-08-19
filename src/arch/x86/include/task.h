@@ -8,6 +8,7 @@ enum TASKPID
     MM,
     TTY,
     VIEW,
+    MOUSE,
     TASKPID_END,
 };
 

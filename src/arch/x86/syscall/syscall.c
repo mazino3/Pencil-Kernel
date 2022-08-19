@@ -74,38 +74,22 @@ PRIVATE uint32_t msg_send(pid_t dst,struct MESSAGE* msg)
     {
         return 1;
     }
-
+    /* 消息复制到当前进程pcb */
+    memcpy(&(sender->msg),msg,sizeof(struct MESSAGE));
+    /* 加入队列 */
+    ASSERT(!list_find(&(pdest->sender_list),&(sender->general_tag)));
+    list_append(&(pdest->sender_list),&(sender->general_tag));
     /* 对方正准备接收消息 */
     if(pdest->status == TASK_RECEIVING && (pdest->recv_from == ANY || pdest->recv_from == sender->pid))
     {
-        /* 消息复制到当前进程pcb */
-        memcpy(&(sender->msg),msg,sizeof(struct MESSAGE));
-        /* 加入队列 */
-        ASSERT(sender->send_tag.data == sender);
-        ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
-        list_append(&(pdest->sender_list),&(sender->send_tag));
         /* 唤醒对方 */
         thread_unblock(pdest);
-        thread_block(TASK_SENDING); /* 统一阻塞自己 */
-        return 0;
     }
-    /* 对方还没准备接收 */
-    else
-    {
-        /* 消息复制到当前进程pcb */
-        memcpy(&(sender->msg),msg,sizeof(struct MESSAGE));
-        sender->send_to = dst;
-        /* 加入队列 */
-        ASSERT(sender->send_tag.data == sender);
-        list_append(&(pdest->sender_list),&(sender->send_tag));
-
-        thread_block(TASK_SENDING);
-        ASSERT(!list_find(&(pdest->sender_list),&(sender->send_tag)));
-        sender->send_to = NO_TASK;
-        resetmsg(&(sender->msg));
-        return 0;
-    }
-    return 1;
+    thread_block(TASK_SENDING);
+    ASSERT(!list_find(&(pdest->sender_list),&(sender->general_tag)));
+    sender->send_to = NO_TASK;
+    resetmsg(&(sender->msg));
+    return 0;
 }
 
 /* list_traversal的回调函数pid_check */
@@ -187,8 +171,11 @@ uint32_t sys_sendrec(int function,pid_t src_dst,struct MESSAGE* msg)
                 res = msg_recv(src_dst,msg);
             }
             break;
+        case MSG_RECEIVED:
+            res = !list_empty(&(running_thread()->sender_list));
+            break;
         default:
-            ASSERT((function == SEND) || (function == RECEIVE) || (function == BOTH));
+            ASSERT((function == SEND) || (function == RECEIVE) || (function == BOTH) || (function == MSG_RECEIVED));
             break;
     }
     intr_set_status(old_status);

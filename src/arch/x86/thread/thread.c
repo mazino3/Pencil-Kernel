@@ -71,12 +71,11 @@ void thread_init(struct task_struct* thread,char* name,uint8_t priority)
     thread->priority = priority;
     thread->self_kstack = ((uint32_t*)(((uint32_t)thread) + PCB_SIZE)); /* 线程内核态下的栈顶地址 */
     thread->page_dir = NULL;
-    
+
     thread->send_to = 0;
     thread->recv_from = 0;
     thread->int_msg = 0;
     list_init(&(thread->sender_list));
-    thread->send_tag.data = thread;
     thread->stack_magic = 0x12345678;
     return;
 }

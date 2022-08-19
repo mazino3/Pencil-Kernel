@@ -19,6 +19,7 @@ void api_viewslide(void* view,int x,int y);
 void api_viewupdown(void* view,int height);
 int api_gettop(void);
 void* api_getviewbypos(int x,int y);
+void* api_height2view(int height);
 int api_getviewflage(void* view);
 
 void api_makeWindow(void* view,void* buf,int xsize,int ysize,char* title);

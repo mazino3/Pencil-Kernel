@@ -91,26 +91,27 @@ void viewFill(pixel_t* vram,int xsize,pixel_t color,int x0,int y0,int x1,int y1)
 
 void vput_char(pixel_t* vram,int xsize,int x,int y,pixel_t color,unsigned char c)
 {
-    int i;
-    pixel_t* put;
-    uint8_t data;
-    int idx = c;
-    unsigned char* font = PKnFont[idx];
+    // int i;
+    // pixel_t* put;
+    // uint8_t data;
+    // int idx = c;
+    // unsigned char* font = PKnFont[idx];
     if(DisplayMode == _GRAPHIC)
     {
-        for(i = 0;i < 16;i++)
-        {
-            put = (vram) + ((y + i) * (xsize) + x);
-            data = font[i];
-            if((data & 0x80) != 0){put[0] = color;}
-            if((data & 0x40) != 0){put[1] = color;}
-            if((data & 0x20) != 0){put[2] = color;}
-            if((data & 0x10) != 0){put[3] = color;}
-            if((data & 0x08) != 0){put[4] = color;}
-            if((data & 0x04) != 0){put[5] = color;}
-            if((data & 0x02) != 0){put[6] = color;}
-            if((data & 0x01) != 0){put[7] = color;}
-        }
+        vput_hzk16(vram,xsize,x,y,color,c);
+        // for(i = 0;i < 16;i++)
+        // {
+        //     put = (vram) + ((y + i) * (xsize) + x);
+        //     data = font[i];
+        //     if((data & 0x80) != 0){put[0] = color;}
+        //     if((data & 0x40) != 0){put[1] = color;}
+        //     if((data & 0x20) != 0){put[2] = color;}
+        //     if((data & 0x10) != 0){put[3] = color;}
+        //     if((data & 0x08) != 0){put[4] = color;}
+        //     if((data & 0x04) != 0){put[5] = color;}
+        //     if((data & 0x02) != 0){put[6] = color;}
+        //     if((data & 0x01) != 0){put[7] = color;}
+        // }
     }
     return;
 }
@@ -122,12 +123,34 @@ void vput_hzk16(pixel_t* vram,int xsize,int x,int y,pixel_t color,uint16_t ch)
     uint16_t* font;
     if(ch >= 0 && ch <= 0xff) /* ASCII字符 */
     {
-        vput_char(vram,xsize,x,y,color,ch);
+        if(ch >= 0x21 && ch <= 0x7e) /* ASCII可见字符 */
+        {
+            k = 3 - 1;
+            t = (ch - 0x21);
+            font = (uint16_t*)(&HZK16 + (k * 94 + t) * 32);
+            uint16_t data;
+            int i;
+            pixel_t* put;
+            for(i = 0;i < 16;i++)
+            {
+                put = (vram) + ((y + i) * (xsize) + x);
+                data = font[i];
+                if((data & 0x8000) != 0){put[0] = color;}
+                if((data & 0x4000) != 0){put[1] = color;}
+                if((data & 0x2000) != 0){put[2] = color;}
+                if((data & 0x1000) != 0){put[3] = color;}
+                if((data & 0x0800) != 0){put[4] = color;}
+                if((data & 0x0400) != 0){put[5] = color;}
+                if((data & 0x0200) != 0){put[6] = color;}
+                if((data & 0x0100) != 0){put[7] = color;}
+            }
+        }
+        // vput_char(vram,xsize,x,y,color,ch);
         return;
     }
     k = ((ch & 0xff00) >> 8) - 0xa1; /* 区 */
     t = (ch & 0x00ff)- 0xa1;      /* 位 */
-    font = (uint16_t*)(&HZK16 + ((k - 15) * 94 + t) * 32);
+    font = (uint16_t*)(&HZK16 + (k * 94 + t) * 32);
     uint16_t data;
     int i;
     pixel_t* put;
@@ -157,27 +180,28 @@ void vput_hzk16(pixel_t* vram,int xsize,int x,int y,pixel_t color,uint16_t ch)
 
 void vput_str(pixel_t* vram,int xsize,int x,int y,pixel_t color,const char* str)
 {
-    int pos_x = x;
-    int pos_y = y;
-    while(*str != '\0')
-    {
-        switch(*str)
-        {
-            case '\t':
-                pos_x = (pos_x + (4 * 8)) & ~(4 * 8 - 1);
-                break;
-            case '\r':
-            case '\n':
-                pos_y += 16;
-                pos_x = x;
-                break;
-            default:
-                vput_char(vram,xsize,pos_x,pos_y,color,*str);
-                pos_x += 8;
-                break;
-        }
-        str++;
-    }
+    vput_zh(vram,xsize,x,y,color,str);
+    // int pos_x = x;
+    // int pos_y = y;
+    // while(*str != '\0')
+    // {
+    //     switch(*str)
+    //     {
+    //         case '\t':
+    //             pos_x = (pos_x + (4 * 8)) & ~(4 * 8 - 1);
+    //             break;
+    //         case '\r':
+    //         case '\n':
+    //             pos_y += 16;
+    //             pos_x = x;
+    //             break;
+    //         default:
+    //             vput_hzk16(vram,xsize,pos_x,pos_y,color,*str);
+    //             pos_x += 8;
+    //             break;
+    //     }
+    //     str++;
+    // }
     return;
 }
 
