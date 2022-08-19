@@ -1,4 +1,4 @@
-Pencil-Kernel
+﻿Pencil-Kernel
 =
 ### Pencil-Kernel
 `Pencil-Kernel`,简称`PKn`,是一个小型的操作系统内核.
@@ -54,7 +54,7 @@ current support:`x86` <br />
 > make run
 ```
 
-### 目标 Goal
+### 目标
 进行中:<br />
 - [ ] 硬盘驱动
 - [ ] shell
@@ -74,12 +74,8 @@ current support:`x86` <br />
 - [ ] ~~打倒Linux~~
 ### 实机启动
 使用rufus等软件将a.img写入u盘,然后从U盘启动即可.
-### 更多 More
+### 更多
 [[运行截图 Run screenshot]](doc/image/Readme.md)<br />
 ***
-### 联系方式 Contact details
-网站: ~~https://pencil.cnurl.tk~~ (暂时关闭中)<br/>
+### 联系方式
 E-mail: zpojia@hotmail.com<br />
-bilibili: @Linevtnpu
-***
-&copy; 2021-2022 Pencil-Kernel developers,All rights reserved.
